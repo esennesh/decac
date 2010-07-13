@@ -1,0 +1,15 @@
+<project name="jllvm">
+	<target name="build">
+		<exec dir="llvm" executable="./compile.sh"/>
+		<javac srcdir="." destdir="."/>
+	</target>
+	<target name="clean">
+		<delete dir="jllvm"/>
+		<delete>
+			<fileset dir="llvm" includes="*.o"/>
+			<fileset dir="llvm" includes="*.so"/>
+			<fileset dir="llvm/Transforms" includes="*.o"/>
+			<fileset dir="llvm/Transforms" includes="*.so"/>
+		</delete>
+	</target>
+</project>

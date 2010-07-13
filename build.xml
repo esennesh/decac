@@ -1,0 +1,35 @@
+<project name="decac">
+	<property name="scala.lib.dir" location="${SCALA_HOME}/lib"/>
+	<path id="project.classpath">
+		<pathelement location="${scala.lib.dir}/scala-library.jar"/>
+		<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
+	</path>
+	<!-- <taskdef resource="scala/tools/ant/antlib.xml">
+		<classpath>
+			<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
+			<pathelement location="${scala.lib.dir}/scala-library.jar"/>
+		</classpath>
+	</taskdef> -->
+	<target name="build_parser">
+		<exec executable="sablecc">
+			<arg value="deca.scc"/>
+		</exec>
+		<mkdir dir="build/"/>
+		<javac srcdir="decasyntax" destdir="build"/>
+	</target>
+	<target name="build_llvm_bindings">
+		<exec dir="src/jllvm/llvm/" executable="./compile.sh"/>
+	</target>
+	<target name="build">
+		<mkdir dir="build/"/>
+		<javac srcdir="src/" destdir="build"/>
+		<scalac srcdir="src/" destdir="build"/>
+	</target>
+	<target name="clean">
+		<exec dir="src/jllvm" executable="ant">
+			<arg value="clean"/>
+		</exec>
+		<delete dir="build/"/>
+		<delete dir="decasyntax/"/>
+	</target>
+</project>

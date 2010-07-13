@@ -1,0 +1,10 @@
+module blah
+
+import list;
+
+function map(l,f) {
+	if(l != Nil)
+		list.cons(f(list.car(l)),map(list.cdr(l),f))
+	else
+		Nil
+}

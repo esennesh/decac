@@ -1,0 +1,33 @@
+module list
+
+import malloc
+
+type List:= class<T> extends Sequence<T> {
+	element T;
+	next List<T>;
+}
+
+new List(e,n) {
+	element:= e;
+	next:= n;
+}
+
+function cons(element,next) {
+	new List(malloc.malloc(typesize(List)),element,next);
+}
+
+method car(lst @null or List) {
+	let(lst List:= lst)
+		element
+	else
+		throw NullPointerException;
+}
+
+method cdr(lst @null or List) {
+	let(lst List:= lst)
+		next
+	else
+		null;
+}
+
+end

@@ -1,0 +1,41 @@
+module highorder
+
+import list;
+
+generic Sequence map(generic s Sequence,f);
+
+method map(s list.List,f) {
+	cast case(l &list.List:= l)
+		list.cons(f(car(l)),map(cdr(l),f))
+	else
+		null
+}
+
+generic Sequence filter(generic s Sequence,p?);
+
+method filter(s list.List,p?) {
+	cast case(l &list.List:= l)
+		cond {
+			case(p(l.element) = true)
+				list.cons(car(l),filter(cdr(l),p))
+			case(true)
+				filter(cdr(l),p)
+		}
+	else
+		null
+}
+
+generic Sequence fold(generic s Sequence,f,base);
+
+method fold(s list.List,f,base) {
+	cast case(l &list.List:= l)
+		f(car(l),fold(cdr(l),f,base))
+	else
+		base
+}
+
+function copy_list(s) {
+	fold(s,lambda(x,y) { list.cons(x,y) },null)
+}
+
+end.
