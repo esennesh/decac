@@ -295,8 +295,8 @@ Productions
     {match} let lparen typed_variable_assignment rparen [success]:expression else [failure]:expression;
     
   block_contents =
-    {one} expression semicolon |
-    {many} block_contents expression [terminator]:semicolon;
+    {one} expression |
+    {many} block_contents [separator]:semicolon expression [semicolon]:semicolon;
   	
   block_expression =
     lbracket block_contents rbracket;

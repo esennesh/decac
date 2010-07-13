@@ -13,21 +13,21 @@ new List(e,n) {
 }
 
 function cons(element,next) {
-	new List(malloc.malloc(typesize(List)),element,next);
+	new List(malloc.malloc(typesize(List)),element,next)
 }
 
 method car(lst @null or List) {
 	let(lst List:= lst)
 		element
 	else
-		throw NullPointerException;
+		throw NullPointerException
 }
 
 method cdr(lst @null or List) {
 	let(lst List:= lst)
 		next
 	else
-		null;
+		null
 }
 
 end
