@@ -18,14 +18,14 @@ function cons(element,next) {
 
 method car(lst @null or List) {
 	let(lst List:= lst)
-		element
+		lst.element
 	else
 		throw NullPointerException
 }
 
 method cdr(lst @null or List) {
 	let(lst List:= lst)
-		next
+		lst.next
 	else
 		null
 }

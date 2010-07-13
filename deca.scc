@@ -191,7 +191,7 @@ Productions
     {many} argument_list comma argument;
     
   function_definition = 
-    {generic} generic [type]:type_form [name]:unqualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
+    {generic} generic [type]:type_form [name]:unqualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression? |
     {method} method [name]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
     {function} function [name]:unqualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
     {constructor} new [type]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
