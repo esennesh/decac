@@ -130,7 +130,7 @@ Productions
     
   type_form =
     {function} function_type_form |
-    {alias} at_operator nullable_alias_clause? lower_type_form  |
+    {alias} at_operator lower_type_form nullable_alias_clause?  |
     {class} class_keyword [parameters]:type_form_arguments? [extension]:extension_clause? lbracket [member]:member_declaration+ rbracket |
     {subrange} subrange lparen [floor]:subrange_bound comma [ceiling]:subrange_bound rparen [parent]:extension_clause |
     {enum} enum lparen identifier_list rparen [extension]:extension_clause? |
@@ -143,7 +143,7 @@ Productions
   
   lower_type_form =
     {named} [typename]:qualified_identifier [arguments]:type_form_arguments? |
-    {parenthetical} type lparen type_form rparen |
+    {parenthetical} type [name]:unqualified_identifier? lparen type_form rparen |
     {tuple} lsbracket typed_variable_declaration_list rsbracket |
     {array} lower_type_form lsbracket integer_constant rsbracket |
     {region} region |
@@ -151,11 +151,11 @@ Productions
     {bottom} null_literal;
 
   nullable_alias_clause =
-    null_literal or_operator;
+    or_operator null_literal;
       
   definition = 
     {globaldef} define constant? typed_variable_assignment |
-    {typedef} type [name]:unqualified_identifier assignment_operator type_form |
+    {typedef} type unqualified_identifier assignment_operator type_form |
     {moduledef} module_definition |
     {fundef} function_definition;
   

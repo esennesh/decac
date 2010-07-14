@@ -16,14 +16,14 @@ function cons(element,next) {
 	new List(malloc.malloc(typesize(List)),element,next)
 }
 
-method car(lst @null or List) {
+method car(lst @List or null) {
 	let(lst List:= lst)
 		lst.element
 	else
 		throw NullPointerException
 }
 
-method cdr(lst @null or List) {
+method cdr(lst @List or null) {
 	let(lst List:= lst)
 		lst.next
 	else

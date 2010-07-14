@@ -2,18 +2,18 @@ module highorder
 
 import list
 
-generic Sequence map(s @null or Sequence,f)
+generic Sequence map(s @Sequence or null,f)
 
-method map(s @null or list.List,f) {
+method map(s @list.List or null,f) {
 	let(l list.List:= s)
 		list.cons(f(list.car(l)),map(list.cdr(l),f))
 	else
 		null
 }
 
-generic Sequence filter(s @null or Sequence,p?)
+generic Sequence filter(s @Sequence or null,p?)
 
-method filter(s @null or list.List,p?) {
+method filter(s @list.List or null,p?) {
 	let(l list.List:= s)
 		cond {
 			case(p?(l.element) = true)
@@ -25,9 +25,9 @@ method filter(s @null or list.List,p?) {
 		null
 }
 
-generic Sequence fold(s @null or Sequence,f,base)
+generic Sequence fold(s @Sequence or null,f,base)
 
-method fold(s @null or list.List,f,base) {
+method fold(s @list.List or null,f,base) {
 	let(l list.List:= s)
 		f(car(l),fold(cdr(l),f,base))
 	else
