@@ -254,11 +254,15 @@ Productions
     {different} [exp1]:exp4 different [exp2]:exp4 |
     {others} exp4;
     
+  destructor_arguments =
+    {one} expression |
+    {many} expression comma expression_list;
+    
   function_call_expression =
     {variable} [function]:qualified_identifier lparen [arguments]:expression_list? rparen |
     {parens} [function]:parenthetical_expression lparen [arguments]:expression_list? rparen |
     {constructor} new [type]:qualified_identifier lparen [arguments]:expression_list? rparen |
-    {destructor} delete [type]:qualified_identifier lparen [arguments]:expression_list? rparen |
+    {destructor} delete [type]:qualified_identifier lparen [arguments]:destructor_arguments rparen |
     {deleteregion} delete region lparen rparen;
   
   parenthetical_expression =
