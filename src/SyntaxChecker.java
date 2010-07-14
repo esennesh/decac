@@ -15,7 +15,7 @@ public class SyntaxChecker {
 	public static void main(String[] args) throws IOException,FileNotFoundException,ParserException,LexerException {
 		System.out.println("Compiling " + args[0] + ".");
 		try {
-			Start node = check_syntax(args[0]);
+			PModuleDefinition node = check_syntax(args[0]).getModuleDefinition();
 		}
 		catch(ParserException pe) {
 			System.err.println(pe.getMessage() + " found '" + pe.getToken().getText() + "' token of " + pe.getToken().getClass().getName() + " type.");
