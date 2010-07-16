@@ -12,14 +12,18 @@
 	</taskdef> -->
 	<target name="build_parser">
 		<exec executable="sablecc">
+			<arg value="-d src/"/>
 			<arg value="--no-inline"/>
 			<arg value="deca.scc"/>
 		</exec>
 		<mkdir dir="build/"/>
-		<javac srcdir="decasyntax" destdir="."/>
+		<javac srcdir="src/decasyntax" destdir="build"/>
 	</target>
 	<target name="build_llvm_bindings">
+		<echo message="Compiling C components of jllvm."/>
 		<exec dir="src/jllvm/llvm/" executable="./compile.sh"/>
+		<echo message="Compiled C components of jllvm."/>
+		<javac srcdir="src/jllvm" destdir="build"/>
 	</target>
 	<target name="build">
 		<mkdir dir="build/"/>

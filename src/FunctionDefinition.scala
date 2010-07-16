@@ -11,5 +11,7 @@ class FunctionDefinition(m: Module,n: String,ft: FunctionRho,b: BlockExpression)
   val body: BlockExpression = b
   val specializations: Map[List[RhoType],BlockExpression] = new HashMap[List[RhoType],BlockExpression]()
   def specialize(types: List[RhoType]): Boolean
-  def compile(specialization: List[RhoType]): Option[LLVMFunction]
+  def compile(specialization: List[RhoType]): Option[LLVMFunction] = {
+    None
+  }
 }

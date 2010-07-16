@@ -1,25 +1,37 @@
 package decac
 
-import decasyntax.nodes._
+import decasyntax.parser._
+import decasyntax.lexer._
+import decasyntax.node._
+import java.util.LinkedList
 
 object ASTProcessor {
+  def convertList[T](list: LinkedList[T]): List[T] = {
+    (list.toArray(new Array[T](3,4))).toList
+  }
   def processQualifiedIdentifier(name: PQualifiedIdentifier): List[String] = name match {
     case simple: ASimpleQualifiedIdentifier => simple.getUnqualifiedIdentifier.getText() :: Nil
-    case imported: AImportedQualifiedIdentifier => processQualifiedIdentifier(imported.getQualifiedIdentifier).append(imported.getUnqualifiedIdentifier.getText() :: Nil)
+    case imported: AImportedQualifiedIdentifier => processQualifiedIdentifier(imported.getQualifiedIdentifier) ++ (imported.getUnqualifiedIdentifier.getText() :: Nil)
+  }
+  def declareImportDeclaration(where: Module,imp: PImportDeclaration): Option[Scopeable] = imp match {
+    case imp: AImportDeclaration => where.declare(where.lookup(processQualifiedIdentifier(imp.getName())))
   }
   def processDefinition(adef: PDefinition,scope: Scope): Definition = adef match {
     case amoddef: AModuledefDefinition => {
-      val moddef: AModuleDefinition = amoddef.getModuleDefinition()
+      val moddef: AModuleDefinition = amoddef.getModuleDefinition() match {case real: AModuleDefinition => real}
       val result = new Module(scope match {case modscope: Module => modscope case _ => null },moddef.getName().getText())
-      moddef.getImports().map(imp: AImportDeclaration => result.declare(scope.lookup(processQualifiedIdentifier(imp.getName()))))
-      moddef.getDefinitions.map(definition: PDefinition => processDefinition(definition,result)
+      convertList(moddef.getImports()).map(imp => declareImportDeclaration(result,imp))
+      convertList(moddef.getDefinitions).map(definition => processDefinition(definition,result))
       return result
     }
     case afuncdef: AFundefDefinition => {
+      null
     }
     case atypedef: ATypedefDefinition => {
+      null
     }
     case avardef: AGlobaldefDefinition => {
+      null
     }
   }
 }

@@ -13,7 +13,7 @@ abstract class SigmaType {
 class ForallSigma(a: TauVariable,s: SigmaType) extends SigmaType {
   val alpha = new SigmaVariable(this)
   val sigma = s match {
-    case tvar: TauVariable => throw new Exception("A universal quantifier must have a rho type inside it.")
+    case tvar: TauVariable => throw new Exception("A universal quantifier must have a rho type or another universal quantifier inside it.")
     case rho: RhoType => rho.replace(a,alpha)
     case _ => s
   }
