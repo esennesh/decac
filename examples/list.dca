@@ -2,9 +2,9 @@ module list
 
 import malloc
 
-type List:= class<T> extends Sequence<T> {
-	element T;
-	next List<T>;
+type List = class<T> extends Sequence<T> {
+	element: T;
+	next: List<T>;
 }
 
 new List(e,n) {
@@ -16,18 +16,12 @@ function cons(element,next) {
 	new List(malloc.malloc(typesize(List)),element,next)
 }
 
-method car(lst @List or null) {
-	let(lst List:= lst)
-		lst.element
-	else
-		throw NullPointerException
+method car(lst: @List or null) {
+	match lst case(lst: List) -> lst.element else throw NullPointerException
 }
 
-method cdr(lst @List or null) {
-	let(lst List:= lst)
-		lst.next
-	else
-		null
+method cdr(lst: @List or null) {
+	match lst case(lst: List) -> lst.next else throw null
 }
 
 end

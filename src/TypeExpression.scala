@@ -87,7 +87,7 @@ class RecordRho(f: List[RecordMember]) extends RhoType {
   val length: Int = fields.length
   
   override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau match {
-    case rec: RecordRho => rec == this || (length >= rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.subtypes(pair._2.tau,possibly)))
+    case rec: RecordRho => rec == this || (length >= rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau,possibly)))
     case range: RhoRange => subtypes(range.lowerBound,possibly)
     case tvar: TauVariable => possibly
     case _ => false

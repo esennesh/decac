@@ -4,7 +4,7 @@ import jllvm.LLVMBasicBlock
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 
-class BlockExpression(exprs: List[Expression]) extends Expression(exprs.last.expressionType) {
+class BlockExpression(exprs: List[Expression]) extends Expression(exprs.last.originalType) {
   val steps: List[Expression] = exprs
   override def children = steps
   val specializations: Map[List[RhoType],LLVMBasicBlock] = new HashMap[List[RhoType],LLVMBasicBlock]()

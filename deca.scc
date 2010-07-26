@@ -80,10 +80,9 @@ Tokens
   lessereq = '<=';
   function = 'function';
   while = 'while';
-  do = 'do';
   for = 'for';
   case = 'case';
-  cond = 'cond';
+  if = 'if';
   let = 'let';
   except = 'except';
   finally = 'finally';
@@ -149,7 +148,7 @@ Productions
     
   tuple_component =
     {type} type_form |
-    {binding} typed_variable_declaration;
+    {binding} [name]:unqualified_identifier type_annotation;
     
   tuple_component_list = 
     {one} tuple_component |
@@ -168,7 +167,7 @@ Productions
     or_operator null_literal;
       
   definition = 
-    {globaldef} define constant? typed_variable_assignment |
+    {globaldef} define constant? unqualified_identifier type_annotation? assignment_operator expression |
     {typedef} type unqualified_identifier equals type_form |
     {moduledef} module_definition |
     {fundef} function_definition;
@@ -179,12 +178,9 @@ Productions
   type_form_list = 
     {one} type_form |
     {many} type_form_list comma type_form;
-
-  typed_variable_declaration =
-    [name]:unqualified_identifier colon [type]:type_form;
     
-  typed_variable_assignment =
-    typed_variable_declaration assignment_operator expression;
+  type_annotation =
+    colon [type]:type_form;
     
   member_declaration = 
     {named} protected? [names]:identifier_list colon [type]:type_form semicolon;
@@ -193,31 +189,29 @@ Productions
     extends [supertype]:qualified_identifier [arguments]:type_form_arguments?;
     
   argument =
-    {generic} unqualified_identifier |
-    {typed} typed_variable_declaration;
+    [name]:unqualified_identifier [type]:type_annotation?;
     
   argument_list = 
     {one} argument |
     {many} argument_list comma argument;
     
   function_definition = 
-    {generic} generic [type]:type_form [name]:unqualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression? |
+    {generic} generic [name]:unqualified_identifier lparen [arguments]:argument_list rparen [type]:type_annotation [body]:block_expression? |
     {method} method [name]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
-    {function} function [name]:unqualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
+    {function} function [name]:unqualified_identifier lparen [arguments]:argument_list rparen [type]:type_annotation? [body]:block_expression |
     {constructor} new [type]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
     {destructor} delete [type]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression;
     
   expression =
     {assignmentexp} qualified_identifier assignment_operator expression |
-    {letexp} let lparen let_assignment_list rparen [success]:expression |
+    {letexp} let lparen let_assignment_list rparen expression |
     {matchexp} match_expression |
     {tryexp} try_expression |
     {finalexp} finally [finalizer]:expression |
     {forexp} for lparen [initializer]:let_assignment [first_separator]:comma [test]:expression [second_separator]:comma [step]:expression rparen [loop]:expression |
     {whilexp} while lparen [condition]:expression rparen [body]:expression |
-    {doexp} do [body]:expression while lparen [condition]:expression rparen |
     {throwexp} throw expression |
-    {condexp} cond_expression |
+    {condexp} if_expression |
     {blockexp} block_expression |
     {regionexp} region lsbracket integer_constant rsbracket |
     {returnexp} return expression |
@@ -233,7 +227,7 @@ Productions
     {sizeof} sizeof_expression |
     {primitive} primitive_expression |
     {tuple} lsbracket expression_list rsbracket |
-    {lambda} function lparen argument_list rparen block_expression [region]:parenthetical_expression? |
+    {lambda} function lparen argument_list rparen [region]:parenthetical_expression? block_expression |
     {call} function_call_expression |
     {parenthetical} parenthetical_expression |
     {identifier} qualified_identifier;
@@ -276,10 +270,10 @@ Productions
     {parens} [function]:parenthetical_expression lparen [arguments]:expression_list? rparen |
     {constructor} new [type]:qualified_identifier lparen [arguments]:condes_arguments rparen |
     {destructor} delete [type]:qualified_identifier lparen [arguments]:condes_arguments rparen |
-    {deleteregion} delete region lparen rparen;
+    {deleteregion} delete region [which]:parenthetical_expression;
     
   except_case_clause =
-    case lparen typed_variable_declaration rparen arrow_operator [body]:expression;
+    case lparen [name]:unqualified_identifier type_annotation rparen arrow_operator [body]:expression;
     
   try_expression = 
     {one} try expression except except_case_clause |
@@ -298,23 +292,23 @@ Productions
     {one} expression |
     {many} expression_list comma expression;
   
-  cond_case_clause =
+  if_case_clause =
     {case} case lparen [condition]:expression rparen [body]:expression |
     {else} else [body]:expression;
     
-  cond_expression =
-    {one} cond lparen [condition]:expression rparen [body]:expression |
-    {many} cond lbracket [cases]:cond_case_clause+ rbracket;
+  if_expression =
+    {one} if lparen [condition]:expression rparen [body]:expression |
+    {many} if lbracket [cases]:if_case_clause+ rbracket;
     
-  let_assignment = 
-    unqualified_identifier assignment_operator expression;
-    
+  let_assignment =
+    unqualified_identifier type_annotation? assignment_operator expression;
+
   let_assignment_list = 
     {one} let_assignment |
     {many} let_assignment_list comma let_assignment;
   
   match_case_clause =
-    {variable} case lparen typed_variable_declaration rparen arrow_operator [body]:expression |
+    {variable} case lparen [name]:unqualified_identifier type_annotation rparen arrow_operator [body]:expression |
     {pattern} case lparen type_form rparen arrow_operator [body]:expression;
     
   match_expression = 
@@ -323,7 +317,7 @@ Productions
     
   block_contents =
     {one} expression |
-    {many} block_contents [separator]:semicolon expression [semicolon]:semicolon;
+    {many} block_contents [separator]:semicolon expression [terminator]:semicolon;
   	
   block_expression =
     lbracket block_contents rbracket;

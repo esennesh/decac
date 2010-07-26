@@ -18,6 +18,8 @@
 		</exec>
 		<mkdir dir="build/"/>
 		<javac srcdir="src/decasyntax" destdir="build"/>
+		<copy file="src/decasyntax/lexer/lexer.dat" todir="build/decasyntax/lexer"/>
+		<copy file="src/decasyntax/parser/parser.dat" todir="build/decasyntax/parser"/>
 	</target>
 	<target name="build_llvm_bindings">
 		<echo message="Compiling C components of jllvm."/>

@@ -2,36 +2,28 @@ module highorder
 
 import list
 
-generic Sequence map(s @Sequence or null,f)
+generic map(s: @Sequence or null,f): @Sequence or null
 
-method map(s @list.List or null,f) {
-	let(l list.List:= s)
-		list.cons(f(list.car(l)),map(list.cdr(l),f))
-	else
-		null
+method map(s: @list.List or null,f) {
+	match s case(l: list.List) -> list.cons(f(list.car(l)),map(list.cdr(l),f)) else null
 }
 
-generic Sequence filter(s @Sequence or null,p?)
+generic filter(s: @Sequence or null,p?): @Sequence or null
 
-method filter(s @list.List or null,p?) {
-	let(l list.List:= s)
+method filter(s: @list.List or null,p?) {
+	match s case (l: list.List) ->
 		cond {
-			case(p?(l.element) = true)
-				list.cons(list.car(l),filter(list.cdr(l),p?))
-			case(true)
-				filter(list.cdr(l),p?)
+			case(p?(l.element) = true) list.cons(list.car(l),filter(list.cdr(l),p?))
+			else filter(list.cdr(l),p?)
 		}
 	else
 		null
 }
 
-generic Sequence fold(s @Sequence or null,f,base)
+generic fold(s: @Sequence or null,f,base): @Sequence or null
 
-method fold(s @list.List or null,f,base) {
-	let(l list.List:= s)
-		f(car(l),fold(cdr(l),f,base))
-	else
-		base
+method fold(s: @list.List or null,f,base) {
+	match s case(l: list.List) -> f(list.car(l),fold(list.cdr(l),f,base)) else base
 }
 
 function copy_list(s) {
