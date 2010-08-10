@@ -133,7 +133,7 @@ Productions
   type_form =
     {function} function_type_form |
     {alias} at_operator lower_type_form nullable_alias_clause?  |
-    {class} class_keyword [parameters]:type_form_arguments? [extension]:extension_clause? lbracket [member]:member_declaration+ rbracket |
+    {class} class_keyword extension_clause? lbracket [member]:member_declaration* rbracket |
     {subrange} subrange lparen [floor]:subrange_bound comma [ceiling]:subrange_bound rparen [parent]:extension_clause |
     {enum} enum lparen identifier_list rparen [extension]:extension_clause? |
     {exception} exception lparen identifier_list rparen [extension]:extension_clause? |
@@ -168,7 +168,7 @@ Productions
       
   definition = 
     {globaldef} define constant? unqualified_identifier type_annotation? assignment_operator expression |
-    {typedef} type unqualified_identifier equals type_form |
+    {typedef} type unqualified_identifier [parameters]:type_form_arguments? equals type_form |
     {moduledef} module_definition |
     {fundef} function_definition;
   
@@ -186,7 +186,7 @@ Productions
     {named} protected? [names]:identifier_list colon [type]:type_form semicolon;
     
   extension_clause = 
-    extends [supertype]:qualified_identifier [arguments]:type_form_arguments?;
+    extends lower_type_form;
     
   argument =
     [name]:unqualified_identifier [type]:type_annotation?;
@@ -196,11 +196,11 @@ Productions
     {many} argument_list comma argument;
     
   function_definition = 
-    {generic} generic [name]:unqualified_identifier lparen [arguments]:argument_list rparen [type]:type_annotation [body]:block_expression? |
+    {generic} generic [name]:unqualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [type]:type_annotation [body]:block_expression? |
     {method} method [name]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
-    {function} function [name]:unqualified_identifier lparen [arguments]:argument_list rparen [type]:type_annotation? [body]:block_expression |
-    {constructor} new [type]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
-    {destructor} delete [type]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression;
+    {function} function [name]:unqualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [type]:type_annotation? [body]:block_expression |
+    {constructor} new [type]:qualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [body]:block_expression |
+    {destructor} delete [type]:qualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [body]:block_expression;
     
   expression =
     {assignmentexp} qualified_identifier assignment_operator expression |
@@ -217,15 +217,15 @@ Productions
     {returnexp} return expression |
     {others} exp5;
     
-  sizeof_expression =
-    {type} typesize lparen type_form rparen |
-    {expression} sizeof lparen expression rparen;
-    
   //Increasing precedence levels.
-  exp1 =   
+  exp1 =
     {at} at_operator [variable]:qualified_identifier |
-    {sizeof} sizeof_expression |
-    {primitive} primitive_expression |
+    {type_sizeof} typesize lparen type_form rparen |
+    {expression_sizeof} sizeof lparen expression rparen |
+    {primitive_integer} integer_constant |
+    {primitive_boolean} boolean_constant |
+    {primitive_string} string_constant |
+    {primitive_null} null_literal |
     {tuple} lsbracket expression_list rsbracket |
     {lambda} function lparen argument_list rparen [region]:parenthetical_expression? block_expression |
     {call} function_call_expression |
@@ -281,12 +281,6 @@ Productions
   
   parenthetical_expression =
     lparen expression rparen;
-    
-  primitive_expression = 
-    {integer} integer_constant |
-    {boolean} boolean_constant |
-    {string} string_constant |
-    {null} null_literal;
     
   expression_list = 
     {one} expression |

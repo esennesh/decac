@@ -1,5 +1,8 @@
 package decac
 
+import jllvm.LLVMModule
+import jllvm.LLVMInstructionBuilder
+
 abstract trait Definition extends Scopeable {
   override def scope: Module
 }
@@ -7,6 +10,7 @@ abstract trait Definition extends Scopeable {
 case class Module(m: Module,n: String) extends Scope(m) with Definition {
   override val parent: Module = m
   val name = n
+  val compiledModule: LLVMModule = new LLVMModule(name)
   override def scope: Module = parent
   override def declare(obj: Scopeable) = obj match {
     case obj: Definition => super.declare(obj)

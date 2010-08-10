@@ -55,3 +55,5 @@ class EnumeratedRho(p: Option[EnumeratedRho],syms: List[String]) extends Primiti
     Some(new LLVMIntegerType(numBits))
   }
 }
+
+object BooleanRho extends EnumeratedRho(None,List("true","false"))

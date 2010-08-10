@@ -3,26 +3,12 @@ package decac;
 import scala.collection.mutable.Queue
 import scala.collection.mutable.Stack
 
-abstract class SubstitutionElement(x: TauVariable,y: TauType) {
-  val initial: TauVariable = x
-  val substituted: TauType = y
-}
-
-class TauToVariable(x: TauVariable,y: TauVariable) extends SubstitutionElement(x,y) {
-  override val substituted: TauVariable = y
-}
-
-class TauToRho(x: TauVariable,y: RhoType) extends SubstitutionElement(x,y) {
-  override val substituted: RhoType = y
-}
-
 class TauSubstitution {
-  val queue: Queue[SubstitutionElement] = new Queue[SubstitutionElement]()
+  val queue: Queue[Tuple2[TauVariable,TauType]] = new Queue[Tuple2[TauVariable,TauType]]()
   
   def substitute(x: TauVariable,y: TauType): Unit = y match {
-    case y: RhoRange => if(y.lowerBound.equals(y.upperBound)) substitute(y,y.lowerBound) else queue.enqueue(new TauToVariable(x,y))
-    case y: TauVariable => queue.enqueue(new TauToVariable(x,y))
-    case y: RhoType => queue.enqueue(new TauToRho(x,y))
+    case y: RhoRange => if(y.lowerBound.equals(y.upperBound)) substitute(y,y.lowerBound) else queue.enqueue((x,y))
+    case _ => queue.enqueue((x,y))
   }
   
   def generalize(sigma: SigmaType): SigmaType = {
@@ -33,12 +19,34 @@ class TauSubstitution {
   
   def solve(x: TauType): TauType = {
     var solution: TauType = x
-    queue.foreach(elmnt => if(elmnt.initial.equals(solution)) solution = elmnt.substituted)
+    queue.foreach(elmnt => if(elmnt._1.equals(solution)) solution = elmnt._2)
     solution match {
       case rho: RhoType => rho
       case variable: TauVariable =>  variable
       case _ => throw new Exception("Inferred type is neither a parameterized type nor a simple type.")
     }
+  }
+}
+
+class SigmaSubstitution(sub: TauSubstitution) {
+  val original: TauSubstitution = sub
+  var sigmas: List[Tuple2[SigmaType,SigmaType]] = Nil
+  
+  def generalize(sigma: SigmaType): SigmaType = sigmas.find(pair => pair._2 == sigma) match {
+    case Some((s: SigmaType,t: SigmaType)) => t
+    case None => {
+      val vars: Queue[TauVariable] = new Queue[TauVariable]()
+      sigma.findUnconstrained(vars,original)
+      val newSigma = vars.foldRight[SigmaType](sigma)((tvar: TauVariable,sigma: SigmaType) => new ForallSigma(tvar,sigma))
+      sigmas = (sigma,newSigma) :: sigmas
+      return newSigma
+    }
+  }
+  
+  def solve(x: TauType): SigmaType = {
+    var solution: SigmaType = original.solve(x)
+    sigmas.foreach(element => if(element._1.equals(solution)) solution = element._2)
+    return solution
   }
 }
 
@@ -62,10 +70,18 @@ class LatticeNode(r: RhoType) {
   protected var children: List[LatticeNode] = Nil
   
   def subtype(n: LatticeNode): Boolean = {
-    if(parents.map(parent => parent.subtype(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y) == false && rho.subtypes(n.rho,false)) {
-      parents = n :: parents
-      n.supertype(this)
-      return true
+    if(parents.map(parent => parent.subtype(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y) == false) {
+      if(rho.subtypes(n.rho,false)) {
+        parents = n :: parents
+        n.supertype(this)
+        true
+      }
+      else if(rho.subtypes(n.rho,true)) {
+        val nodeMatch = new LatticeNode(rho.generateMatch(n.rho) match { case rhoMatch: RhoType => rhoMatch case _ => throw new Exception("Generating a match between two rho-types generated a non-rho type.") })
+        subtype(n)
+      }
+      else
+        false
     }
     else
       false
@@ -74,10 +90,18 @@ class LatticeNode(r: RhoType) {
   def subtypes(n: LatticeNode): Boolean = parents.exists(parent => parent == n) || parents.map(parent => parent.subtypes(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y)
   
   def supertype(n: LatticeNode): Boolean = {
-    if(children.map(child => child.supertype(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y) == false && n.rho.subtypes(rho,false)) {
-      children = n :: children
-      n.subtype(this)
-      return true
+    if(children.map(child => child.supertype(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y) == false) {
+      if(n.rho.subtypes(rho,false)) {
+        children = n :: children
+        n.subtype(this)
+        true
+      }
+      else if(n.rho.subtypes(rho,true)) {
+        val nodeMatch = new LatticeNode(n.rho.generateMatch(rho) match { case rhoMatch: RhoType => rhoMatch case _ => throw new Exception("Generating a match between two rho-types generated a non-rho type.") })
+        supertype(n)
+      }
+      else
+        false
     }
     else
       false

@@ -43,12 +43,3 @@ class Scope(p: Scope) {
     return false
   }
 }
-
-abstract class Binding(n: String,s: Scope) {
-  val name = n
-  val scope = s
-  
-  val correctType: Boolean
-  
-  def evaluate: Scopeable = scope.lookup(name)
-}
