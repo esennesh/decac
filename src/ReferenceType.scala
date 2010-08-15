@@ -14,8 +14,5 @@ class ReferenceRho(rho: RhoType,optional: Boolean) extends PrimitiveRho {
     case _ => false
   }
   
-  override def compile(substitution: TauSubstitution): Option[LLVMType] = target.compile(substitution) match {
-    case Some(llvmType) => Some(new LLVMPointerType(llvmType,0))
-    case None => None
-  }
+  override def compile: LLVMType = new LLVMPointerType(target.compile,0)
 }

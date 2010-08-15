@@ -42,7 +42,6 @@ class BlockExpression(exprs: List[Expression],scope: Scope) extends Expression(e
 class SpecializedBlock(exprs: List[SpecializedExpression],scope: Scope) extends SpecializedExpression(exprs.last.expressionType,scope) {
   val steps: List[SpecializedExpression] = exprs
   override def children = steps
-  val name: String = ""
   override def compile(builder: LLVMInstructionBuilder): LLVMValue = {
     val builtSteps = children.map(child => compile(builder))
     builtSteps.last

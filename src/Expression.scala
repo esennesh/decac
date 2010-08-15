@@ -9,7 +9,7 @@ abstract class UninferredExpression(tau: TauType,s: Scope) {
   val expressionType: TauType = tau
   val scope: Scope = s
   def children: List[UninferredExpression]
-  protected def substituteTypes(substitution: SigmaSubstitution,generalize: Boolean) = {
+  protected def substituteTypes(substitution: SigmaSubstitution,generalize: Boolean): Tuple2[SigmaType,List[Expression]] = {
     val exprType = if(generalize) substitution.generalize(substitution.solve(expressionType)) else substitution.solve(expressionType)
     (exprType,children.map(child => child.substitute(substitution,false)))
   }

@@ -50,10 +50,7 @@ class EnumeratedRho(p: Option[EnumeratedRho],syms: List[String]) extends Primiti
     case _ => false
   }
   
-  override def compile(substitution: TauSubstitution): Option[LLVMType] = {
-    val numBits = representationSize
-    Some(new LLVMIntegerType(numBits))
-  }
+  override def compile: LLVMType = new LLVMIntegerType(representationSize)
 }
 
 object BooleanRho extends EnumeratedRho(None,List("true","false"))

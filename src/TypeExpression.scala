@@ -49,7 +49,7 @@ abstract class TauType extends SigmaType {
   def subtypes(tau: TauType,possibly: Boolean): Boolean
   def generateMatch(tau: TauType): Option[TauType]
   def equals(tau: TauType,possibly: Boolean): Boolean = tau == this
-  def compile(substitution: TauSubstitution): Option[LLVMType]
+  def compile: LLVMType
   override def countUniversals: Int = 0
   def mangle: String
 }
@@ -80,8 +80,8 @@ abstract class PrimitiveRho extends RhoType {
     case tvar: TauVariable => possibly
     case _ => tau == this
   }
-  override def generateMatch(rho: RhoType): Option[PrimitiveRho] = {
-    if(rho == this)
+  override def generateMatch(tau: TauType): Option[PrimitiveRho] = {
+    if(tau == this)
       Some(this)
     else
       None
@@ -101,7 +101,7 @@ object TopRho extends PrimitiveRho {
     case tvar: TauVariable => possibly
     case rho: RhoType => false
   }
-  override def compile(substitution: TauSubstitution): Option[LLVMType] = Some(new LLVMVoidType)
+  override def compile: LLVMType = new LLVMVoidType
   override def mangle: String = "top"
 }
 
@@ -111,7 +111,7 @@ object BottomRho extends PrimitiveRho {
     case tvar: TauVariable => possibly
     case rho: RhoType => true
   }
-  override def compile(substitution: TauSubstitution): Option[LLVMType] = Some(new LLVMVoidType)
+  override def compile: LLVMType = new LLVMVoidType
   override def mangle: String = "bottom"
 }
 
@@ -121,7 +121,7 @@ class RecordMember(str: String,t: TauType) {
 }
 
 class RecordRho(f: List[RecordMember]) extends RhoType {
-  val fields: List[RecordMember] = f
+  val fields: List[RecordMember] = f.map(field => if(field.tau == null) new RecordMember(field.name,this) else field)
   val length: Int = fields.length
   
   override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau match {
@@ -159,19 +159,15 @@ class RecordRho(f: List[RecordMember]) extends RhoType {
     fields.map(field => field.tau.findUnconstrained(queue,substitution))
   }
   
-  override def compile(substitution: TauSubstitution): Option[LLVMType] = {
-    val compiledMembers = fields.map(field => field.tau.compile(substitution) match {
-      case Some(t) => t
-      case None => throw new Exception("Field type of record rho-type failed to compile.")
-    })
-    Some(new LLVMStructType(compiledMembers.toArray,true))
+  override def compile: LLVMType = {
+    new LLVMStructType(fields.map(field => field.tau.compile).toArray,true)
   }
   
   override def mangle: String = "pi" + fields.map(field => field.name + ":" + field.tau.mangle).foldRight("")((head: String,tail: String) => "_" + head + tail)
 }
 
 class FunctionRho(d: List[TauType],r: TauType) extends RhoType {
-  val domain = d
+  val domain = d.map(domainType => if(domainType == null) this else domainType)
   val range = r
   
   override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau match {
@@ -213,16 +209,10 @@ class FunctionRho(d: List[TauType],r: TauType) extends RhoType {
     range.findUnconstrained(queue,substitution)
   }
   
-  override def compile(substitution: TauSubstitution): Option[LLVMType] = {
-    val compiledRange: LLVMType = range.compile(substitution) match {
-      case Some(t) => t
-      case None => throw new Exception("Range type of function rho-type does not compile successfully.")
-    }
-    val compiledDomain: List[LLVMType] = domain.map(tau => tau.compile(substitution) match {
-      case Some(t) => t
-      case None => throw new Exception("Domain type of function rho-type does not compile successfully.")
-    })
-    Some(new LLVMFunctionType(compiledRange,compiledDomain.toArray,false))  
+  override def compile: LLVMType = {
+    val compiledRange: LLVMType = range.compile
+    val compiledDomain: List[LLVMType] = domain.map(tau => tau.compile)
+    new LLVMFunctionType(compiledRange,compiledDomain.toArray,false)
   }
   override def mangle: String = "(" + domain.map(tau => tau.mangle).foldRight("")((x: String,y: String) => x + "," + y) + ")_arrow_" + range.mangle
 }
@@ -242,7 +232,9 @@ class TauVariable extends TauType {
     if(substitution.solve(this) == this)
       queue.enqueue(this)
   }
-  override def compile(substitution: TauSubstitution): Option[LLVMType] = None
+  override def compile: LLVMType = {
+    throw new Exception("Cannot compile a type variable.")
+  }
   override def mangle: String = toString
 }
 

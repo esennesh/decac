@@ -27,13 +27,13 @@ abstract class IntegerRho(n: String,p: Option[IntegerRho]) extends PrimitiveRho 
   val min_octet = -2^7
   val min_unsigned = 0
   
-  def compile(substitution: TauSubstitution): Option[LLVMType] = compiledType match {
+  def compile: LLVMType = compiledType match {
     case None => {
       val myType = new LLVMIntegerType(Math.floor(Math.log(ceiling - floor) / Math.log(2)).toInt + 1)
       compiledType = Some(myType)
-      return Some(myType)
+      return myType
     }
-    case Some(myType) => Some(myType)
+    case Some(myType) => myType
   }
   
   override def subtypes(tau: TauType,possibly: Boolean) = tau match {

@@ -7,7 +7,7 @@ abstract trait Definition extends Scopeable {
   override def scope: Module
 }
 
-case class Module(m: Module,n: String) extends Scope(m) with Definition {
+class Module(m: Module,n: String) extends Scope(m) with Definition {
   override val parent: Module = m
   val name = n
   val compiledModule: LLVMModule = new LLVMModule(name)
