@@ -3,13 +3,13 @@ package decac;
 import jllvm.LLVMType
 import jllvm.LLVMPointerType
 
-class ReferenceRho(rho: RhoType,optional: Boolean) extends PrimitiveRho {
-  val target: RhoType = rho
+class ReferenceGamma(gamma: GammaType,optional: Boolean) extends PrimitiveGamma {
+  val target: GammaType = gamma
   val nullable: Boolean = optional
   
   override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau match {
-    case ref: ReferenceRho => target.subtypes(ref.target,possibly)
-    case range: RhoRange => subtypes(range.lowerBound,possibly)
+    case ref: ReferenceGamma => target.subtypes(ref.target,possibly)
+    case range: GammaRange => subtypes(range.lowerBound,possibly)
     case tvar: TauVariable => possibly
     case _ => false
   }

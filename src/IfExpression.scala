@@ -8,10 +8,10 @@ import scala.collection.mutable.HashMap
 class UninferredIf(possibilities: List[Tuple2[UninferredExpression,UninferredExpression]],scope: Scope) extends UninferredExpression(new TauVariable,scope) {
   val cases: List[Tuple2[UninferredExpression,UninferredExpression]] = possibilities
   override def children = cases.map(ifcase => ifcase._2)
-  override def substitute(substitution: SigmaSubstitution,generalize: Boolean): IfExpression = {
-    val conditions = cases.map(ifcase => ifcase._1.substitute(substitution,false))
-    val results = cases.map(ifcase => ifcase._2.substitute(substitution,false))
-    new IfExpression(conditions.zip(results),substituteTypes(substitution,generalize)._1,scope)
+  override def substitute(substitution: TauSubstitution): IfExpression = {
+    val conditions = cases.map(ifcase => ifcase._1.substitute(substitution))
+    val results = cases.map(ifcase => ifcase._2.substitute(substitution))
+    new IfExpression(conditions.zip(results),substituteTypes(substitution)._1,scope)
   }
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     cases.map(ifcase => { rui.constrain(new Equal(ifcase._1.expressionType,BooleanRho)); rui.constrain(new LesserEq(ifcase._2.expressionType,expressionType)) })
@@ -19,32 +19,22 @@ class UninferredIf(possibilities: List[Tuple2[UninferredExpression,UninferredExp
   }
 }
 
-class IfExpression(possibilities: List[Tuple2[Expression,Expression]],overallType: SigmaType,scope: Scope) extends Expression(overallType,scope) {
+class IfExpression(possibilities: List[Tuple2[Expression,Expression]],overallType: TauType,scope: Scope) extends Expression(overallType,scope) {
   val cases: List[Tuple2[Expression,Expression]] = possibilities
   override def children = cases.map(ifcase => ifcase._2)
-  val specializations: Map[List[RhoType],SpecializedIf] = new HashMap[List[RhoType],SpecializedIf]()
-  override def specialize(specialization: List[RhoType]): SpecializedIf = {
-    if(specialization.length == expressionType.countUniversals)
-      specializations.get(specialization) match {
-        case Some(sb) => sb
-        case None => {
-          val resultCases = cases.map(ifcase => (ifcase._1.specialize(specialization),ifcase._2.specialize(specialization)))
-          val specializedType: RhoType = expressionType match {
-            case forall: ForallSigma => forall.specialize(specialization)
-            case rho: RhoType => rho
-            case _ => throw new Exception("Cannot specialize expression whose principal type is neither a universally-quantified type nor a rho type.")
-          }
-          val result = new SpecializedIf(resultCases,specializedType,scope)
-          specializations.put(specialization,result)
-          return result
-        }
-      }
-    else
-      throw new Exception("Cannot specialize if expression with list of rho types whose length differs from the number of universally-quantified type variables.")
+  val specializations: Map[SigmaSubstitution,SpecializedIf] = new HashMap[SigmaSubstitution,SpecializedIf]()
+  override def specialize(specialization: SigmaSubstitution): SpecializedIf = specializations.get(specialization) match {
+    case Some(sb) => sb
+    case None => {
+      val resultCases = cases.map(ifcase => (ifcase._1.specialize(specialization),ifcase._2.specialize(specialization)))
+      val result = new SpecializedIf(resultCases,specialization.solve(expressionType),scope)
+      specializations.put(specialization,result)
+      result
+    }
   }
 }
 
-class SpecializedIf(possibilities: List[Tuple2[SpecializedExpression,SpecializedExpression]],overallType: RhoType,scope: Scope) extends SpecializedExpression(overallType,scope) {
+class SpecializedIf(possibilities: List[Tuple2[SpecializedExpression,SpecializedExpression]],overallType: GammaType,scope: Scope) extends SpecializedExpression(overallType,scope) {
   val cases: List[Tuple2[SpecializedExpression,SpecializedExpression]] = possibilities
   override def children = cases.map(ifcase => ifcase._2)
   def compileCases(builder: LLVMInstructionBuilder,

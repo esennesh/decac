@@ -10,9 +10,8 @@ import scala.collection.mutable.HashMap
 class UninferredBlock(exprs: List[UninferredExpression],scope: Scope) extends UninferredExpression(exprs.last.expressionType,scope) {
   val steps: List[UninferredExpression] = exprs
   override def children = steps
-  override def substitute(substitution: SigmaSubstitution,generalize: Boolean): BlockExpression = {
-    val pair = substituteTypes(substitution,generalize)
-    new BlockExpression(pair._2,scope)
+  override def substitute(substitution: TauSubstitution): BlockExpression = {
+    new BlockExpression(substituteTypes(substitution)._2,scope)
   }
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     children.map(child => child.constrain(rui))
@@ -23,19 +22,14 @@ class UninferredBlock(exprs: List[UninferredExpression],scope: Scope) extends Un
 class BlockExpression(exprs: List[Expression],scope: Scope) extends Expression(exprs.last.expressionType,scope) {
   val steps: List[Expression] = exprs
   override def children = steps
-  val specializations: Map[List[RhoType],SpecializedBlock] = new HashMap[List[RhoType],SpecializedBlock]()
-  override def specialize(specialization: List[RhoType]): SpecializedBlock = {
-    if(specialization.length == expressionType.countUniversals)
-      specializations.get(specialization) match {
-        case Some(sb) => sb
-        case None => {
-          val result = new SpecializedBlock(children.map(child => child.specialize(specialization)),scope)
-          specializations.put(specialization,result)
-          return result
-        }
-      }
-    else
-      throw new Exception("Cannot specialize block expression with list of rho types whose length differs from the number of universally-quantified type variables.")
+  val specializations: Map[SigmaSubstitution,SpecializedBlock] = new HashMap[SigmaSubstitution,SpecializedBlock]()
+  override def specialize(specialization: SigmaSubstitution): SpecializedBlock = specializations.get(specialization) match {
+    case Some(sb) => sb
+    case None => {
+      val result = new SpecializedBlock(children.map(child => child.specialize(specialization)),scope)
+      specializations.put(specialization,result)
+      return result
+    }
   }
 }
 

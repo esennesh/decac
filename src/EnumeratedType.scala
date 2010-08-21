@@ -6,11 +6,11 @@ import java.lang.Math
 import jllvm.LLVMType
 import jllvm.LLVMIntegerType
 
-class EnumeratedRho(p: Option[EnumeratedRho],syms: List[String]) extends PrimitiveRho {
-  val parent: Option[EnumeratedRho] = p
+class EnumeratedGamma(p: Option[EnumeratedGamma],syms: List[String]) extends PrimitiveGamma {
+  val parent: Option[EnumeratedGamma] = p
   val symbols: List[String] = syms
   var values: List[Int] = Nil
-  var childEnums: Set[EnumeratedRho] = new HashSet[EnumeratedRho]()
+  var childEnums: Set[EnumeratedGamma] = new HashSet[EnumeratedGamma]()
   
   protected def assign_symbol_values(s: Int): Int = {
     values = Nil
@@ -41,11 +41,11 @@ class EnumeratedRho(p: Option[EnumeratedRho],syms: List[String]) extends Primiti
   }
   
   override def subtypes(tau: TauType,possibly: Boolean) = tau match {
-    case enum: EnumeratedRho => parent match {
+    case enum: EnumeratedGamma => parent match {
       case Some(par) => enum == par || par.subtypes(enum,possibly)
       case None => false
     }
-    case range: RhoRange => subtypes(range.lowerBound,possibly)
+    case range: GammaRange => subtypes(range.lowerBound,possibly)
     case tvar: TauVariable => possibly
     case _ => false
   }
@@ -53,4 +53,4 @@ class EnumeratedRho(p: Option[EnumeratedRho],syms: List[String]) extends Primiti
   override def compile: LLVMType = new LLVMIntegerType(representationSize)
 }
 
-object BooleanRho extends EnumeratedRho(None,List("true","false"))
+object BooleanGamma extends EnumeratedGamma(None,List("true","false"))

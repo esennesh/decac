@@ -4,10 +4,10 @@ import scala.Math
 import jllvm.LLVMType
 import jllvm.LLVMIntegerType
 
-abstract class IntegerRho(n: String,p: Option[IntegerRho]) extends PrimitiveRho {
+abstract class IntegerGamma(n: String,p: Option[IntegerGamma]) extends PrimitiveGamma {
   def signed: Boolean
   val name: String = n
-  val parent: Option[IntegerRho] = p
+  val parent: Option[IntegerGamma] = p
   def floor: Int
   def ceiling: Int
   
@@ -37,58 +37,58 @@ abstract class IntegerRho(n: String,p: Option[IntegerRho]) extends PrimitiveRho 
   }
   
   override def subtypes(tau: TauType,possibly: Boolean) = tau match {
-    case itype: IntegerRho => parent match {
+    case itype: IntegerGamma => parent match {
       case Some(par) => par == itype || par.subtypes(tau,possibly)
       case None => false
     }
-    case range: RhoRange => subtypes(range.lowerBound,possibly)
+    case range: GammaRange => subtypes(range.lowerBound,possibly)
     case _ => false
   }
 }
 
-object LongNat extends IntegerRho("longnat",None) {
+object LongNat extends IntegerGamma("longnat",None) {
   override def signed: Boolean = false
   override def floor: Int = min_unsigned
   override def ceiling: Int = max_longnat
 }
 
-object LongInt extends IntegerRho("longint",None) {
+object LongInt extends IntegerGamma("longint",None) {
   override def signed: Boolean = true
   override def floor: Int = min_longInt
   override def ceiling: Int = max_longInt
 }
 
-object Nat extends IntegerRho("nat",Some(LongNat)) {
+object Nat extends IntegerGamma("nat",Some(LongNat)) {
   override def ceiling: Int = max_nat
   override def floor: Int = min_unsigned
   override def signed: Boolean = false
 }
 
-object Int extends IntegerRho("int",Some(LongInt)) {
+object Int extends IntegerGamma("int",Some(LongInt)) {
   override def floor: Int = min_Int
   override def ceiling: Int = max_Int
   override def signed: Boolean = true
 }
 
-object SNat extends IntegerRho("snat",Some(Nat)) {
+object SNat extends IntegerGamma("snat",Some(Nat)) {
   override def ceiling: Int = max_snat
   override def floor: Int = min_unsigned
   override def signed: Boolean = false
 }
 
-object SInt extends IntegerRho("sint",Some(Int)) {
+object SInt extends IntegerGamma("sint",Some(Int)) {
   override def floor: Int = min_sInt
   override def ceiling: Int = max_sInt
   override def signed: Boolean = true
 }
 
-object Byte extends IntegerRho("byte",Some(SNat)) {
+object Byte extends IntegerGamma("byte",Some(SNat)) {
   override def floor: Int = min_unsigned
   override def ceiling: Int = max_byte
   override def signed: Boolean = false
 }
 
-object Octet extends IntegerRho("octet",Some(SInt)) {
+object Octet extends IntegerGamma("octet",Some(SInt)) {
   override def floor: Int = min_octet
   override def ceiling: Int = max_octet
   override def signed: Boolean = true
