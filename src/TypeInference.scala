@@ -19,7 +19,7 @@ class TauSubstitution {
   
   def solve(x: TauType): TauType = {
     var solution: TauType = x
-    queue.foreach(elmnt => if(elmnt._1.equals(solution)) solution = elmnt._2)
+    queue.foreach(elmnt => if(elmnt._1.equals(solution,false)) solution = elmnt._2)
     solution match {
       case rho: RhoType => rho
       case variable: TauVariable =>  variable
@@ -53,9 +53,7 @@ class SigmaSubstitution(sub: TauSubstitution) {
 class ConstraintSet {
   val stack: Stack[Constraint] = new Stack[Constraint]()
   
-  def substitute(x: TauVariable,y: TauType): Unit = {
-    stack.map(constraint => constraint.substitute(x,y))
-  }
+  def substitute(x: TauVariable,y: TauType): Unit = stack.map(constraint => constraint.substitute(x,y))
   
   def push(c: Constraint): Unit = stack.push(c)
   

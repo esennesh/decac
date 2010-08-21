@@ -124,19 +124,19 @@ class RecordRho(f: List[RecordMember]) extends RhoType {
   val fields: List[RecordMember] = f.map(field => if(field.tau == null) new RecordMember(field.name,this) else field)
   val length: Int = fields.length
   
-  override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau match {
-    case rec: RecordRho => rec == this || (length >= rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau,possibly)))
+  override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau == this || (tau match {
+    case rec: RecordRho => (length >= rec.length && fields.zip(rec.fields).forall(pair => (pair._1 == this && pair._2 == rec) || pair._1.tau.equals(pair._2.tau,possibly)))
     case range: RhoRange => subtypes(range.lowerBound,possibly)
     case tvar: TauVariable => possibly
     case _ => false
-  }
+  })
   
   override def generateMatch(tau: TauType): Option[RecordRho] = tau match {
     case rec: RecordRho => {
       if(rec == this)
         return Some(this)
-      else if(length >= rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau,true)))
-        Some(new RecordRho(fields.zip(rec.fields).map(pair => new RecordMember(pair._1.name,pair._1.tau.generateMatch(pair._2.tau) match { case Some(tauMatch) => tauMatch case None => return None }))))
+      else if(length >= rec.length && fields.zip(rec.fields).forall(pair => (pair._1.tau == this && pair._2.tau == rec) || pair._1.tau.equals(pair._2.tau,true)))
+        Some(new RecordRho(fields.zip(rec.fields).map(pair => new RecordMember(pair._1.name,if(pair._1 == this && pair._2 == rec) null else pair._1.tau.generateMatch(pair._2.tau) match { case Some(tauMatch) => tauMatch case None => return None }))))
       else
         None
     }
@@ -144,12 +144,12 @@ class RecordRho(f: List[RecordMember]) extends RhoType {
     case _ => None
   }
   
-  override def equals(tau: TauType,possibly: Boolean): Boolean = tau match {
-    case rec: RecordRho => rec == this || (length == rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau,possibly)))
+  override def equals(tau: TauType,possibly: Boolean): Boolean = tau == this || (tau match {
+    case rec: RecordRho => (length == rec.length && fields.zip(rec.fields).forall(pair => (pair._1.tau == this && pair._2.tau == rec) || pair._1.tau.equals(pair._2.tau,possibly)))
     case range: RhoRange => possibly && subtypes(range.upperBound,possibly) && range.lowerBound.subtypes(this,possibly)
     case tvar: TauVariable => possibly
     case _ => false
-  }
+  })
   
   override def replace(from: TauVariable,to: TauType): RhoType = {
     new RecordRho(fields.map(field => new RecordMember(field.name,replaceComponent(field.tau,from,to))))
@@ -168,22 +168,22 @@ class RecordRho(f: List[RecordMember]) extends RhoType {
 
 class FunctionRho(d: List[TauType],r: TauType) extends RhoType {
   val domain = d.map(domainType => if(domainType == null) this else domainType)
-  val range = r
+  val range = if(r == null) this else r
   
-  override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau match {
-    case func: FunctionRho => func == this || (func.domain.zip(domain).map(pair => pair._1.subtypes(pair._2,possibly)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && range.subtypes(func.range,possibly))
+  override def subtypes(tau: TauType,possibly: Boolean): Boolean = equals(tau,possibly) || (tau match {
+    case func: FunctionRho => func.domain.zip(domain).map(pair => (pair._1 == this && pair._2 == tau) || pair._1.subtypes(pair._2,possibly)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && ((range == this && func.range == func) || range.subtypes(func.range,possibly))
     case range: RhoRange => subtypes(range.lowerBound,possibly)
     case tvar: TauVariable => possibly
     case _ => false
-  }
+  })
   
   override def generateMatch(tau: TauType): Option[FunctionRho] = tau match {
     case func: FunctionRho => {
       if(func == this)
         Some(this)
-      else if(func.domain.zip(domain).map(pair => pair._1.subtypes(pair._2,true)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && range.subtypes(func.range,true)) {
-        val domainMatch = domain.zip(func.domain).map(pair => pair._1.generateMatch(pair._2)  match { case funcMatch: FunctionRho => funcMatch case _ => return None })
-        val rangeMatch = range.generateMatch(func.range) match { case funcMatch: FunctionRho => funcMatch case _ => return None }
+      else if(func.domain.zip(domain).map(pair => (pair._1 == this && pair._2 == func) || pair._1.subtypes(pair._2,true)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && range.subtypes(func.range,true)) {
+        val domainMatch = domain.zip(func.domain).map(pair => if(pair._1 == this && pair._2 == func) null else pair._1.generateMatch(pair._2) match { case funcMatch: FunctionRho => funcMatch case _ => return None })
+        val rangeMatch = if(range == this && func.range == func) null else range.generateMatch(func.range) match { case funcMatch: FunctionRho => funcMatch case _ => return None }
         return Some(new FunctionRho(domainMatch,rangeMatch))
       }
       else
@@ -193,12 +193,12 @@ class FunctionRho(d: List[TauType],r: TauType) extends RhoType {
     case _ => None
   }
   
-  override def equals(tau: TauType,possibly: Boolean): Boolean = tau match {
-    case func: FunctionRho => func == this || (func.domain.zip(domain).map(pair => pair._1.subtypes(pair._2,possibly)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && func.range.equals(range,possibly))
+  override def equals(tau: TauType,possibly: Boolean): Boolean = tau == this || (tau match {
+    case func: FunctionRho => (func.domain.zip(domain).map(pair => (pair._1 == this && pair._2 == func) || pair._1.equals(pair._2,possibly)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && func.range.equals(range,possibly))
     case range: RhoRange => possibly && subtypes(range.upperBound,possibly) && range.lowerBound.subtypes(this,possibly)
     case tvar: TauVariable => possibly
     case _ => false
-  }
+  })
   
   override def replace(from: TauVariable,to: TauType): RhoType = {
     new FunctionRho(domain.map(tau => replaceComponent(tau,from,to)),replaceComponent(range,from,to))
