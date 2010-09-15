@@ -5,11 +5,11 @@ import scala.collection.mutable.HashMap
 
 trait Scopeable {
   def name(): String
-  def scope(): Scope
+  def scope(): Scope[_]
 }
 
-class Scope(p: Scope) {
-  protected var symbols: Map[String,Scopeable] = new HashMap[String,Scopeable]()
+abstract class Scope[T <: Scopeable](p: Scope[_]) {
+  val symbols: Map[String,T] = new HashMap[String,T]()
   
   def lookup(name: String): Scopeable = {
     val result = symbols.get(name)
@@ -27,19 +27,11 @@ class Scope(p: Scope) {
     }
   }
   
-  def declare(obj: Scopeable) = {
+  protected def declare(obj: T) = {
     symbols.put(obj.name,obj)
   }
   
-  val parent: Scope = p
+  val parent: Scope[_] = p
   
-  def encloses(s: Scope): Boolean = {
-    var next = s
-    while(next != null) {
-      if(next == this)
-        return true
-      next = next.parent
-    }
-    return false
-  }
+  def enclosed(s: Scope[_]): Boolean = parent == s || parent.enclosed(s)
 }

@@ -7,10 +7,11 @@ class ReferenceGamma(gamma: GammaType,optional: Boolean) extends PrimitiveGamma 
   val target: GammaType = gamma
   val nullable: Boolean = optional
   
-  override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau match {
-    case ref: ReferenceGamma => target.subtypes(ref.target,possibly)
-    case range: GammaRange => subtypes(range.lowerBound,possibly)
-    case tvar: TauVariable => possibly
+  override def subtypes(tau: TauType): Boolean = tau match {
+    case ref: ReferenceGamma => target.subtypes(ref.target)
+    case range: GammaRange => subtypes(range.lowerBound)
+    case bvar: BetaVariable => true
+    case tvar: TauVariable => false
     case _ => false
   }
   

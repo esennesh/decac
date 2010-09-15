@@ -6,60 +6,60 @@ import jllvm.LLVMFunction
 import jllvm.LLVMInstructionBuilder
 import jllvm.LLVMReturnInstruction
 
-class UninferredFunction(m: Module,n: String,ft: FunctionArrow,b: UninferredBlock) {
+class UninferredFunction(m: Module,n: String,args: List[Tuple2[String,TauType]],b: (LexicalScope) => UninferredBlock) {
   val name: String = n
-  val scope: Module = {assert(b.scope == m) ; m}
-  val functionType: FunctionArrow = ft
-  val functionBody: UninferredBlock = b
+  val scope: Module = m
+  val functionScope = new LexicalScope(scope)
+  val arguments = args.map(arg => new LexicalBinding(arg._1,functionScope,arg._2))
+  val body = b(functionScope)
+  val functionType = new FunctionArrow(arguments.map(arg => arg.variableType),body.expressionType)
   
   def infer: FunctionDefinition = {
-    val rui = new RangeUnificationInstance
-    functionBody.constrain(rui)
-    val substitution = rui.solve
-    val inferredType = functionType.generalize(substitution)
-    val body = functionBody.substitute(substitution)
-    new FunctionDefinition(m,n,inferredType,body)
+    val rui = new RangeUnificationInstance(Some(scope))
+    body.constrain(rui)
+    new FunctionDefinition(this,rui.solve)
   }
 }
+
+class FunctionDefinition(original: UninferredFunction,substitution: TauSubstitution) extends Definition {
+  override val name: String = original.name
+  override val scope: Module = {original.scope.define(this) ; original.scope}
+  val functionScope = original.functionScope
+  val functionType: SigmaType = original.functionType.generalize(substitution)
+  val arguments = original.arguments
+  val body = original.body.substitute(substitution)
   
-class FunctionDefinition(m: Module,n: String,ft: SigmaType,b: BlockExpression) extends Definition {
-  override val name: String = n
-  override val scope: Module = { m.declare(this) ; m}
-  val functionType: SigmaType = ft
-  val functionBody: BlockExpression = b
   protected val specializations: Map[List[GammaType],SpecializedFunction] = new HashMap[List[GammaType],SpecializedFunction]()
+  
   def specialize(specialization: List[GammaType]): SpecializedFunction = specializations.get(specialization) match {
     case Some(sf) => sf
-    case None => functionType match {
-      case universal: BetaType => {
-        val specializer = universal.specialize(specialization)
-        val specialized: FunctionArrow = specializer.solve(functionType.body) match {
-          case f: FunctionArrow => f
-          case _ => throw new Exception("Specializing a function's type should never yield anything but an arrow type.")
-        }
-        val result = new SpecializedFunction(this,specialized,functionBody.specialize(specializer))
-        specializations.put(specialization,result)
-        return result
-      }
-      case frho: FunctionArrow => {
-        assert(specialization.length == 0)
-        val result = new SpecializedFunction(this,frho,functionBody.specialize(new SigmaSubstitution))
-        specializations.put(Nil,result)
-        return result
-      }
+    case None => {
+      val specializer = functionType.specialize(specialization)
+      val result = new SpecializedFunction(this,specializer)
+      specializations.put(specialization,result)
+      result
     }
   }
 }
 
-class SpecializedFunction(f: FunctionDefinition,frho: FunctionArrow,b: SpecializedBlock) {
-  val originalFunction = f
-  val functionType: FunctionArrow = frho
-  val functionBody: SpecializedBlock = b
+class SpecializedFunction(original: FunctionDefinition,specializer: BetaSpecialization) {
+  val module: Module = original.scope
+  val name: String = original.name
+  val functionType: FunctionArrow = specializer.solve(original.functionType.body) match {
+    case frho: FunctionArrow => frho
+    case _ => throw new Exception("Specializing a function's type should never yield anything but an arrow type.")
+  }
+  val specialization = specializer
+  val arguments = original.arguments.map(argument => (argument.name,specialization.solve(argument.variableType)))
+  val body = original.body.specialize(specialization)
+  
   def compile(builder: LLVMInstructionBuilder): LLVMFunction = {
-    val result = originalFunction.scope.compiledModule.getNamedFunction(originalFunction.name + functionType.mangle)
+    val result = module.compiledModule.getNamedFunction(name + functionType.mangle)
     val entry = result.getEntryBasicBlock
     builder.positionBuilderAtEnd(entry)
-    val funcResult = functionBody.compile(builder)
+    val bodyScope = new LexicalScope(module)
+    arguments.foreach(arg => new LexicalBinding(arg._1,bodyScope,arg._2))
+    val funcResult = body.compile(builder,bodyScope)
     new LLVMReturnInstruction(builder,funcResult)
     return result
   }

@@ -4,10 +4,23 @@ import scala.Math
 import jllvm.LLVMType
 import jllvm.LLVMIntegerType
 
-abstract class IntegerGamma(n: String,p: Option[IntegerGamma]) extends PrimitiveGamma {
+abstract class NumericalGamma(n: String,p: Option[NumericalGamma]) extends PrimitiveGamma {
   def signed: Boolean
   val name: String = n
-  val parent: Option[IntegerGamma] = p
+  val parent: Option[NumericalGamma] = p
+  
+  override def subtypes(tau: TauType) = tau match {
+    case ntype: NumericalGamma => parent match {
+      case Some(par) => par == ntype || par.subtypes(tau)
+      case None => false
+    }
+    case range: GammaRange => subtypes(range.lowerBound)
+    case bvar: BetaVariable => true
+    case _ => false
+  }
+}
+
+abstract class IntegerGamma(n: String,p: Option[NumericalGamma]) extends NumericalGamma(n,p) {
   def floor: Int
   def ceiling: Int
   
@@ -27,7 +40,7 @@ abstract class IntegerGamma(n: String,p: Option[IntegerGamma]) extends Primitive
   val min_octet = -2^7
   val min_unsigned = 0
   
-  def compile: LLVMType = compiledType match {
+  override def compile: LLVMIntegerType = compiledType match {
     case None => {
       val myType = new LLVMIntegerType(Math.floor(Math.log(ceiling - floor) / Math.log(2)).toInt + 1)
       compiledType = Some(myType)
@@ -35,24 +48,21 @@ abstract class IntegerGamma(n: String,p: Option[IntegerGamma]) extends Primitive
     }
     case Some(myType) => myType
   }
-  
-  override def subtypes(tau: TauType,possibly: Boolean) = tau match {
-    case itype: IntegerGamma => parent match {
-      case Some(par) => par == itype || par.subtypes(tau,possibly)
-      case None => false
-    }
-    case range: GammaRange => subtypes(range.lowerBound,possibly)
-    case _ => false
-  }
 }
 
-object LongNat extends IntegerGamma("longnat",None) {
+object LongInteger extends IntegerGamma("integer",Some(FP128Gamma)) {
+  override def signed: Boolean = true
+  override def floor: Int = -2^64
+  override def ceiling: Int = max_longnat
+}
+
+object LongNat extends IntegerGamma("longnat",Some(LongInteger)) {
   override def signed: Boolean = false
   override def floor: Int = min_unsigned
   override def ceiling: Int = max_longnat
 }
 
-object LongInt extends IntegerGamma("longint",None) {
+object LongInt extends IntegerGamma("longint",Some(LongInteger)) {
   override def signed: Boolean = true
   override def floor: Int = min_longInt
   override def ceiling: Int = max_longInt

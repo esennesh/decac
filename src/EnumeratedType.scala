@@ -40,13 +40,14 @@ class EnumeratedGamma(p: Option[EnumeratedGamma],syms: List[String]) extends Pri
     case Some(par) => par.representationSize
   }
   
-  override def subtypes(tau: TauType,possibly: Boolean) = tau match {
+  override def subtypes(tau: TauType) = tau match {
     case enum: EnumeratedGamma => parent match {
-      case Some(par) => enum == par || par.subtypes(enum,possibly)
+      case Some(par) => enum == par || par.subtypes(enum)
       case None => false
     }
-    case range: GammaRange => subtypes(range.lowerBound,possibly)
-    case tvar: TauVariable => possibly
+    case range: GammaRange => subtypes(range.lowerBound)
+    case bvar: BetaVariable => true
+    case tvar: TauVariable => false
     case _ => false
   }
   

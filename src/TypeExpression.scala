@@ -7,14 +7,14 @@ import jllvm.LLVMStructType
 
 trait SigmaType {
   def instantiate(args: List[TauType]): GammaType
-  def specialize(args: List[GammaType]): SigmaSubstitution
+  def freshlyInstantiate: GammaType
+  def specialize(args: List[GammaType]): BetaSpecialization
   def body: GammaType
 }
 
 abstract class TauType {
-  def subtypes(tau: TauType,possibly: Boolean): Boolean
-  def matchSupertype(tau: TauType): Option[TauType]
-  def equals(tau: TauType,possibly: Boolean): Boolean = tau == this
+  def subtypes(tau: TauType): Boolean
+  def equals(tau: TauType): Boolean = tau == this
   def mangle: String
 }
 
@@ -34,10 +34,12 @@ abstract class GammaType extends TauType with SigmaType {
     this
   }
   
-  override def specialize(args: List[GammaType]): SigmaSubstitution = {
+  override def freshlyInstantiate: GammaType = this
+  
+  override def specialize(args: List[GammaType]): BetaSpecialization = {
     if(args.length > 0)
       throw new Exception("Cannot specialize gamma type on non-empty arguments.")
-    new SigmaSubstitution
+    new BetaSpecialization
   }
   
   override def body: GammaType = this
@@ -46,21 +48,15 @@ abstract class GammaType extends TauType with SigmaType {
 case class TypeDefinition(t: GammaType,n: String,context: Module) extends Definition {
   val gamma = t
   val name = n
-  val scope = { context.declare(this); context }
+  val scope = { context.define(this); context }
 }
 
 abstract class PrimitiveGamma extends GammaType {
-  override def equals(tau: TauType,possibly: Boolean): Boolean = tau match {
-    case range: GammaRange => possibly && subtypes(range.upperBound,true) && range.lowerBound.subtypes(this,true)
-    case tvar: TauVariable => possibly
+  override def equals(tau: TauType): Boolean = tau match {
+    case bvar: BetaVariable => true
+    case range: GammaRange => subtypes(range.upperBound) && range.lowerBound.subtypes(this)
+    case tvar: TauVariable => false
     case _ => tau == this
-  }
-  
-  override def matchSupertype(tau: TauType): Option[PrimitiveGamma] = {
-    if(tau == this)
-      Some(this)
-    else
-      None
   }
   
   override def mangle: String = definition match {
@@ -70,9 +66,10 @@ abstract class PrimitiveGamma extends GammaType {
 }
 
 object TopGamma extends PrimitiveGamma {
-  override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau match {
-    case range: GammaRange => subtypes(range.lowerBound,possibly)
-    case tvar: TauVariable => possibly
+  override def subtypes(tau: TauType): Boolean = tau match {
+    case bvar: BetaVariable => true
+    case range: GammaRange => subtypes(range.lowerBound)
+    case tvar: TauVariable => false
     case gamma: GammaType => false
   }
   override def compile: LLVMType = new LLVMVoidType
@@ -80,9 +77,10 @@ object TopGamma extends PrimitiveGamma {
 }
 
 object BottomGamma extends PrimitiveGamma {
-  override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau match {
-    case range: GammaRange => subtypes(range.lowerBound,possibly)
-    case tvar: TauVariable => possibly
+  override def subtypes(tau: TauType): Boolean = tau match {
+    case bvar: BetaVariable => true
+    case range: GammaRange => subtypes(range.lowerBound)
+    case tvar: TauVariable => false
     case rho: GammaType => true
   }
   override def compile: LLVMType = new LLVMVoidType
@@ -94,13 +92,19 @@ abstract class RhoType extends GammaType {
   def map(f: (TauType) => TauType): RhoType
   def filter(p: (TauType) => Boolean): List[TauType]
   def generalize(substitution: TauSubstitution): SigmaType = {
-    val tvars = filter(tau => tau.equals(substitution.solve(tau),false))
+    val tvars = filter(tau => tau.equals(substitution.solve(tau)))
     if(tvars == Nil)
       this
     else {
       val head = tvars.head match { case tvar: TauVariable => tvar case _ => throw new Exception("Given something other than a tau variable in what should be a list of tau variables.") }
-      tvars.tail.foldLeft[BetaType](new BetaRho(this,head))((beta: BetaType,tau: TauType) => tau match {
-        case tvar: TauVariable => new BetaBeta(beta,tvar)
+      val betaHead = new BetaRho(this,head)
+      substitution.substitute(head,betaHead.alpha)
+      tvars.tail.foldLeft[BetaType](betaHead)((beta: BetaType,tau: TauType) => tau match {
+        case tvar: TauVariable => {
+          val newBeta = new BetaBeta(beta,tvar)
+          substitution.substitute(tvar,newBeta.alpha)
+          newBeta
+        }
         case _ => throw new Exception("Given something other than a tau variable in what should be a list of tau variables.")
       })
     }
@@ -116,37 +120,19 @@ class RecordPi(f: List[RecordMember]) extends RhoType {
   val fields: List[RecordMember] = f
   val length: Int = fields.length
   
-  override def subtypes(tau: TauType,possibly: Boolean): Boolean = tau == this || (tau match {
-    case rec: RecordPi => (length >= rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau,possibly)))
-    case range: GammaRange => subtypes(range.lowerBound,possibly)
-    case tvar: TauVariable => possibly
+  override def subtypes(tau: TauType): Boolean = tau == this || (tau match {
+    case rec: RecordPi => (length >= rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau)))
+    case range: GammaRange => subtypes(range.lowerBound)
+    case bvar: BetaVariable => true
+    case tvar: TauVariable => false
     case TopGamma => true
-    case BottomGamma => false
     case _ => false
   })
   
-  override def matchSupertype(tau: TauType): Option[RecordPi] = tau match {
-    case rec: RecordPi => {
-      if(rec == this)
-        return Some(this)
-      else if(length >= rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau,true))) {
-        val matchedFields = fields.zip(rec.fields).map(pair => pair._1.tau.matchSupertype(pair._2.tau) match {
-          case Some(f) => new RecordMember(pair._1.name,f) 
-          case None => throw new Exception("Could not match field of subtype record to field of supertype record.")
-        })
-        Some(new RecordPi(matchedFields))
-      }
-      else
-        None
-    }
-    case range: GammaRange => matchSupertype(range.lowerBound)
-    case _ => None
-  }
-  
-  override def equals(tau: TauType,possibly: Boolean): Boolean = tau == this || (tau match {
-    case rec: RecordPi => (length == rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau,possibly)))
-    case range: GammaRange => possibly && subtypes(range.upperBound,possibly) && range.lowerBound.subtypes(this,possibly)
-    case tvar: TauVariable => possibly
+  override def equals(tau: TauType): Boolean = tau == this || (tau match {
+    case rec: RecordPi => (length == rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau)))
+    case bvar: BetaVariable => true
+    case range: GammaRange => subtypes(range.upperBound) && range.lowerBound.subtypes(this)
     case _ => false
   })
   
@@ -182,35 +168,18 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   val domain = d
   val range = r
   
-  override def subtypes(tau: TauType,possibly: Boolean): Boolean = equals(tau,possibly) || (tau match {
-    case func: FunctionArrow => func.domain.zip(domain).map(pair => pair._1.subtypes(pair._2,possibly)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && range.subtypes(func.range,possibly)
-    case range: RhoRange => subtypes(range.lowerBound,possibly)
-    case tvar: TauVariable => possibly
+  override def subtypes(tau: TauType): Boolean = equals(tau) || (tau match {
+    case func: FunctionArrow => func.domain.zip(domain).map(pair => pair._1.subtypes(pair._2)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && range.subtypes(func.range)
+    case bvar: BetaVariable => true
+    case range: RhoRange => subtypes(range.lowerBound)
     case TopGamma => true
-    case BottomGamma => false
     case _ => false
   })
   
-  override def matchSupertype(tau: TauType): Option[FunctionArrow] = tau match {
-    case func: FunctionArrow => {
-      if(func == this)
-        Some(this)
-      else if(func.domain.zip(domain).map(pair => pair._1.subtypes(pair._2,true)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && range.subtypes(func.range,true)) {
-        val domainMatch = domain.zip(func.domain).map(pair => pair._1.matchSupertype(pair._2) match { case Some(d) => d case None => return None })
-        val rangeMatch = range.matchSupertype(func.range) match { case Some(r) => r case None => return None }
-        return Some(new FunctionArrow(domainMatch,rangeMatch))
-      }
-      else
-        return None
-    }
-    case range: RhoRange => matchSupertype(range.lowerBound)
-    case _ => None
-  }
-  
-  override def equals(tau: TauType,possibly: Boolean): Boolean = tau == this || (tau match {
-    case func: FunctionArrow => (func.domain.zip(domain).map(pair => pair._1.equals(pair._2,possibly)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && func.range.equals(range,possibly))
-    case range: RhoRange => possibly && subtypes(range.upperBound,possibly) && range.lowerBound.subtypes(this,possibly)
-    case tvar: TauVariable => possibly
+  override def equals(tau: TauType): Boolean = tau == this || (tau match {
+    case func: FunctionArrow => (func.domain.zip(domain).map(pair => pair._1.equals(pair._2)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && func.range.equals(range))
+    case bvar: BetaVariable => true
+    case range: RhoRange => subtypes(range.upperBound) && range.lowerBound.subtypes(this)
     case _ => false
   })
   
@@ -257,17 +226,12 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
 }
 
 class TauVariable extends TauType {
-  override def subtypes(tau: TauType,possibly: Boolean): Boolean = {
-    equals(tau,possibly)
+  override def subtypes(tau: TauType): Boolean = {
+    equals(tau)
   }
   
-  override def matchSupertype(tau: TauType): Option[TauVariable] = tau match {
-    case tvar: TauVariable => Some(this)
-    case _ => None
-  }
-  
-  override def equals(tau: TauType,possibly: Boolean): Boolean = {
-    tau == this || possibly
+  override def equals(tau: TauType): Boolean = {
+    tau == this
   }
   
   override def mangle: String = toString
@@ -277,21 +241,26 @@ class GammaRange(low: Option[GammaType],high: Option[GammaType]) extends TauVari
   val lowerBound: GammaType = low match { case None => BottomGamma case Some(bound) => bound }
   val upperBound: GammaType = high match { case None => TopGamma case Some(bound) => bound }
   
-  override def subtypes(tau: TauType,possibly: Boolean): Boolean = upperBound.subtypes(tau,possibly)
+  override def subtypes(tau: TauType): Boolean = upperBound.subtypes(tau)
 }
 
 abstract class BetaType extends SigmaType {
-  val alpha: TauVariable
+  val alpha: BetaVariable
   
   def replace(from: TauVariable,to: TauType): BetaType
   
   override def instantiate(args: List[TauType]): RhoType
-  override def specialize(args: List[GammaType]): SigmaSubstitution
+  override def freshlyInstantiate: RhoType
+  override def specialize(args: List[GammaType]): BetaSpecialization
   override def body: RhoType
 }
 
+class BetaVariable(b: BetaType) extends TauVariable {
+  val beta: BetaType = b
+}
+
 class BetaRho(r: RhoType,tvar: TauVariable) extends BetaType {
-  override val alpha: TauVariable = new TauVariable
+  override val alpha: BetaVariable = new BetaVariable(this)
   val rho: RhoType = r.replace(tvar,alpha)
   
   override def replace(from: TauVariable,to: TauType): BetaType = new BetaRho(rho.replace(from,to),alpha)
@@ -300,12 +269,14 @@ class BetaRho(r: RhoType,tvar: TauVariable) extends BetaType {
     if(args.length == 1)
       rho.replace(alpha,args.head)
     else
-      throw new Exception("Given wrong number of arguments to specialize rho-containing beta type.")
+      throw new Exception("Given wrong number of arguments to instantiate rho-containing beta type.")
   }
   
-  override def specialize(args: List[GammaType]): SigmaSubstitution = {
+  override def freshlyInstantiate: RhoType = rho.replace(alpha,new TauVariable)
+  
+  override def specialize(args: List[GammaType]): BetaSpecialization = {
     if(args.length == 1) {
-      val result = new SigmaSubstitution
+      val result = new BetaSpecialization
       result.substitute(alpha,args.head)
       result
     }
@@ -317,14 +288,16 @@ class BetaRho(r: RhoType,tvar: TauVariable) extends BetaType {
 }
 
 class BetaBeta(b: BetaType,tvar: TauVariable) extends BetaType {
-  override val alpha: TauVariable = new TauVariable
+  override val alpha: BetaVariable = new BetaVariable(this)
   val beta: BetaType = b.replace(tvar,alpha)
   
   override def replace(from: TauVariable,to: TauType): BetaType = new BetaBeta(beta.replace(from,to),alpha)
   
   override def instantiate(args: List[TauType]): RhoType = beta.instantiate(args.tail).replace(alpha,args.head)
   
-  override def specialize(args: List[GammaType]): SigmaSubstitution = {
+  override def freshlyInstantiate: RhoType = beta.freshlyInstantiate.replace(alpha,new TauVariable)
+  
+  override def specialize(args: List[GammaType]): BetaSpecialization = {
     val result = beta.specialize(args.tail)
     result.substitute(alpha,args.head)
     result

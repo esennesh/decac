@@ -14,12 +14,12 @@ object ASTProcessor {
     case imported: AImportedQualifiedIdentifier => processQualifiedIdentifier(imported.getQualifiedIdentifier) ++ (imported.getUnqualifiedIdentifier.getText() :: Nil)
   }
   def declareImportDeclaration(where: Module,imp: PImportDeclaration): Option[Scopeable] = imp match {
-    case imp: AImportDeclaration => where.declare(where.lookup(processQualifiedIdentifier(imp.getName())))
+    case imp: AImportDeclaration => where.define(where.lookup(processQualifiedIdentifier(imp.getName())))
   }
-  def processDefinition(adef: PDefinition,scope: Scope): Definition = adef match {
+  def processDefinition(adef: PDefinition,scope: Module): Definition = adef match {
     case amoddef: AModuledefDefinition => {
       val moddef: AModuleDefinition = amoddef.getModuleDefinition() match {case real: AModuleDefinition => real}
-      val result = new Module(scope match {case modscope: Module => modscope case _ => null },moddef.getName().getText())
+      val result = new Module(scope,moddef.getName().getText())
       convertList(moddef.getImports()).map(imp => declareImportDeclaration(result,imp))
       convertList(moddef.getDefinitions).map(definition => processDefinition(definition,result))
       return result
