@@ -12,6 +12,14 @@ trait SigmaType {
   def body: GammaType
 }
 
+/* trait ComplexSigma extends SigmaType {
+  def replace(from: TauVariable,to: TauType): ComplexSigma = {
+    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
+  }
+  def map(f: (TauType) => TauType): ComplexSigma
+  def filter(p: (TauType) => Boolean): List[TauType]
+} */
+
 abstract class TauType {
   def subtypes(tau: TauType): Boolean
   def equals(tau: TauType): Boolean = tau == this
@@ -90,6 +98,7 @@ object BottomGamma extends PrimitiveGamma {
 abstract class RhoType extends GammaType {
   def replace(from: TauVariable,to: TauType): RhoType
   def map(f: (TauType) => TauType): RhoType
+  def scopeMap(f: (ScopeType) => ScopeType): RhoType
   def filter(p: (TauType) => Boolean): List[TauType]
   def generalize(substitution: TauSubstitution): SigmaType = {
     val tvars = filter(tau => tau.equals(substitution.solve(tau)))
@@ -144,6 +153,10 @@ class RecordPi(f: List[RecordMember]) extends RhoType {
     new RecordPi(fields.map(field => new RecordMember(field.name,field.tau match { case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
   }
   
+  override def scopeMap(f: (ScopeType) => ScopeType): RecordPi = {
+    new RecordPi(fields.map(field => new RecordMember(field.name,field.tau match { case rho: RhoType => rho.scopeMap(f) case _ => field.tau })))
+  }
+  
   override def filter(p: (TauType) => Boolean): List[TauType] = {
     var result: List[TauType] = Nil
     fields.foreach(field => field.tau match {
@@ -190,6 +203,12 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   override def map(f: (TauType) => TauType): FunctionArrow = {
     val mappedDomain = domain.map(tau => tau match { case rho: RhoType => rho.map(f) case _ => f(tau) })
     val mappedRange = range match { case rho: RhoType => rho.map(f) case _ => f(range) }
+    new FunctionArrow(mappedDomain,mappedRange)
+  }
+  
+  override def scopeMap(f: (ScopeType) => ScopeType): FunctionArrow = {
+    val mappedDomain = domain.map(tau => tau match { case rho: RhoType => rho.scopeMap(f) case _ => tau })
+    val mappedRange = range match { case rho: RhoType => rho.scopeMap(f) case _ => range }
     new FunctionArrow(mappedDomain,mappedRange)
   }
   
@@ -248,6 +267,9 @@ abstract class BetaType extends SigmaType {
   val alpha: BetaVariable
   
   def replace(from: TauVariable,to: TauType): BetaType
+  def map(f: (TauType) => TauType): BetaType
+  def scopeMap(f: (ScopeType) => ScopeType): BetaType
+  def filter(p: (TauType) => Boolean): List[TauType]
   
   override def instantiate(args: List[TauType]): RhoType
   override def freshlyInstantiate: RhoType
@@ -263,7 +285,10 @@ class BetaRho(r: RhoType,tvar: TauVariable) extends BetaType {
   override val alpha: BetaVariable = new BetaVariable(this)
   val rho: RhoType = r.replace(tvar,alpha)
   
-  override def replace(from: TauVariable,to: TauType): BetaType = new BetaRho(rho.replace(from,to),alpha)
+  override def replace(from: TauVariable,to: TauType): BetaRho = new BetaRho(rho.replace(from,to),alpha)
+  override def map(f: (TauType) => TauType): BetaRho = new BetaRho(rho.map(f),alpha)
+  override def scopeMap(f: (ScopeType) => ScopeType): BetaRho = new BetaRho(rho.scopeMap(f),alpha)
+  override def filter(p: (TauType) => Boolean): List[TauType] = rho.filter(p)
   
   override def instantiate(args: List[TauType]): RhoType = {
     if(args.length == 1)
@@ -291,7 +316,10 @@ class BetaBeta(b: BetaType,tvar: TauVariable) extends BetaType {
   override val alpha: BetaVariable = new BetaVariable(this)
   val beta: BetaType = b.replace(tvar,alpha)
   
-  override def replace(from: TauVariable,to: TauType): BetaType = new BetaBeta(beta.replace(from,to),alpha)
+  override def replace(from: TauVariable,to: TauType): BetaBeta = new BetaBeta(beta.replace(from,to),alpha)
+  override def map(f: (TauType) => TauType): BetaBeta = new BetaBeta(beta.map(f),alpha)
+  override def scopeMap(f: (ScopeType) => ScopeType): BetaBeta = new BetaBeta(beta.scopeMap(f),alpha)
+  override def filter(p: (TauType) => Boolean): List[TauType] = beta.filter(p)
   
   override def instantiate(args: List[TauType]): RhoType = beta.instantiate(args.tail).replace(alpha,args.head)
   

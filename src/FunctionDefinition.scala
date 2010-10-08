@@ -31,6 +31,24 @@ class FunctionDefinition(original: UninferredFunction,substitution: TauSubstitut
   
   protected val specializations: Map[List[GammaType],SpecializedFunction] = new HashMap[List[GammaType],SpecializedFunction]()
   
+  def specializeScope(caller: Scope[_]): SigmaType = functionType match {
+    case beta: BetaType => beta.scopeMap(scope => scope match {
+      case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller match {
+        case mod: Module => new GlobalScopeType(Some(mod))
+        case lexical: LexicalScope => new LexicalScopeType(lexical)
+      }))
+      case _ => scope
+    })
+    case arrow: FunctionArrow => arrow.scopeMap(scope => scope match {
+      case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller match {
+        case mod: Module => new GlobalScopeType(Some(mod))
+        case lexical: LexicalScope => new LexicalScopeType(lexical)
+      }))
+      case _ => scope
+    })
+    case _ => throw new Exception("Why does a function have something other than an arrow type or generalized arrow type?")
+  }
+  
   def specialize(specialization: List[GammaType]): SpecializedFunction = specializations.get(specialization) match {
     case Some(sf) => sf
     case None => {
