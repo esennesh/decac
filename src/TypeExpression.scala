@@ -184,7 +184,7 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   override def subtypes(tau: TauType): Boolean = equals(tau) || (tau match {
     case func: FunctionArrow => func.domain.zip(domain).map(pair => pair._1.subtypes(pair._2)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && range.subtypes(func.range)
     case bvar: BetaVariable => true
-    case range: RhoRange => subtypes(range.lowerBound)
+    case range: GammaRange => subtypes(range.lowerBound)
     case TopGamma => true
     case _ => false
   })
@@ -192,7 +192,7 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   override def equals(tau: TauType): Boolean = tau == this || (tau match {
     case func: FunctionArrow => (func.domain.zip(domain).map(pair => pair._1.equals(pair._2)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && func.range.equals(range))
     case bvar: BetaVariable => true
-    case range: RhoRange => subtypes(range.upperBound) && range.lowerBound.subtypes(this)
+    case range: GammaRange => subtypes(range.upperBound) && range.lowerBound.subtypes(this)
     case _ => false
   })
   

@@ -14,7 +14,7 @@ class UninferredIf(possibilities: List[Tuple2[UninferredExpression,UninferredExp
     new IfExpression(conditions.zip(results),substituteTypes(substitution)._1)
   }
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
-    cases.map(ifcase => { rui.constrain(new Equal(ifcase._1.expressionType,BooleanRho)); rui.constrain(new LesserEq(ifcase._2.expressionType,expressionType)) })
+    cases.map(ifcase => { rui.constrain(new Equal(ifcase._1.expressionType,BooleanGamma)); rui.constrain(new LesserEq(ifcase._2.expressionType,expressionType)) })
     return rui
   }
 }
@@ -24,7 +24,7 @@ class IfExpression(possibilities: List[Tuple2[Expression,Expression]],overallTyp
   override def children = cases.map(ifcase => ifcase._2)
   val specializations: Map[BetaSpecialization,SpecializedIf] = new HashMap[BetaSpecialization,SpecializedIf]()
   override def specialize(specialization: BetaSpecialization): SpecializedIf = specializations.get(specialization) match {
-    case Some(sb) => sb
+    case Some(si) => si
     case None => {
       val resultCases = cases.map(ifcase => (ifcase._1.specialize(specialization),ifcase._2.specialize(specialization)))
       val result = new SpecializedIf(resultCases,specialization.solve(expressionType))
