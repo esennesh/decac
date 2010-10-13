@@ -37,6 +37,6 @@
 			<arg value="clean"/>
 		</exec>
 		<delete dir="build/"/>
-		<delete dir="decasyntax/"/>
+		<delete dir="src/decasyntax/"/>
 	</target>
 </project>

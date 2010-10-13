@@ -25,3 +25,5 @@ class LexicalScope(p: Scope[_]) extends Scope[LexicalBinding](p) {
     result
   }
 }
+
+object GlobalLexicalScope extends LexicalScope(GlobalScope)

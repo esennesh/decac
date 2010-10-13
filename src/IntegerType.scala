@@ -52,13 +52,15 @@ object IntegerConstants {
   val min_unsigned = 0
 }
 
+abstract class UnsignedIntegerGamma(n: String,p: Option[NumericalGamma]) extends IntegerGamma(n,p)
+
 object LongInteger extends IntegerGamma("integer",Some(FP128Gamma)) {
   override def signed: Boolean = true
   override def floor: Int = -2^64
   override def ceiling: Int = IntegerConstants.max_longnat
 }
 
-object LongNat extends IntegerGamma("longnat",Some(LongInteger)) {
+object LongNat extends UnsignedIntegerGamma("longnat",Some(LongInteger)) {
   override def signed: Boolean = false
   override def floor: Int = IntegerConstants.min_unsigned
   override def ceiling: Int = IntegerConstants.max_longnat
@@ -70,7 +72,7 @@ object LongInt extends IntegerGamma("longint",Some(LongInteger)) {
   override def ceiling: Int = IntegerConstants.max_longInt
 }
 
-object Nat extends IntegerGamma("nat",Some(LongNat)) {
+object Nat extends UnsignedIntegerGamma("nat",Some(LongNat)) {
   override def ceiling: Int = IntegerConstants.max_nat
   override def floor: Int = IntegerConstants.min_unsigned
   override def signed: Boolean = false
@@ -82,7 +84,7 @@ object Int extends IntegerGamma("int",Some(LongInt)) {
   override def signed: Boolean = true
 }
 
-object SNat extends IntegerGamma("snat",Some(Nat)) {
+object SNat extends UnsignedIntegerGamma("snat",Some(Nat)) {
   override def ceiling: Int = IntegerConstants.max_snat
   override def floor: Int = IntegerConstants.min_unsigned
   override def signed: Boolean = false
@@ -94,7 +96,7 @@ object SInt extends IntegerGamma("sint",Some(Int)) {
   override def signed: Boolean = true
 }
 
-object Byte extends IntegerGamma("byte",Some(SNat)) {
+object Byte extends UnsignedIntegerGamma("byte",Some(SNat)) {
   override def floor: Int = IntegerConstants.min_unsigned
   override def ceiling: Int = IntegerConstants.max_byte
   override def signed: Boolean = false

@@ -46,8 +46,8 @@ Tokens
   exponentiation_operator = '^';
   at_operator = '@';
   not_operator = 'not';
-  generic = 'generic';
   method = 'method';
+  override = 'override';
   comma = ',';
   assignment_operator = ':=';
   lparen = '(';
@@ -134,8 +134,6 @@ Productions
     {function} function_type_form |
     {alias} at_operator lower_type_form nullable_alias_clause?  |
     {class} class_keyword extension_clause? lbracket [member]:member_declaration+ rbracket |
-    {variant} case type |
-    {variantcase} case lower_type_form extension_clause |
     {subrange} subrange lparen [floor]:subrange_bound comma [ceiling]:subrange_bound rparen [parent]:extension_clause |
     {enum} enum lparen identifier_list rparen [extension]:extension_clause? |
     {exception} exception lparen identifier_list rparen [extension]:extension_clause? |
@@ -175,7 +173,7 @@ Productions
     {fundef} function_definition;
   
   type_form_arguments =
-    labracket [arguments]:type_form_list rabracket;  
+    labracket [arguments]:identifier_list rabracket;  
 
   type_form_list = 
     {one} type_form |
@@ -198,8 +196,8 @@ Productions
     {many} argument_list comma argument;
     
   function_definition = 
-    {generic} generic [name]:unqualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [type]:type_annotation [body]:block_expression? |
-    {method} method [name]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
+    {method} method [name]:unqualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [type]:type_annotation [body]:block_expression? |
+    {override} override [name]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
     {function} function [name]:unqualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [type]:type_annotation? [body]:block_expression |
     {constructor} new [type]:qualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [body]:block_expression |
     {destructor} delete [type]:qualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [body]:block_expression;

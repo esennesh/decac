@@ -2,15 +2,15 @@ module highorder
 
 import list
 
-generic map(s: @Sequence or null,f): @Sequence or null
+method map(s: @Sequence or null,f): @Sequence or null
 
-method map(s: @list.List or null,f) {
+override map(s: @list.List or null,f) {
 	match s case(l: list.List) -> list.cons(f(list.car(l)),map(list.cdr(l),f)) else null
 }
 
-generic filter(s: @Sequence or null,p?): @Sequence or null
+method filter(s: @Sequence or null,p?): @Sequence or null
 
-method filter(s: @list.List or null,p?) {
+override filter(s: @list.List or null,p?) {
 	match s case (l: list.List) ->
 		cond {
 			case(p?(l.element) = true) list.cons(list.car(l),filter(list.cdr(l),p?))
@@ -20,9 +20,9 @@ method filter(s: @list.List or null,p?) {
 		null
 }
 
-generic fold(s: @Sequence or null,f,base): @Sequence or null
+method fold<T>(s: @Sequence or null,f,base: T): T
 
-method fold(s: @list.List or null,f,base) {
+override fold(s: @list.List or null,f,base) {
 	match s case(l: list.List) -> f(list.car(l),fold(list.cdr(l),f,base)) else base
 }
 

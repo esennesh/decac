@@ -10,6 +10,7 @@ import jllvm.LLVMSubtractInstruction
 import jllvm.LLVMMultiplyInstruction
 import jllvm.LLVMFloatDivideInstruction
 import jllvm.LLVMSignedDivideInstruction
+import jllvm.LLVMIntegerToFloatCast
 import scala.Math
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
@@ -121,17 +122,26 @@ abstract class SpecializedArithmetic(gamma: NumericalGamma) extends SpecializedE
 class SpecializedOperator(x: SpecializedArithmetic,y: SpecializedArithmetic,op: ArithmeticOperator,exprType: NumericalGamma) extends SpecializedArithmetic(exprType) {
   val operator = op
   override def children: List[SpecializedArithmetic] = x :: y :: Nil
-  val lhs = x
-  val rhs = y
+  def coerce(child: SpecializedArithmetic,builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = expressionType match {
+    case real: RealGamma => children.apply(0).expressionType match {
+      case unsigned: UnsignedIntegerGamma => new LLVMIntegerToFloatCast(builder,child.compile(builder,scope),real.compile,"cast",LLVMIntegerToFloatCast.IntCastType.UNSIGNED)
+      case signed: IntegerGamma => new LLVMIntegerToFloatCast(builder,child.compile(builder,scope),real.compile,"cast",LLVMIntegerToFloatCast.IntCastType.SIGNED)
+      case floating: RealGamma => child.compile(builder,scope)
+    }
+    case integer: IntegerGamma => child.compile(builder,scope)
+  }
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val builtSteps = children.map(child => compile(builder,scope))
+    //TODO: Add support for checking the types of the subexpressions and casting to floating-point where necessary.
+    val lhs = coerce(children.apply(0),builder,scope)
+    val rhs = coerce(children.apply(1),builder,scope)
     operator match {
-      case Add => new LLVMAddInstruction(builder,lhs.compile(builder,scope),rhs.compile(builder,scope),"add")
-      case Subtract => new LLVMSubtractInstruction(builder,lhs.compile(builder,scope),rhs.compile(builder,scope),"subtract")
-      case Multiply => new LLVMMultiplyInstruction(builder,lhs.compile(builder,scope),rhs.compile(builder,scope),"multiply")
+      case Add => new LLVMAddInstruction(builder,lhs,rhs,"add")
+      case Subtract => new LLVMSubtractInstruction(builder,lhs,rhs,"subtract")
+      case Multiply => new LLVMMultiplyInstruction(builder,lhs,rhs,"multiply")
       case Divide => expressionType match {
-        case real: RealGamma => new LLVMFloatDivideInstruction(builder,lhs.compile(builder,scope),rhs.compile(builder,scope),"fdivide")
-        case integer: IntegerGamma => new LLVMSignedDivideInstruction(builder,lhs.compile(builder,scope),rhs.compile(builder,scope),"idivide")
+        case real: RealGamma => new LLVMFloatDivideInstruction(builder,lhs,rhs,"fdivide")
+        case integer: IntegerGamma => new LLVMSignedDivideInstruction(builder,lhs,rhs,"idivide")
       }
     }
   }
