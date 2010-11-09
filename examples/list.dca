@@ -2,26 +2,21 @@ module list
 
 import malloc
 
-type List = class<T> extends Sequence<T> {
-	element: T;
-	next: List<T>;
-}
-
-new List(e,n) {
-	element:= e;
-	next:= n;
+type List<T> = class(e,n) extends Sequence<T> {
+	element: T:= e;
+	next: List<T>:= n;
 }
 
 function cons(element,next) {
 	new List(malloc.malloc(typesize(List)),element,next)
 }
 
-method car(lst: @List or null) {
-	match lst case(lst: List) -> lst.element else throw NullPointerException
+override car(lst: @List or null) {
+	match lst case(lst: List) lst.element else throw NullPointerException
 }
 
-method cdr(lst: @List or null) {
-	match lst case(lst: List) -> lst.next else throw null
+override cdr(lst: @List or null) {
+	match lst case(lst: List) lst.next else throw null
 }
 
 end

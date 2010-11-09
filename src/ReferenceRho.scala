@@ -1,6 +1,7 @@
 package decac;
 
 import jllvm.LLVMType
+import jllvm.LLVMStructType
 import jllvm.LLVMPointerType
 
 class ReferenceRho(tau: TauType,optional: Boolean,st: ScopeType) extends RhoType {
@@ -17,7 +18,13 @@ class ReferenceRho(tau: TauType,optional: Boolean,st: ScopeType) extends RhoType
   }
   
   override def compile: LLVMType = target match {
-    case gamma: GammaType => new LLVMPointerType(gamma.compile,0)
+    case gamma: GammaType => {
+      val pointer = new LLVMPointerType(gamma.compile,0)
+      if(scope == RegionalScopeType)
+        new LLVMStructType((new LLVMPointerType(Nat.compile,0) :: pointer :: Nil).toArray,true)
+      else
+        pointer
+    }
     case _ => throw new Exception("Cannot compile a reference to non-gamma type " + target.mangle)
   }
   
@@ -37,4 +44,14 @@ class ReferenceRho(tau: TauType,optional: Boolean,st: ScopeType) extends RhoType
   }
   
   override def mangle: String = target.mangle + "*(-" + scope.toString
+}
+
+object NullRho extends ReferenceRho(TopGamma,true,new GlobalScopeType(None)) {
+  override def subtypes(tau: TauType): Boolean = tau match {
+    case ref: ReferenceRho => ref.nullable
+    case range: GammaRange => subtypes(range.lowerBound)
+    case bvar: BetaVariable => true
+    case tvar: TauVariable => false
+    case _ => false
+  }
 }

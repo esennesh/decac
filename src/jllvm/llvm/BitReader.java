@@ -9,24 +9,24 @@
 package jllvm.llvm;
 
 public class BitReader {
-  public static SWIGTYPE_p_LLVMBool LLVMParseBitcode(SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_LLVMModuleRef OutModule, SWIGTYPE_p_p_char OutMessage) {
-    return new SWIGTYPE_p_LLVMBool(BitReaderJNI.LLVMParseBitcode(SWIGTYPE_p_LLVMMemoryBufferRef.getCPtr(MemBuf), SWIGTYPE_p_LLVMModuleRef.getCPtr(OutModule), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
+  public static SWIGTYPE_p_LLVMBool LLVMParseBitcode(SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_p_LLVMOpaqueModule OutModule, SWIGTYPE_p_p_char OutMessage) {
+    return new SWIGTYPE_p_LLVMBool(BitReaderJNI.LLVMParseBitcode(SWIGTYPE_p_LLVMMemoryBufferRef.getCPtr(MemBuf), SWIGTYPE_p_p_LLVMOpaqueModule.getCPtr(OutModule), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
   }
 
-  public static SWIGTYPE_p_LLVMBool LLVMParseBitcodeInContext(SWIGTYPE_p_LLVMContextRef ContextRef, SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_LLVMModuleRef OutModule, SWIGTYPE_p_p_char OutMessage) {
-    return new SWIGTYPE_p_LLVMBool(BitReaderJNI.LLVMParseBitcodeInContext(SWIGTYPE_p_LLVMContextRef.getCPtr(ContextRef), SWIGTYPE_p_LLVMMemoryBufferRef.getCPtr(MemBuf), SWIGTYPE_p_LLVMModuleRef.getCPtr(OutModule), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
+  public static SWIGTYPE_p_LLVMBool LLVMParseBitcodeInContext(SWIGTYPE_p_LLVMOpaqueContext ContextRef, SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_p_LLVMOpaqueModule OutModule, SWIGTYPE_p_p_char OutMessage) {
+    return new SWIGTYPE_p_LLVMBool(BitReaderJNI.LLVMParseBitcodeInContext(SWIGTYPE_p_LLVMOpaqueContext.getCPtr(ContextRef), SWIGTYPE_p_LLVMMemoryBufferRef.getCPtr(MemBuf), SWIGTYPE_p_p_LLVMOpaqueModule.getCPtr(OutModule), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
   }
 
-  public static SWIGTYPE_p_LLVMBool LLVMGetBitcodeModuleInContext(SWIGTYPE_p_LLVMContextRef ContextRef, SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_LLVMModuleRef OutM, SWIGTYPE_p_p_char OutMessage) {
-    return new SWIGTYPE_p_LLVMBool(BitReaderJNI.LLVMGetBitcodeModuleInContext(SWIGTYPE_p_LLVMContextRef.getCPtr(ContextRef), SWIGTYPE_p_LLVMMemoryBufferRef.getCPtr(MemBuf), SWIGTYPE_p_LLVMModuleRef.getCPtr(OutM), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
+  public static SWIGTYPE_p_LLVMBool LLVMGetBitcodeModuleInContext(SWIGTYPE_p_LLVMOpaqueContext ContextRef, SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_p_LLVMOpaqueModule OutM, SWIGTYPE_p_p_char OutMessage) {
+    return new SWIGTYPE_p_LLVMBool(BitReaderJNI.LLVMGetBitcodeModuleInContext(SWIGTYPE_p_LLVMOpaqueContext.getCPtr(ContextRef), SWIGTYPE_p_LLVMMemoryBufferRef.getCPtr(MemBuf), SWIGTYPE_p_p_LLVMOpaqueModule.getCPtr(OutM), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
   }
 
-  public static SWIGTYPE_p_LLVMBool LLVMGetBitcodeModule(SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_LLVMModuleRef OutM, SWIGTYPE_p_p_char OutMessage) {
-    return new SWIGTYPE_p_LLVMBool(BitReaderJNI.LLVMGetBitcodeModule(SWIGTYPE_p_LLVMMemoryBufferRef.getCPtr(MemBuf), SWIGTYPE_p_LLVMModuleRef.getCPtr(OutM), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
+  public static SWIGTYPE_p_LLVMBool LLVMGetBitcodeModule(SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_p_LLVMOpaqueModule OutM, SWIGTYPE_p_p_char OutMessage) {
+    return new SWIGTYPE_p_LLVMBool(BitReaderJNI.LLVMGetBitcodeModule(SWIGTYPE_p_LLVMMemoryBufferRef.getCPtr(MemBuf), SWIGTYPE_p_p_LLVMOpaqueModule.getCPtr(OutM), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
   }
 
-  public static SWIGTYPE_p_LLVMBool LLVMGetBitcodeModuleProviderInContext(SWIGTYPE_p_LLVMContextRef ContextRef, SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_LLVMModuleProviderRef OutMP, SWIGTYPE_p_p_char OutMessage) {
-    return new SWIGTYPE_p_LLVMBool(BitReaderJNI.LLVMGetBitcodeModuleProviderInContext(SWIGTYPE_p_LLVMContextRef.getCPtr(ContextRef), SWIGTYPE_p_LLVMMemoryBufferRef.getCPtr(MemBuf), SWIGTYPE_p_LLVMModuleProviderRef.getCPtr(OutMP), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
+  public static SWIGTYPE_p_LLVMBool LLVMGetBitcodeModuleProviderInContext(SWIGTYPE_p_LLVMOpaqueContext ContextRef, SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_LLVMModuleProviderRef OutMP, SWIGTYPE_p_p_char OutMessage) {
+    return new SWIGTYPE_p_LLVMBool(BitReaderJNI.LLVMGetBitcodeModuleProviderInContext(SWIGTYPE_p_LLVMOpaqueContext.getCPtr(ContextRef), SWIGTYPE_p_LLVMMemoryBufferRef.getCPtr(MemBuf), SWIGTYPE_p_LLVMModuleProviderRef.getCPtr(OutMP), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
   }
 
   public static SWIGTYPE_p_LLVMBool LLVMGetBitcodeModuleProvider(SWIGTYPE_p_LLVMMemoryBufferRef MemBuf, SWIGTYPE_p_LLVMModuleProviderRef OutMP, SWIGTYPE_p_p_char OutMessage) {

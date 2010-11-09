@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+typedef struct LLVMOpaquePassManager *LLVMPassManagerRef;
+
 /** See llvm::createAggressiveDCEPass function. */
 void LLVMAddAggressiveDCEPass(LLVMPassManagerRef PM);
 

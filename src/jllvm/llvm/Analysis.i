@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+typedef struct LLVMOpaqueModule *LLVMModuleRef;
+typedef struct LLVMOpaqueValue *LLVMValueRef;
 
 typedef enum {
   LLVMAbortProcessAction, /* verifier will print to stderr and abort() */

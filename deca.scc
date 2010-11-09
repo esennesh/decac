@@ -133,11 +133,14 @@ Productions
   type_form =
     {function} function_type_form |
     {alias} at_operator lower_type_form nullable_alias_clause?  |
-    {class} class_keyword extension_clause? lbracket [member]:member_declaration+ rbracket |
+    {class} class_keyword function_arguments? extension_clause? lbracket [member]:member_declaration+ constructor_definition? destructor_definition? rbracket |
     {subrange} subrange lparen [floor]:subrange_bound comma [ceiling]:subrange_bound rparen [parent]:extension_clause |
     {enum} enum lparen identifier_list rparen [extension]:extension_clause? |
     {exception} exception lparen identifier_list rparen [extension]:extension_clause? |
     {others} lower_type_form;
+  
+  constructor_definition = new [constructor]:block_expression;
+  destructor_definition = delete [destructor]:block_expression;
     
   function_type_form = 
     {one} [argument]:lower_type_form arrow_operator [result]:type_form |
@@ -183,7 +186,7 @@ Productions
     colon [type]:type_form;
     
   member_declaration = 
-    {named} protected? [names]:identifier_list colon [type]:type_form semicolon;
+    {named} protected? let_assignment_list semicolon;
     
   extension_clause = 
     extends lower_type_form;
@@ -195,12 +198,12 @@ Productions
     {one} argument |
     {many} argument_list comma argument;
     
+  function_arguments = lparen [arguments]:argument_list rparen;
+    
   function_definition = 
-    {method} method [name]:unqualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [type]:type_annotation [body]:block_expression? |
-    {override} override [name]:qualified_identifier lparen [arguments]:argument_list rparen [body]:block_expression |
-    {function} function [name]:unqualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [type]:type_annotation? [body]:block_expression |
-    {constructor} new [type]:qualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [body]:block_expression |
-    {destructor} delete [type]:qualified_identifier [parameters]:type_form_arguments? lparen [arguments]:argument_list rparen [body]:block_expression;
+    {method} method [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [body]:block_expression? |
+    {override} override [name]:qualified_identifier function_arguments [body]:block_expression |
+    {function} function [name]:unqualified_identifier function_arguments [type]:type_annotation? [body]:block_expression;
     
   expression =
     {assignmentexp} qualified_identifier assignment_operator expression |
@@ -227,7 +230,7 @@ Productions
     {primitive_string} string_constant |
     {primitive_null} null_literal |
     {tuple} lsbracket expression_list rsbracket |
-    {lambda} function lparen argument_list rparen [region]:parenthetical_expression? block_expression |
+    {lambda} function function_arguments [region]:parenthetical_expression? block_expression |
     {call} function_call_expression |
     {parenthetical} parenthetical_expression |
     {identifier} qualified_identifier;
@@ -261,15 +264,11 @@ Productions
     {different} [exp1]:exp4 different [exp2]:exp4 |
     {others} exp4;
     
-  condes_arguments =
-    {one} expression |
-    {many} expression comma expression_list;
-    
   function_call_expression =
     {variable} [function]:qualified_identifier lparen [arguments]:expression_list? rparen |
     {parens} [function]:parenthetical_expression lparen [arguments]:expression_list? rparen |
-    {constructor} new [type]:qualified_identifier lparen [arguments]:condes_arguments rparen |
-    {destructor} delete [type]:qualified_identifier lparen [arguments]:condes_arguments rparen |
+    {constructor} new [type]:qualified_identifier lparen [arguments]:expression_list? rparen |
+    {destructor} delete [type]:qualified_identifier lparen [arguments]:expression_list? rparen |
     {deleteregion} delete region [which]:parenthetical_expression;
     
   except_case_clause =
@@ -285,10 +284,13 @@ Productions
   expression_list = 
     {one} expression |
     {many} expression_list comma expression;
+    
+  else_case_clause =
+    else [body]:expression;
   
   if_case_clause =
     {case} case lparen [condition]:expression rparen [body]:expression |
-    {else} else [body]:expression;
+    {else} else_case_clause;
     
   if_expression =
     {one} if lparen [condition]:expression rparen [body]:expression |
@@ -302,12 +304,12 @@ Productions
     {many} let_assignment_list comma let_assignment;
   
   match_case_clause =
-    {variable} case lparen [name]:unqualified_identifier type_annotation rparen arrow_operator [body]:expression |
-    {pattern} case lparen type_form rparen arrow_operator [body]:expression;
+    {variable} case lparen [name]:unqualified_identifier type_annotation rparen [body]:expression |
+    {pattern} case lparen type_form rparen [body]:expression;
     
   match_expression = 
-    {one} match expression match_case_clause else [failure]:expression |
-    {many} match expression lbracket match_case_clause+ rbracket else [failure]:expression;
+    {one} match expression match_case_clause else_case_clause |
+    {many} match expression lbracket match_case_clause+ rbracket else_case_clause;
     
   block_contents =
     {one} expression |

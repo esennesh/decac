@@ -25,8 +25,10 @@ class GlobalScopeType(m: Option[Module]) extends ScopeType {
   }
 }
 
-class LexicalScopeType(s: LexicalScope) extends ScopeType {
-  val scope: LexicalScope = s
+object RegionalScopeType extends GlobalScopeType(None)
+
+class LexicalScopeType(s: UninferredLexicalScope) extends ScopeType {
+  val scope: UninferredLexicalScope = s
   
   override def subtypes(scope: ScopeType): Boolean = scope match {
     case mod: GlobalScopeType => true
@@ -34,7 +36,7 @@ class LexicalScopeType(s: LexicalScope) extends ScopeType {
   }
 }
 
-class ArgumentScopeType(func: UninferredFunction,caller: Option[ScopeType]) extends LexicalScopeType(func.functionScope) {
+class ArgumentScopeType(func: UninferredFunction,caller: Option[ScopeType]) extends LexicalScopeType(func.fScope) {
   val callerScope: Option[ScopeType] = caller
   val function: UninferredFunction = func
   

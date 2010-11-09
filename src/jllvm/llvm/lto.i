@@ -25,6 +25,9 @@
 
 #define LTO_API_VERSION 3
 
+/// This provides a dummy type for pointers to the LTO object.
+typedef void* llvm_lto_t;
+
 typedef enum {
     LTO_SYMBOL_ALIGNMENT_MASK         = 0x0000001F,    /* log2 of alignment */
     LTO_SYMBOL_PERMISSIONS_MASK       = 0x000000E0,    

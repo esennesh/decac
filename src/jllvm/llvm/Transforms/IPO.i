@@ -25,6 +25,8 @@
 extern "C" {
 #endif
 
+typedef struct LLVMOpaquePassManager *LLVMPassManagerRef;
+
 /** See llvm::createArgumentPromotionPass function. */
 void LLVMAddArgumentPromotionPass(LLVMPassManagerRef PM);
 

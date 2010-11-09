@@ -29,6 +29,7 @@
 extern "C" {
 #endif
 
+typedef struct LLVMOpaqueModule* LLVMModuleRef;
 
 /*===-- Operations on modules ---------------------------------------------===*/
 

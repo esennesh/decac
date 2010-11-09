@@ -2,53 +2,35 @@ package decac
 
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashSet
-import java.lang.Math
+import scala.collection.mutable.Queue
+import scala.Math
 import jllvm.LLVMType
 import jllvm.LLVMIntegerType
 
-class EnumeratedGamma(p: Option[EnumeratedGamma],syms: List[String]) extends PrimitiveGamma {
-  val parent: Option[EnumeratedGamma] = p
+class EnumeratedGamma(parent: Option[EnumeratedGamma],syms: List[String]) extends PrimitiveGamma {
   val symbols: List[String] = syms
-  var values: List[Int] = Nil
-  var childEnums: Set[EnumeratedGamma] = new HashSet[EnumeratedGamma]()
-  
-  protected def assign_symbol_values(s: Int): Int = {
-    values = Nil
-    var start = s
-    var i = 0
-    for(symbol <- symbols) {
-      values = values ::: List(i)
-      i += 1
-    }
-    start += values.length
-    for(child <- childEnums)
-      start = child.assign_symbol_values(start)
-    return start
+  protected var representations: Option[List[Int]] = None
+  val childSymbols: Queue[String] = new Queue[String]()
+  parent match {
+    case Some(parent) => parent.childSymbols ++ symbols
+    case None => None
   }
   
-  def assign_values(): Unit = parent match {
-    case None => assign_symbol_values(0)
-    case Some(parent) => parent.assign_values
-  }
-  
-  protected def calculateRepresentationSize: Int = {
-    values.length + childEnums.map(child => child.calculateRepresentationSize).foldLeft(0)((x,y) => x + y)
-  }
-  
-  protected def representationSize: Int = parent match {
-    case None => calculateRepresentationSize
-    case Some(par) => par.representationSize
+  def represent(start: Int): Int = {
+    representations = Some(List.range(start,start + symbols.length))
+    start + symbols.length
   }
   
   override def subtypes(tau: TauType) = tau match {
-    case enum: EnumeratedGamma => parent match {
-      case Some(par) => enum == par || par.subtypes(enum)
-      case None => false
-    }
+    case enum: EnumeratedGamma => enum.symbols.length >= symbols.length && symbols.map(sym => enum.symbols.exists(x => x == sym)).foldLeft(true)((x: Boolean,y: Boolean) => x && y)
     case range: GammaRange => subtypes(range.lowerBound)
     case bvar: BetaVariable => true
     case tvar: TauVariable => false
     case _ => false
+  }
+  
+  def representationSize: Int = {
+    Math.ceil(Math.log(symbols.length + childSymbols.length) / Math.log(2)).toInt
   }
   
   override def compile: LLVMType = new LLVMIntegerType(representationSize)

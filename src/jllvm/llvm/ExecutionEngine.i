@@ -38,6 +38,8 @@ void LLVMLinkInInterpreter(void);
 
 typedef struct LLVMOpaqueGenericValue *LLVMGenericValueRef;
 typedef struct LLVMOpaqueExecutionEngine *LLVMExecutionEngineRef;
+typedef struct LLVMOpaqueType *LLVMTypeRef;
+typedef struct LLVMOpaqueModule *LLVMModuleRef;
 
 /*===-- Operations on generic values --------------------------------------===*/
 

@@ -1,6 +1,9 @@
 <project name="jllvm">
 	<target name="build">
-		<exec dir="llvm" executable="./compile.sh"/>
+		<exec dir="llvm" executable="cmake">
+			<arg value="."/>
+		</exec>
+		<exec dir="llvm" executable="make"/>
 		<javac srcdir="." destdir="."/>
 	</target>
 	<target name="clean">

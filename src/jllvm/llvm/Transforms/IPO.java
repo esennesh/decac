@@ -9,60 +9,60 @@
 package jllvm.llvm;
 
 public class IPO {
-  public static void LLVMAddArgumentPromotionPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddArgumentPromotionPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddArgumentPromotionPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddArgumentPromotionPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddConstantMergePass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddConstantMergePass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddConstantMergePass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddConstantMergePass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddDeadArgEliminationPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddDeadArgEliminationPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddDeadArgEliminationPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddDeadArgEliminationPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddDeadTypeEliminationPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddDeadTypeEliminationPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddDeadTypeEliminationPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddDeadTypeEliminationPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddFunctionAttrsPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddFunctionAttrsPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddFunctionAttrsPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddFunctionAttrsPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddFunctionInliningPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddFunctionInliningPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddFunctionInliningPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddFunctionInliningPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddGlobalDCEPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddGlobalDCEPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddGlobalDCEPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddGlobalDCEPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddGlobalOptimizerPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddGlobalOptimizerPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddGlobalOptimizerPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddGlobalOptimizerPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddIPConstantPropagationPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddIPConstantPropagationPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddIPConstantPropagationPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddIPConstantPropagationPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddLowerSetJmpPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddLowerSetJmpPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddLowerSetJmpPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddLowerSetJmpPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddPruneEHPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddPruneEHPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddPruneEHPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddPruneEHPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddRaiseAllocationsPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddRaiseAllocationsPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddRaiseAllocationsPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddRaiseAllocationsPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddStripDeadPrototypesPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddStripDeadPrototypesPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddStripDeadPrototypesPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddStripDeadPrototypesPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
-  public static void LLVMAddStripSymbolsPass(SWIGTYPE_p_LLVMPassManagerRef PM) {
-    IPOJNI.LLVMAddStripSymbolsPass(SWIGTYPE_p_LLVMPassManagerRef.getCPtr(PM));
+  public static void LLVMAddStripSymbolsPass(SWIGTYPE_p_LLVMOpaquePassManager PM) {
+    IPOJNI.LLVMAddStripSymbolsPass(SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(PM));
   }
 
 }

@@ -1,16 +1,6 @@
 package decac
 
-import jllvm.LLVMValue
-import jllvm.LLVMBasicBlock
-import jllvm.LLVMFunction
-import jllvm.LLVMInstructionBuilder
-import jllvm.LLVMConstantInteger
-import jllvm.LLVMAddInstruction
-import jllvm.LLVMSubtractInstruction
-import jllvm.LLVMMultiplyInstruction
-import jllvm.LLVMFloatDivideInstruction
-import jllvm.LLVMSignedDivideInstruction
-import jllvm.LLVMIntegerToFloatCast
+import jllvm._
 import scala.Math
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
@@ -131,7 +121,7 @@ class SpecializedOperator(x: SpecializedArithmetic,y: SpecializedArithmetic,op: 
     case integer: IntegerGamma => child.compile(builder,scope)
   }
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
-    val builtSteps = children.map(child => compile(builder,scope))
+    val builtSteps = children.map(child => child.compile(builder,scope))
     //TODO: Add support for checking the types of the subexpressions and casting to floating-point where necessary.
     val lhs = coerce(children.apply(0),builder,scope)
     val rhs = coerce(children.apply(1),builder,scope)

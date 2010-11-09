@@ -5,14 +5,14 @@ import list
 method map(s: @Sequence or null,f): @Sequence or null
 
 override map(s: @list.List or null,f) {
-	match s case(l: list.List) -> list.cons(f(list.car(l)),map(list.cdr(l),f)) else null
+	match s case(l: list.List) list.cons(f(list.car(l)),map(list.cdr(l),f)) else null
 }
 
 method filter(s: @Sequence or null,p?): @Sequence or null
 
 override filter(s: @list.List or null,p?) {
-	match s case (l: list.List) ->
-		cond {
+	match s case (l: list.List)
+		if {
 			case(p?(l.element) = true) list.cons(list.car(l),filter(list.cdr(l),p?))
 			else filter(list.cdr(l),p?)
 		}
@@ -23,7 +23,7 @@ override filter(s: @list.List or null,p?) {
 method fold<T>(s: @Sequence or null,f,base: T): T
 
 override fold(s: @list.List or null,f,base) {
-	match s case(l: list.List) -> f(list.car(l),fold(list.cdr(l),f,base)) else base
+	match s case(l: list.List) f(list.car(l),fold(list.cdr(l),f,base)) else base
 }
 
 function copy_list(s) {

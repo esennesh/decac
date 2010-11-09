@@ -196,20 +196,14 @@ extern "C" {
 
 SWIGEXPORT jlong JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMVerifyModule(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
   jlong jresult = 0 ;
-  LLVMModuleRef arg1 ;
+  LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMVerifierFailureAction arg2 ;
   char **arg3 = (char **) 0 ;
-  LLVMModuleRef *argp1 ;
   LLVMBool result;
   
   (void)jenv;
   (void)jcls;
-  argp1 = *(LLVMModuleRef **)&jarg1; 
-  if (!argp1) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMModuleRef");
-    return 0;
-  }
-  arg1 = *argp1; 
+  arg1 = *(LLVMModuleRef *)&jarg1; 
   arg2 = (LLVMVerifierFailureAction)jarg2; 
   arg3 = *(char ***)&jarg3; 
   result = LLVMVerifyModule(arg1,arg2,arg3);
@@ -224,19 +218,13 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMVerifyModule(JNIEnv *je
 
 SWIGEXPORT jlong JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMVerifyFunction(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   jlong jresult = 0 ;
-  LLVMValueRef arg1 ;
+  LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMVerifierFailureAction arg2 ;
-  LLVMValueRef *argp1 ;
   LLVMBool result;
   
   (void)jenv;
   (void)jcls;
-  argp1 = *(LLVMValueRef **)&jarg1; 
-  if (!argp1) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMValueRef");
-    return 0;
-  }
-  arg1 = *argp1; 
+  arg1 = *(LLVMValueRef *)&jarg1; 
   arg2 = (LLVMVerifierFailureAction)jarg2; 
   result = LLVMVerifyFunction(arg1,arg2);
   {
@@ -249,33 +237,21 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMVerifyFunction(JNIEnv *
 
 
 SWIGEXPORT void JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMViewFunctionCFG(JNIEnv *jenv, jclass jcls, jlong jarg1) {
-  LLVMValueRef arg1 ;
-  LLVMValueRef *argp1 ;
+  LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   
   (void)jenv;
   (void)jcls;
-  argp1 = *(LLVMValueRef **)&jarg1; 
-  if (!argp1) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMValueRef");
-    return ;
-  }
-  arg1 = *argp1; 
+  arg1 = *(LLVMValueRef *)&jarg1; 
   LLVMViewFunctionCFG(arg1);
 }
 
 
 SWIGEXPORT void JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMViewFunctionCFGOnly(JNIEnv *jenv, jclass jcls, jlong jarg1) {
-  LLVMValueRef arg1 ;
-  LLVMValueRef *argp1 ;
+  LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   
   (void)jenv;
   (void)jcls;
-  argp1 = *(LLVMValueRef **)&jarg1; 
-  if (!argp1) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMValueRef");
-    return ;
-  }
-  arg1 = *argp1; 
+  arg1 = *(LLVMValueRef *)&jarg1; 
   LLVMViewFunctionCFGOnly(arg1);
 }
 

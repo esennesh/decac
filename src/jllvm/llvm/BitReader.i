@@ -29,6 +29,9 @@
 extern "C" {
 #endif
 
+typedef LLVMOpaqueModule* LLVMModuleRef;
+typedef LLVMOpaqueContext* LLVMContextRef;
+typedef LLVMOpaqueMemoryBuffer* LLVMMemoryBuffer;
 
 /* Builds a module from the bitcode in the specified memory buffer, returning a
    reference to the module via the OutModule parameter. Returns 0 on success.

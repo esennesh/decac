@@ -34,6 +34,8 @@ enum LLVMByteOrdering { LLVMBigEndian, LLVMLittleEndian };
 
 typedef struct LLVMOpaqueTargetData *LLVMTargetDataRef;
 typedef struct LLVMStructLayout *LLVMStructLayoutRef;
+typedef struct LLVMOpaqueType *LLVMTypeRef;
+typedef struct LLVMOpaqueValue *LLVMValueRef;
 
 /* Declare all of the target-initialization functions that are available. */
 #define LLVM_TARGET(TargetName) void LLVMInitialize##TargetName##TargetInfo();

@@ -6,7 +6,9 @@ import decasyntax.node._
 import java.io.FileReader
 import java.io.PushbackReader
 
-class Decac {
+object Decac {
+  System.loadLibrary("jllvm")
+
   def check_syntax(file: String): Start = {
     System.out.println("Parsing " + file + ".")
     try {
@@ -23,10 +25,15 @@ class Decac {
   
   def compile(file: String): Unit = {
     val module: PModuleDefinition = check_syntax(file).getPModuleDefinition()
-    ASTProcessor.processDefinition(new AModuledefDefinition(module),GlobalScope)
+    val definition = ASTProcessor.processDefinition(new AModuledefDefinition(module),GlobalScope)
   }
   
   def main(args: Array[String]): Unit = {
-    args.map(arg => compile(arg))
+    val modules = args.map(arg => compile(arg))
+    modules.foreach(mod => mod match { case module: Module => module.compiledModule })
+    System.err.println("Beginning AST print-out for debugging purposes.")
+    for(symbol <- GlobalScope.symbols)
+      System.err.println(symbol.toString)
+    System.err.println("Ending AST print-out for debugging purposes.")
   }
 }

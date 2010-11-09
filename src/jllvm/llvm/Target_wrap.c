@@ -311,12 +311,8 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMIntPtrType(JNIEnv *jenv, 
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  result = LLVMIntPtrType(arg1);
-  {
-    LLVMTypeRef * resultptr = (LLVMTypeRef *) malloc(sizeof(LLVMTypeRef));
-    memmove(resultptr, &result, sizeof(LLVMTypeRef));
-    *(LLVMTypeRef **)&jresult = resultptr;
-  }
+  result = (LLVMTypeRef)LLVMIntPtrType(arg1);
+  *(LLVMTypeRef *)&jresult = result; 
   return jresult;
 }
 
@@ -324,19 +320,13 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMIntPtrType(JNIEnv *jenv, 
 SWIGEXPORT jobject JNICALL Java_jllvm_llvm_TargetJNI_LLVMSizeOfTypeInBits(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jobject jresult = 0 ;
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMTypeRef arg2 ;
-  LLVMTypeRef *argp2 ;
+  LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
   unsigned long long result;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMTypeRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMTypeRef");
-    return 0;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMTypeRef *)&jarg2; 
   result = (unsigned long long)LLVMSizeOfTypeInBits(arg1,arg2);
   {
     jbyteArray ba = (*jenv)->NewByteArray(jenv, 9);
@@ -362,19 +352,13 @@ SWIGEXPORT jobject JNICALL Java_jllvm_llvm_TargetJNI_LLVMSizeOfTypeInBits(JNIEnv
 SWIGEXPORT jobject JNICALL Java_jllvm_llvm_TargetJNI_LLVMStoreSizeOfType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jobject jresult = 0 ;
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMTypeRef arg2 ;
-  LLVMTypeRef *argp2 ;
+  LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
   unsigned long long result;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMTypeRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMTypeRef");
-    return 0;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMTypeRef *)&jarg2; 
   result = (unsigned long long)LLVMStoreSizeOfType(arg1,arg2);
   {
     jbyteArray ba = (*jenv)->NewByteArray(jenv, 9);
@@ -400,19 +384,13 @@ SWIGEXPORT jobject JNICALL Java_jllvm_llvm_TargetJNI_LLVMStoreSizeOfType(JNIEnv 
 SWIGEXPORT jobject JNICALL Java_jllvm_llvm_TargetJNI_LLVMABISizeOfType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jobject jresult = 0 ;
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMTypeRef arg2 ;
-  LLVMTypeRef *argp2 ;
+  LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
   unsigned long long result;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMTypeRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMTypeRef");
-    return 0;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMTypeRef *)&jarg2; 
   result = (unsigned long long)LLVMABISizeOfType(arg1,arg2);
   {
     jbyteArray ba = (*jenv)->NewByteArray(jenv, 9);
@@ -438,19 +416,13 @@ SWIGEXPORT jobject JNICALL Java_jllvm_llvm_TargetJNI_LLVMABISizeOfType(JNIEnv *j
 SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMABIAlignmentOfType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMTypeRef arg2 ;
-  LLVMTypeRef *argp2 ;
+  LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
   unsigned int result;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMTypeRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMTypeRef");
-    return 0;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMTypeRef *)&jarg2; 
   result = (unsigned int)LLVMABIAlignmentOfType(arg1,arg2);
   jresult = (jlong)result; 
   return jresult;
@@ -460,19 +432,13 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMABIAlignmentOfType(JNIEnv
 SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMCallFrameAlignmentOfType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMTypeRef arg2 ;
-  LLVMTypeRef *argp2 ;
+  LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
   unsigned int result;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMTypeRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMTypeRef");
-    return 0;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMTypeRef *)&jarg2; 
   result = (unsigned int)LLVMCallFrameAlignmentOfType(arg1,arg2);
   jresult = (jlong)result; 
   return jresult;
@@ -482,19 +448,13 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMCallFrameAlignmentOfType(
 SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMPreferredAlignmentOfType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMTypeRef arg2 ;
-  LLVMTypeRef *argp2 ;
+  LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
   unsigned int result;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMTypeRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMTypeRef");
-    return 0;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMTypeRef *)&jarg2; 
   result = (unsigned int)LLVMPreferredAlignmentOfType(arg1,arg2);
   jresult = (jlong)result; 
   return jresult;
@@ -504,19 +464,13 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMPreferredAlignmentOfType(
 SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMPreferredAlignmentOfGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMValueRef arg2 ;
-  LLVMValueRef *argp2 ;
+  LLVMValueRef arg2 = (LLVMValueRef) 0 ;
   unsigned int result;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMValueRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMValueRef");
-    return 0;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMValueRef *)&jarg2; 
   result = (unsigned int)LLVMPreferredAlignmentOfGlobal(arg1,arg2);
   jresult = (jlong)result; 
   return jresult;
@@ -526,20 +480,14 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMPreferredAlignmentOfGloba
 SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMElementAtOffset(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jobject jarg3) {
   jlong jresult = 0 ;
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMTypeRef arg2 ;
+  LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
   unsigned long long arg3 ;
-  LLVMTypeRef *argp2 ;
   unsigned int result;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMTypeRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMTypeRef");
-    return 0;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMTypeRef *)&jarg2; 
   {
     jclass clazz;
     jmethodID mid;
@@ -572,20 +520,14 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMElementAtOffset(JNIEnv *j
 SWIGEXPORT jobject JNICALL Java_jllvm_llvm_TargetJNI_LLVMOffsetOfElement(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jobject jresult = 0 ;
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMTypeRef arg2 ;
+  LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
   unsigned int arg3 ;
-  LLVMTypeRef *argp2 ;
   unsigned long long result;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMTypeRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMTypeRef");
-    return 0;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMTypeRef *)&jarg2; 
   arg3 = (unsigned int)jarg3; 
   result = (unsigned long long)LLVMOffsetOfElement(arg1,arg2,arg3);
   {
@@ -611,18 +553,12 @@ SWIGEXPORT jobject JNICALL Java_jllvm_llvm_TargetJNI_LLVMOffsetOfElement(JNIEnv 
 
 SWIGEXPORT void JNICALL Java_jllvm_llvm_TargetJNI_LLVMInvalidateStructLayout(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMTypeRef arg2 ;
-  LLVMTypeRef *argp2 ;
+  LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMTypeRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMTypeRef");
-    return ;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMTypeRef *)&jarg2; 
   LLVMInvalidateStructLayout(arg1,arg2);
 }
 

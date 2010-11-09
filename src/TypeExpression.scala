@@ -12,14 +12,6 @@ trait SigmaType {
   def body: GammaType
 }
 
-/* trait ComplexSigma extends SigmaType {
-  def replace(from: TauVariable,to: TauType): ComplexSigma = {
-    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
-  }
-  def map(f: (TauType) => TauType): ComplexSigma
-  def filter(p: (TauType) => Boolean): List[TauType]
-} */
-
 abstract class TauType {
   def subtypes(tau: TauType): Boolean
   def equals(tau: TauType): Boolean = tau == this
@@ -171,7 +163,7 @@ class RecordPi(f: List[RecordMember]) extends RhoType {
       case gammaField: GammaType => gammaField.compile
       case _ => throw new Exception("Cannot compile non-gamma field type " + field.tau.mangle + " of record type " + mangle + ".")
     })
-    new LLVMStructType(compiledFields.toArray,true)
+    new LLVMStructType((SigmaLattice.find(this).represent :: compiledFields).toArray,true)
   }
   
   override def mangle: String = "pi" + fields.map(field => field.name + ":" + field.tau.mangle).foldRight("")((head: String,tail: String) => "_" + head + tail)

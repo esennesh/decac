@@ -51,130 +51,6 @@ class BetaSpecialization extends Substitution[BetaVariable,GammaType] {
   }
 }
 
-abstract class LatticeNode {
-  val gamma: GammaType
-  protected var parents: List[LatticeNode] = Nil
-  protected var children: List[LatticeNode] = Nil
-  
-  def subtype(n: LatticeNode): Boolean = {
-    if(parents.map(parent => parent.subtype(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y) == false && gamma.subtypes(n.gamma)) {
-      parents = n :: parents
-      n.supertype(this)
-      true
-    }
-    else
-      false
-  }
-  
-  def subtypes(n: LatticeNode): Boolean = parents.exists(parent => parent == n) || parents.map(parent => parent.subtypes(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y)
-  
-  def supertype(n: LatticeNode): Boolean = {
-    if(children.map(child => child.supertype(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y) == false && n.gamma.subtypes(gamma)) {
-      children = n :: children
-      n.subtype(this)
-      true
-    }
-    else
-      false
-  }
-  
-  def supertypes(n: LatticeNode): Boolean = children.exists(child => child == n) || children.map(child => child.supertypes(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y)
-  
-  def find(g: GammaType): Option[LatticeNode] = {
-    if(gamma == g)
-      Some(this)
-    else
-      children.map(child => child.find(g)).map(res => res match { case Some(result) => result case None => null }).find(search => search != null)
-  }
-  
-  def getSupertypes: List[LatticeNode] = parents ++ parents.flatMap(parent => parent.getSupertypes)
-  def getSubtypes: List[LatticeNode] = children ++ children.flatMap(child => child.getSubtypes)
-}
-
-class GammaNode(g: GammaType) extends LatticeNode {
-  override val gamma: GammaType = g
-}
-
-class BetaNode(b: BetaType) extends LatticeNode {
-  val beta = b
-  override val gamma: GammaType = b.body
-}
-
-class GammaLattice(scope: Option[Module]) {
-  val top: LatticeNode = add(TopGamma)
-  val bottom: LatticeNode = add(BottomGamma)
-  scope match {
-    case Some(scope) => scope.symbols.foreach(pair => pair._2 match {
-      case TypeDefinition(gamma: GammaType,_,_) => add(gamma)
-    })
-    case None => {}
-  }
-  
-  //Meet is the greatest lower bound.
-  def meet(x: GammaType,y: GammaType,rui: RangeUnificationInstance): GammaType = {
-    val xn: LatticeNode = find(x)
-    val yn: LatticeNode = find(y)
-    if(xn.subtypes(yn))
-      x
-    else if(yn.subtypes(xn))
-      y
-    else {
-      val attempts = (xn.getSubtypes ++ yn.getSubtypes).filter(attempt => attempt.subtypes(xn) && attempt.subtypes(yn))
-      attempts.sort((a: LatticeNode,b: LatticeNode) => a.supertypes(b)).first match {
-        case bn: BetaNode => {
-          val result = bn.beta.freshlyInstantiate
-          rui.constrain(new LesserEq(result,x))
-          rui.constrain(new LesserEq(result,y))
-          result
-        }
-        case gn: GammaNode => gn.gamma
-      }
-    }
-  }
-  
-  //Join is the least upper bound.
-  def join(x: GammaType,y: GammaType,rui: RangeUnificationInstance): GammaType = {
-    val xn: LatticeNode = find(x)
-    val yn: LatticeNode = find(y)
-    if(xn.subtypes(yn))
-      y
-    else if(yn.subtypes(xn))
-      x
-    else {
-      val attempts = (xn.getSupertypes ++ yn.getSupertypes).filter(attempt => xn.subtypes(attempt) && yn.subtypes(attempt))
-      attempts.sort((a: LatticeNode,b: LatticeNode) => a.subtypes(b)).first match {
-        case bn: BetaNode => {
-          val result = bn.beta.freshlyInstantiate
-          rui.constrain(new LesserEq(x,result))
-          rui.constrain(new LesserEq(y,result))
-          result
-        }
-        case gn: GammaNode => gn.gamma
-      }
-    }
-  }
-
-  def find(gamma: GammaType): LatticeNode = {
-    top.find(gamma) match {
-      case Some(node) => node
-      case None => add(gamma)
-    }
-  }
-  
-  def add(gamma: GammaType): LatticeNode = {
-    val node: LatticeNode = gamma match {
-      case rho: RhoType => rho.generalize(new TauSubstitution) match {
-        case gamma: GammaType => new GammaNode(gamma)
-        case beta: BetaType => new BetaNode(beta)
-      }
-      case _ => new GammaNode(gamma)
-    }
-    top.supertype(node)
-    bottom.subtype(node)
-    node
-  }
-}
-
 class ConstraintSet {
   val stack: Stack[Constraint] = new Stack[Constraint]()
   
@@ -189,16 +65,19 @@ class ConstraintSet {
 
 class RangeUnificationInstance(scope: Option[Module]) {
   protected val constraints = new ConstraintSet()
-  val lattice = new GammaLattice(scope)
   protected val result = new TauSubstitution
+  scope match {
+    case Some(module) => SigmaLattice.addModule(module)
+    case None => None
+  }
   
   def constrain(c: Constraint) = {
     constraints.push(c)
     c.alpha match {
-      case gamma: GammaType => lattice.add(gamma)
+      case gamma: GammaType => SigmaLattice.add(gamma)
     }
     c.beta match {
-      case gamma: GammaType => lattice.add(gamma)
+      case gamma: GammaType => SigmaLattice.add(gamma)
     }
   }
   
@@ -239,15 +118,15 @@ abstract class Constraint(x: TauType,y: TauType) {
 case class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
   override def infer(rui: RangeUnificationInstance): Unit = this match {
     case LesserEq(alpha: GammaRange,beta: GammaRange) => {
-      rui.substitute(alpha,new GammaRange(Some(alpha.lowerBound),Some(rui.lattice.meet(alpha.upperBound,beta.lowerBound,rui))))
-      rui.substitute(beta,new GammaRange(Some(rui.lattice.join(alpha.upperBound,beta.lowerBound,rui)),Some(beta.upperBound)))
+      rui.substitute(alpha,new GammaRange(Some(alpha.lowerBound),Some(SigmaLattice.meet(alpha.upperBound,beta.lowerBound,rui))))
+      rui.substitute(beta,new GammaRange(Some(SigmaLattice.join(alpha.upperBound,beta.lowerBound,rui)),Some(beta.upperBound)))
     }
     case LesserEq(alpha: GammaRange,beta: TauVariable) => rui.substitute(beta,alpha)
     case LesserEq(alpha: TauVariable,beta: GammaRange) => rui.substitute(alpha,beta)
     case LesserEq(alpha: TauVariable,beta: TauVariable) => rui.substitute(alpha,beta)
     
-    case LesserEq(alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,new GammaRange(Some(alpha.lowerBound),Some(rui.lattice.meet(alpha.upperBound,beta,rui))))
-    case LesserEq(alpha: GammaType,beta: GammaRange) => rui.substitute(beta,new GammaRange(Some(rui.lattice.join(beta.lowerBound,alpha,rui)),Some(beta.upperBound)))
+    case LesserEq(alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,new GammaRange(Some(alpha.lowerBound),Some(SigmaLattice.meet(alpha.upperBound,beta,rui))))
+    case LesserEq(alpha: GammaType,beta: GammaRange) => rui.substitute(beta,new GammaRange(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),Some(beta.upperBound)))
     
     case LesserEq(alpha: FunctionArrow,beta: FunctionArrow) => {
       beta.domain.zip(alpha.domain).map(pair => rui.constrain(new LesserEq(pair._1,pair._2)))
