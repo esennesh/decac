@@ -24,8 +24,8 @@ class UninferredFunction(m: Module,n: String,args: List[Tuple2[String,TauType]],
 class FunctionDefinition(original: UninferredFunction,substitution: TauSubstitution) extends Definition {
   override val name: String = original.name
   override val scope: Module = {original.scope.define(this) ; original.scope}
-  val fScope = original.fScope.infer(substitution)
   val functionType: SigmaType = original.functionType.generalize(substitution)
+  val fScope = original.fScope.infer(substitution)
   val body = original.body.substitute(substitution)
   
   protected val specializations: Map[List[GammaType],SpecializedFunction] = new HashMap[List[GammaType],SpecializedFunction]()

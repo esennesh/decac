@@ -5,6 +5,7 @@ import decasyntax.lexer._
 import decasyntax.node._
 import java.io.FileReader
 import java.io.PushbackReader
+import jllvm.LLVMBitWriter
 
 object Decac {
   System.loadLibrary("jllvm")
@@ -23,17 +24,24 @@ object Decac {
     }
   }
   
-  def compile(file: String): Unit = {
+  def compile(file: String): Module = {
     val module: PModuleDefinition = check_syntax(file).getPModuleDefinition()
-    val definition = ASTProcessor.processDefinition(new AModuledefDefinition(module),GlobalScope)
+    ASTProcessor.processDefinition(new AModuledefDefinition(module),GlobalScope) match {
+      case mod: Module => mod
+      case _ => throw new Exception("Processing a module definition must yield a Module.")
+    }
   }
   
   def main(args: Array[String]): Unit = {
     val modules = args.map(arg => compile(arg))
-    modules.foreach(mod => mod match { case module: Module => module.compiledModule })
     System.err.println("Beginning AST print-out for debugging purposes.")
     for(symbol <- GlobalScope.symbols)
       System.err.println(symbol.toString)
+    for(module <- modules)
+      for(symbol <- module.symbols)
+        System.err.println(symbol.toString)
     System.err.println("Ending AST print-out for debugging purposes.")
+    for(module <- modules)
+      (new LLVMBitWriter(module.compiledModule)).writeBitcodeToFile(module.name + ".llas")
   }
 }

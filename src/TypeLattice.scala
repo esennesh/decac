@@ -98,8 +98,8 @@ class BetaNode(b: BetaType) extends LatticeNode {
 }
 
 object SigmaLattice {
-  val top: LatticeNode = add(TopGamma)
-  val bottom: LatticeNode = add(BottomGamma)
+  val top: LatticeNode = new GammaNode(TopGamma)
+  val bottom: LatticeNode = new GammaNode(BottomGamma)
   
   def addModule(module: Module): Unit = {
     for(pair <- module.symbols) pair._2 match { case TypeDefinition(sigma: SigmaType,_,_) => add(sigma) }

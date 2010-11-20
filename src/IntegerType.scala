@@ -8,6 +8,7 @@ abstract class NumericalGamma(n: String,p: Option[NumericalGamma]) extends Primi
   def signed: Boolean
   val name: String = n
   val parent: Option[NumericalGamma] = p
+  define(new TypeDefinition(this,name,GlobalScope))
   
   override def subtypes(tau: TauType) = tau match {
     case ntype: NumericalGamma => parent match {

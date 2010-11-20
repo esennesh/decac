@@ -24,6 +24,7 @@ class TauSubstitution extends Substitution[TauVariable,TauType] {
     queue.enqueue((x,y))
     y match {
       case y: GammaRange => if(y.lowerBound.equals(y.upperBound)) substitute(y,y.lowerBound)
+      case _ => {}
     }
   }
 }
