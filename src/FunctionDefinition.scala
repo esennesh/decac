@@ -6,11 +6,11 @@ import jllvm.LLVMFunction
 import jllvm.LLVMInstructionBuilder
 import jllvm.LLVMReturnInstruction
 
-class UninferredFunction(m: Module,n: String,args: List[Tuple2[String,TauType]],b: (UninferredLexicalScope) => UninferredBlock) {
+class UninferredFunction(m: Module,n: String,args: List[Tuple2[String,UninferredArgument]],b: (UninferredLexicalScope) => UninferredBlock) {
   val name: String = n
   val scope: Module = m
   val fScope = new UninferredLexicalScope(scope,args)
-  val arguments = args.map(arg => new UninferredLexicalBinding(arg._1,fScope,arg._2))
+  val arguments = fScope.bindings
   val body = b(fScope)
   val functionType = new FunctionArrow(arguments.map(arg => arg.variableType),body.expressionType)
   

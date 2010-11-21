@@ -22,8 +22,8 @@ abstract class NumericalGamma(n: String,p: Option[NumericalGamma]) extends Primi
 }
 
 abstract class IntegerGamma(n: String,p: Option[NumericalGamma]) extends NumericalGamma(n,p) {
-  def floor: Int
-  def ceiling: Int
+  def floor: Long
+  def ceiling: Long
   
   var compiledType: Option[LLVMIntegerType] = None
   
@@ -38,18 +38,24 @@ abstract class IntegerGamma(n: String,p: Option[NumericalGamma]) extends Numeric
 }
 
 object IntegerConstants {
-  val max_longnat = 2^64 - 1
-  val max_longInt = 2^63 - 1
-  val min_longInt = -2^63
-  val max_nat = 2^32 - 1
-  val max_Int = 2^31 - 1
-  val min_Int = -2^31
-  val max_snat = 2^16 - 1
-  val max_sInt = 2^15 - 1
-  val min_sInt = -2^15
-  val max_byte = 2^8 - 1
-  val max_octet = 2^7 - 1
-  val min_octet = -2^7
+  def raise(n: Int,pow: Int): Long = {
+    if(pow == 1)
+      n
+    else
+      n * raise(n,pow-1)
+  }
+  val max_longnat = raise(2,64) - 1
+  val max_longInt = raise(2,63) - 1
+  val min_longInt = -raise(2,63)
+  val max_nat = raise(2,32) - 1
+  val max_Int = raise(2,31) - 1
+  val min_Int = -raise(2,31)
+  val max_snat = raise(2,16) - 1
+  val max_sInt = raise(2,15) - 1
+  val min_sInt = -raise(2,15)
+  val max_byte = raise(2,8) - 1
+  val max_octet = raise(2,7) - 1
+  val min_octet = -raise(2,7)
   val min_unsigned = 0
 }
 
@@ -57,54 +63,54 @@ abstract class UnsignedIntegerGamma(n: String,p: Option[NumericalGamma]) extends
 
 object LongInteger extends IntegerGamma("integer",Some(FP128Gamma)) {
   override def signed: Boolean = true
-  override def floor: Int = -2^64
-  override def ceiling: Int = IntegerConstants.max_longnat
+  override def floor: Long = -IntegerConstants.raise(2,64)
+  override def ceiling: Long = IntegerConstants.max_longnat
 }
 
 object LongNat extends UnsignedIntegerGamma("longnat",Some(LongInteger)) {
   override def signed: Boolean = false
-  override def floor: Int = IntegerConstants.min_unsigned
-  override def ceiling: Int = IntegerConstants.max_longnat
+  override def floor: Long = IntegerConstants.min_unsigned
+  override def ceiling: Long = IntegerConstants.max_longnat
 }
 
 object LongInt extends IntegerGamma("longint",Some(LongInteger)) {
   override def signed: Boolean = true
-  override def floor: Int = IntegerConstants.min_longInt
-  override def ceiling: Int = IntegerConstants.max_longInt
+  override def floor: Long = IntegerConstants.min_longInt
+  override def ceiling: Long = IntegerConstants.max_longInt
 }
 
 object Nat extends UnsignedIntegerGamma("nat",Some(LongNat)) {
-  override def ceiling: Int = IntegerConstants.max_nat
-  override def floor: Int = IntegerConstants.min_unsigned
+  override def ceiling: Long = IntegerConstants.max_nat
+  override def floor: Long = IntegerConstants.min_unsigned
   override def signed: Boolean = false
 }
 
 object Int extends IntegerGamma("int",Some(LongInt)) {
-  override def floor: Int = IntegerConstants.min_Int
-  override def ceiling: Int = IntegerConstants.max_Int
+  override def floor: Long = IntegerConstants.min_Int
+  override def ceiling: Long = IntegerConstants.max_Int
   override def signed: Boolean = true
 }
 
 object SNat extends UnsignedIntegerGamma("snat",Some(Nat)) {
-  override def ceiling: Int = IntegerConstants.max_snat
-  override def floor: Int = IntegerConstants.min_unsigned
+  override def ceiling: Long = IntegerConstants.max_snat
+  override def floor: Long = IntegerConstants.min_unsigned
   override def signed: Boolean = false
 }
 
 object SInt extends IntegerGamma("sint",Some(Int)) {
-  override def floor: Int = IntegerConstants.min_sInt
-  override def ceiling: Int = IntegerConstants.max_sInt
+  override def floor: Long = IntegerConstants.min_sInt
+  override def ceiling: Long = IntegerConstants.max_sInt
   override def signed: Boolean = true
 }
 
 object Byte extends UnsignedIntegerGamma("byte",Some(SNat)) {
-  override def floor: Int = IntegerConstants.min_unsigned
-  override def ceiling: Int = IntegerConstants.max_byte
+  override def floor: Long = IntegerConstants.min_unsigned
+  override def ceiling: Long = IntegerConstants.max_byte
   override def signed: Boolean = false
 }
 
 object Octet extends IntegerGamma("octet",Some(SInt)) {
-  override def floor: Int = IntegerConstants.min_octet
-  override def ceiling: Int = IntegerConstants.max_octet
+  override def floor: Long = IntegerConstants.min_octet
+  override def ceiling: Long = IntegerConstants.max_octet
   override def signed: Boolean = true
 }

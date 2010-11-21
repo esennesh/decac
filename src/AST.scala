@@ -136,7 +136,7 @@ object ASTProcessor {
       afuncdef.getFunctionDefinition() match {
         case normal: AFunctionFunctionDefinition => {
           val name = normal.getName.getText
-          val arguments = processArguments(normal.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},scope)
+          val arguments = processArguments(normal.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},scope).map(arg => (arg._1,UninferredArgument(arg._2,false)))
           val uninferred = new UninferredFunction(scope,name,arguments,lexical => processBlock(normal.getBody,lexical))
           uninferred.infer
         }
