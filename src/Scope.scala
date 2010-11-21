@@ -18,6 +18,8 @@ trait VariableBinding extends Scopeable {
 trait SpecializedVariableBinding extends VariableBinding {
   override def variableType: GammaType
   def compile(builder: LLVMInstructionBuilder): LLVMValue
+  def load(builder: LLVMInstructionBuilder): LLVMValue
+  def store(builder: LLVMInstructionBuilder,value: LLVMValue): LLVMValue
 }
 
 abstract class Scope[T <: Scopeable](p: Scope[_]) {

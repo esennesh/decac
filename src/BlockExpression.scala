@@ -37,7 +37,7 @@ class SpecializedBlock(exprs: List[SpecializedExpression]) extends SpecializedEx
   val steps: List[SpecializedExpression] = exprs
   override def children = steps
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
-    val builtSteps = children.map(child => compile(builder,scope))
+    val builtSteps = children.map(child => child.compile(builder,scope))
     builtSteps.last
   }
 }

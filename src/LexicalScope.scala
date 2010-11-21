@@ -4,6 +4,8 @@ import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 import jllvm.LLVMInstructionBuilder
 import jllvm.LLVMStackAllocation
+import jllvm.LLVMLoadInstruction
+import jllvm.LLVMStoreInstruction
 import jllvm.LLVMValue
 import jllvm.LLVMArgument
 
@@ -59,13 +61,23 @@ class SpecializedLexicalBinding(n: String,s: SpecializedLexicalScope,g: GammaTyp
   override val variableType: GammaType = g
   protected var compiled: Option[LLVMValue] = arg
   
-  override def compile(builder: LLVMInstructionBuilder): LLVMValue = compiled match {
-    case Some(value) => value
+  def compile(builder: LLVMInstructionBuilder): LLVMValue = compiled match {
+    case Some(allocation) => allocation
     case None => {
       val result = new LLVMStackAllocation(builder,variableType.compile,null,name)
       compiled = Some(result)
       result
     }
+  }
+  
+  override def load(builder: LLVMInstructionBuilder): LLVMValue = compile(builder) match {
+    case stack: LLVMStackAllocation => new LLVMLoadInstruction(builder,stack,name)
+    case argument: LLVMArgument => argument
+  }
+  
+  override def store(builder: LLVMInstructionBuilder,value: LLVMValue): LLVMValue = compile(builder) match{
+    case stack: LLVMStackAllocation => new LLVMStoreInstruction(builder,value,stack)
+    case argument: LLVMArgument => throw new Exception("Cannot store into a function argument!")
   }
 }
 

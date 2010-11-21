@@ -30,6 +30,12 @@ class FunctionDefinition(original: UninferredFunction,substitution: TauSubstitut
   
   protected val specializations: Map[List[GammaType],SpecializedFunction] = new HashMap[List[GammaType],SpecializedFunction]()
   
+  functionType match {
+    case arrow: FunctionArrow => specialize(Nil)
+  }
+  
+  def specialized = specializations.values
+  
   def specializeScope(caller: Scope[_]): SigmaType = functionType match {
     case beta: BetaType => beta.scopeMap(fScope => fScope match {
       case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller match {
@@ -74,7 +80,7 @@ class SpecializedFunction(org: FunctionDefinition,specializer: BetaSpecializatio
   def compile(builder: LLVMInstructionBuilder): LLVMFunction = {
     if(compiled == false) {
       fScope.compile(builder)
-      val entry = function.getEntryBasicBlock
+      val entry = function.appendBasicBlock("entry")
       builder.positionBuilderAtEnd(entry)
       val result = body.compile(builder,fScope)
       new LLVMReturnInstruction(builder,result)

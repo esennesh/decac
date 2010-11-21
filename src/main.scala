@@ -11,7 +11,6 @@ object Decac {
   System.loadLibrary("jllvm")
 
   def check_syntax(file: String): Start = {
-    System.out.println("Parsing " + file + ".")
     try {
       val parser: Parser = new Parser(new Lexer(new PushbackReader(new FileReader(file))))
       return parser.parse()
@@ -33,15 +32,13 @@ object Decac {
   }
   
   def main(args: Array[String]): Unit = {
+    //We reference the singletons for the primitive types to get their classes loaded and their names declared.
+    Byte;
+    Octet;
+    BooleanGamma;
+    FloatGamma;
     val modules = args.map(arg => compile(arg))
-    System.err.println("Beginning AST print-out for debugging purposes.")
-    for(symbol <- GlobalScope.symbols)
-      System.err.println(symbol.toString)
     for(module <- modules)
-      for(symbol <- module.symbols)
-        System.err.println(symbol.toString)
-    System.err.println("Ending AST print-out for debugging purposes.")
-    for(module <- modules)
-      (new LLVMBitWriter(module.compiledModule)).writeBitcodeToFile(module.name + ".llas")
+      (new LLVMBitWriter(module.compile)).writeBitcodeToFile(module.name + ".llas")
   }
 }

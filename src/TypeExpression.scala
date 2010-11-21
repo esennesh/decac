@@ -93,7 +93,7 @@ abstract class RhoType extends GammaType {
   def scopeMap(f: (ScopeType) => ScopeType): RhoType
   def filter(p: (TauType) => Boolean): List[TauType]
   def generalize(substitution: TauSubstitution): SigmaType = {
-    val tvars = filter(tau => tau.equals(substitution.solve(tau)))
+    val tvars = filter(tau => tau.isInstanceOf[TauVariable] && tau.equals(substitution.solve(tau)))
     if(tvars == Nil)
       this
     else {
