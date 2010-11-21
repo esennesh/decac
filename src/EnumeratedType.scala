@@ -3,7 +3,7 @@ package decac
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashSet
 import scala.collection.mutable.Queue
-import scala.Math
+import scala.math
 import jllvm.LLVMType
 import jllvm.LLVMIntegerType
 
@@ -30,7 +30,7 @@ class EnumeratedGamma(parent: Option[EnumeratedGamma],syms: List[String]) extend
   }
   
   def representationSize: Int = {
-    Math.ceil(Math.log(symbols.length + childSymbols.length) / Math.log(2)).toInt
+    math.ceil(math.log(symbols.length + childSymbols.length) / math.log(2)).toInt
   }
   
   override def compile: LLVMType = new LLVMIntegerType(representationSize)

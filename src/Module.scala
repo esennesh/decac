@@ -15,12 +15,9 @@ class Module(m: Module,n: String) extends Scope[Definition](m) with Definition {
   val compiledModule: LLVMModule = new LLVMModule(name)
   override def scope: Module = parent
   
-  override def lookup(name: String): Definition = {
-    val result = symbols.get(name)
-    if(result.isDefined)
-      result.get
-    else
-      if(parent != null) parent.lookup(name) else throw new UndeclaredIdentifierException(name)
+  override def lookup(name: String): Definition = symbols.get(name) match {
+    case Some(result) => result
+    case None => if(parent != null) parent.lookup(name) else throw new UndeclaredIdentifierException(name)
   }
   
   override def lookup(name: List[String]): Definition = name.tail match {

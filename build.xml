@@ -1,15 +1,13 @@
 <project name="decac">
-	<property name="scala.lib.dir" location="${SCALA_HOME}/lib"/>
-	<path id="project.classpath">
-		<pathelement location="${scala.lib.dir}/scala-library.jar"/>
+	<property environment="env"/>
+	<property name="scala.lib.dir" location="${env.SCALA_HOME}/lib"/>
+	<path id="scala.classpath">
 		<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
+		<pathelement location="${scala.lib.dir}/scala-library.jar"/>
 	</path>
-	<!-- <taskdef resource="scala/tools/ant/antlib.xml">
-		<classpath>
-			<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
-			<pathelement location="${scala.lib.dir}/scala-library.jar"/>
-		</classpath>
-	</taskdef> -->
+	<taskdef resource="scala/tools/ant/antlib.xml">
+		<classpath refid="scala.classpath"/>
+	</taskdef>
 	<target name="build_parser">
 		<exec executable="sablecc">
 			<arg value="-d src/"/>
@@ -17,20 +15,20 @@
 			<arg value="deca.scc"/>
 		</exec>
 		<mkdir dir="build/"/>
-		<javac srcdir="src/decasyntax" destdir="build"/>
+		<javac srcdir="src/decasyntax" destdir="build" includeantruntime="false"/>
 		<copy file="src/decasyntax/lexer/lexer.dat" todir="build/decasyntax/lexer"/>
 		<copy file="src/decasyntax/parser/parser.dat" todir="build/decasyntax/parser"/>
 	</target>
 	<target name="build_llvm_bindings">
 		<echo message="Compiling C components of jllvm."/>
-		<exec dir="src/jllvm/llvm/" executable="./compile.sh"/>
+		<exec dir="src/jllvm/llvm/" executable="make"/>
 		<echo message="Compiled C components of jllvm."/>
-		<javac srcdir="src/jllvm" destdir="build"/>
+		<javac srcdir="src/jllvm" destdir="build" includeantruntime="false"/>
 	</target>
 	<target name="build">
 		<mkdir dir="build/"/>
-		<javac srcdir="src/" destdir="build"/>
-		<scalac srcdir="src/" destdir="build"/>
+		<javac srcdir="src/" destdir="build" includeantruntime="false"/>
+		<scalac srcdir="src/" destdir="build" classpathref="scala.classpath"/>
 	</target>
 	<target name="clean">
 		<exec dir="src/jllvm" executable="ant">

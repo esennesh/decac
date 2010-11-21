@@ -23,12 +23,9 @@ trait SpecializedVariableBinding extends VariableBinding {
 abstract class Scope[T <: Scopeable](p: Scope[_]) {
   val symbols: Map[String,T] = new HashMap[String,T]()
 
-  def lookup(name: String): Scopeable = {
-    val result = symbols.get(name)
-    if(result.isDefined)
-      result.get
-    else
-      if(parent != null) parent.lookup(name) else throw new UndeclaredIdentifierException(name)
+  def lookup(name: String): Scopeable = symbols.get(name) match {
+    case Some(result) => result
+    case None => if(parent != null) parent.lookup(name) else throw new UndeclaredIdentifierException(name)
   }
   
   def lookup(name: List[String]): Scopeable = name.tail match {

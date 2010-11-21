@@ -1,6 +1,6 @@
 package decac
 
-import scala.Math
+import scala.math
 import jllvm.LLVMType
 import jllvm.LLVMIntegerType
 
@@ -29,7 +29,7 @@ abstract class IntegerGamma(n: String,p: Option[NumericalGamma]) extends Numeric
   
   override def compile: LLVMIntegerType = compiledType match {
     case None => {
-      val myType = new LLVMIntegerType(Math.floor(Math.log(ceiling - floor) / Math.log(2)).toInt + 1)
+      val myType = new LLVMIntegerType(math.floor(math.log(ceiling - floor) / math.log(2)).toInt + 1)
       compiledType = Some(myType)
       return myType
     }

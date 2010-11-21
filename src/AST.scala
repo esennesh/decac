@@ -39,6 +39,7 @@ object ASTProcessor {
   def processLowerTypeForm(form: PLowerTypeForm,scope: Module): TauType = form match {
     case named: ANamedLowerTypeForm => {
       val name = processQualifiedIdentifier(named.getTypename)
+      Nat
       scope.lookup(name) match {
         case TypeDefinition(gamma,_,_) => gamma
         case _ => throw new Exception("Used an identifier in a type annotation that referred to a non-type definition.")

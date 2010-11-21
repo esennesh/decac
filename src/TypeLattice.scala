@@ -1,6 +1,6 @@
 package decac
 
-import scala.Math
+import scala.math
 import jllvm.LLVMType
 import jllvm.LLVMIntegerType
 
@@ -46,7 +46,7 @@ abstract class LatticeNode {
   def assignRepresentation(s: Int): Int
 
   def rttiSize: Int = parents match {
-    case Nil => Math.ceil(Math.log(calculateRttiSize) / Math.log(2)).toInt
+    case Nil => math.ceil(math.log(calculateRttiSize) / math.log(2)).toInt
     case parent :: _ => parent.rttiSize
   }
   
@@ -115,7 +115,7 @@ object SigmaLattice {
       y
     else {
       val attempts = (xn.getSubtypes ++ yn.getSubtypes).filter(attempt => attempt.subtypes(xn) && attempt.subtypes(yn))
-      attempts.sort((a: LatticeNode,b: LatticeNode) => a.supertypes(b)).first match {
+      attempts.sortWith((a: LatticeNode,b: LatticeNode) => a.supertypes(b)).head match {
         case bn: BetaNode => {
           val result = bn.beta.freshlyInstantiate
           rui.constrain(new LesserEq(result,x))
@@ -137,7 +137,7 @@ object SigmaLattice {
       x
     else {
       val attempts = (xn.getSupertypes ++ yn.getSupertypes).filter(attempt => xn.subtypes(attempt) && yn.subtypes(attempt))
-      attempts.sort((a: LatticeNode,b: LatticeNode) => a.subtypes(b)).first match {
+      attempts.sortWith((a: LatticeNode,b: LatticeNode) => a.subtypes(b)).head match {
         case bn: BetaNode => {
           val result = bn.beta.freshlyInstantiate
           rui.constrain(new LesserEq(x,result))
