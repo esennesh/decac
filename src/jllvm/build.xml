@@ -4,10 +4,10 @@
 			<arg value="."/>
 		</exec>
 		<exec dir="llvm" executable="make"/>
-		<javac srcdir="." destdir="."/>
+		<javac srcdir="." destdir="build/"/>
 	</target>
 	<target name="clean">
-		<delete dir="jllvm"/>
+		<delete dir="build/jllvm"/>
 		<delete>
 			<fileset dir="llvm" includes="*.o"/>
 			<fileset dir="llvm" includes="*.so"/>

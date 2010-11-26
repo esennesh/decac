@@ -4,6 +4,8 @@ import jllvm.LLVMType
 import jllvm.LLVMVoidType
 import jllvm.LLVMFunctionType
 import jllvm.LLVMStructType
+import jllvm.LLVMTypeHandle
+import jllvm.LLVMOpaqueType
 
 trait SigmaType {
   def instantiate(args: List[TauType]): GammaType
@@ -87,8 +89,21 @@ object BottomGamma extends PrimitiveGamma {
   override def mangle: String = "bottom"
 }
 
+class OpaqueGamma extends PrimitiveGamma {
+  protected val compiled: LLVMOpaqueType = new LLVMOpaqueType
+  override def subtypes(tau: TauType): Boolean = tau match {
+    case bvar: BetaVariable => true
+    case range: GammaRange => subtypes(range.lowerBound)
+    case _ => false
+  }
+  override def compile: LLVMType = compiled
+  override def mangle: String = "opaque"
+}
+
 abstract class RhoType extends GammaType {
-  def replace(from: TauVariable,to: TauType): RhoType
+  def replace(from: TauVariable,to: TauType): RhoType = {
+    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
+  }
   def map(f: (TauType) => TauType): RhoType
   def scopeMap(f: (ScopeType) => ScopeType): RhoType
   def filter(p: (TauType) => Boolean): List[TauType]
@@ -109,6 +124,68 @@ abstract class RhoType extends GammaType {
         case _ => throw new Exception("Given something other than a tau variable in what should be a list of tau variables.")
       })
     }
+  }
+}
+
+abstract class RecursiveVariable
+case class UnrecursiveAlpha(alpha: TauVariable) extends RecursiveVariable
+case class MuBinding(mu: RecursiveRho) extends RecursiveVariable
+
+class RecursiveRho(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
+  val contents: RhoType = alpha match {
+    case UnrecursiveAlpha(alpha) => rho.replace(alpha,this)
+    case MuBinding(mu) => rho.map(tau => if(tau == mu) this else tau)
+  }
+  
+  override def map(f: (TauType) => TauType): RecursiveRho = {
+    new RecursiveRho(contents.map(tau => if(tau == this) tau else f(tau)),MuBinding(this))
+  }
+  
+  override def scopeMap(f: (ScopeType) => ScopeType): RecursiveRho = {
+    new RecursiveRho(contents.scopeMap(f),MuBinding(this))
+  }
+  
+  override def filter(f: (TauType) => Boolean): List[TauType] = {
+    contents.filter(tau => if(tau == this) false else f(tau))
+  }
+  
+  override def subtypes(tau: TauType): Boolean = tau == this || (tau match {
+    case mu: RecursiveRho => {
+      val alpha = new TauVariable
+      val unrecursiveBody = contents.map(tau => if(tau == this) alpha else tau)
+      val rho = mu.map(tau => if(tau == mu) alpha else tau)
+      unrecursiveBody.subtypes(rho)
+    }
+    case range: GammaRange => subtypes(range.lowerBound)
+    case bvar: BetaVariable => true
+    case tvar: TauVariable => false
+    case TopGamma => true
+    case _ => false
+  })
+  
+  override def equals(tau: TauType): Boolean = tau == this || (tau match {
+    case mu: RecursiveRho => {
+      val alpha = new TauVariable
+      val unrecursiveBody = contents.map(tau => if(tau == this) alpha else tau)
+      val rho = mu.map(tau => if(tau == mu) alpha else tau)
+      unrecursiveBody.equals(rho)
+    }
+    case bvar: BetaVariable => true
+    case range: GammaRange => subtypes(range.upperBound) && range.lowerBound.subtypes(this)
+    case _ => false
+  })
+  
+  override def compile: LLVMType = {
+    val opaque = new OpaqueGamma
+    val bodyType = contents.map(tau => if(tau == this) opaque else tau).compile
+    val bodyHandle = new LLVMTypeHandle(bodyType)
+    LLVMTypeHandle.refineType(opaque.compile,bodyType)
+    bodyHandle.resolve
+  }
+  
+  override def mangle: String = {
+    val alpha = new TauVariable
+    "mu " + alpha.mangle + "." + contents.map(tau => if(tau == this) alpha else tau).mangle
   }
 }
 
@@ -137,12 +214,8 @@ class RecordPi(f: List[RecordMember]) extends RhoType {
     case _ => false
   })
   
-  override def replace(from: TauVariable,to: TauType): RecordPi = {
-    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
-  }
-  
   override def map(f: (TauType) => TauType): RecordPi = {
-    new RecordPi(fields.map(field => new RecordMember(field.name,field.tau match { case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
+    new RecordPi(fields.map(field => new RecordMember(field.name,field.tau match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
   }
   
   override def scopeMap(f: (ScopeType) => ScopeType): RecordPi = {
@@ -188,12 +261,8 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
     case _ => false
   })
   
-  override def replace(from: TauVariable,to: TauType): FunctionArrow = {
-    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
-  }
-  
   override def map(f: (TauType) => TauType): FunctionArrow = {
-    val mappedDomain = domain.map(tau => tau match { case rho: RhoType => rho.map(f) case _ => f(tau) })
+    val mappedDomain = domain.map(tau => tau match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(tau) })
     val mappedRange = range match { case rho: RhoType => rho.map(f) case _ => f(range) }
     new FunctionArrow(mappedDomain,mappedRange)
   }
@@ -233,7 +302,7 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
     new LLVMFunctionType(compiledRange,compiledDomain.toArray,false)
   }
   
-  override def mangle: String = "(" + domain.map(tau => tau.mangle).foldRight("")((x: String,y: String) => x + "," + y) + ")_arrow_" + range.mangle
+  override def mangle: String = "(" + domain.head.mangle + domain.tail.map(tau => tau.mangle).foldRight("")((x: String,y: String) => x + "," + y) + ")->" + range.mangle
 }
 
 class TauVariable extends TauType {

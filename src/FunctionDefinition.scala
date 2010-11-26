@@ -73,17 +73,18 @@ class SpecializedFunction(org: FunctionDefinition,specializer: BetaSpecializatio
     case _ => throw new Exception("Specializing a function's type should never yield anything but an arrow type.")
   }
   val function = new LLVMFunction(original.scope.compiledModule,name + functionType.mangle,functionType.compile)
-  var compiled: Boolean = false
+  protected var compiled: Boolean = false
   val fScope = org.fScope.specialize(specializer,Some(function.getParameters.toList))
   val body = original.body.specialize(specializer)
   
   def compile(builder: LLVMInstructionBuilder): LLVMFunction = {
     if(compiled == false) {
-      fScope.compile(builder)
       val entry = function.appendBasicBlock("entry")
       builder.positionBuilderAtEnd(entry)
+      fScope.compile(builder)
       val result = body.compile(builder,fScope)
       new LLVMReturnInstruction(builder,result)
+      compiled = true
     }
     function
   }

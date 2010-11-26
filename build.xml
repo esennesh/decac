@@ -4,6 +4,7 @@
 	<path id="scala.classpath">
 		<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
 		<pathelement location="${scala.lib.dir}/scala-library.jar"/>
+		<pathelement location="build/"/>
 	</path>
 	<taskdef resource="scala/tools/ant/antlib.xml">
 		<classpath refid="scala.classpath"/>
@@ -27,8 +28,11 @@
 	</target>
 	<target name="build">
 		<mkdir dir="build/"/>
-		<javac srcdir="src/" destdir="build" includeantruntime="false"/>
-		<scalac srcdir="src/" destdir="build" classpathref="scala.classpath"/>
+		<scalac sourcepath="" srcdir="src/" destdir="build" classpathref="scala.classpath">
+			<include name="**/*.scala"/>
+			<exclude name="**/jllvm"/>
+			<exclude name="**/decasyntax"/>
+		</scalac>
 	</target>
 	<target name="clean">
 		<exec dir="src/jllvm" executable="ant">

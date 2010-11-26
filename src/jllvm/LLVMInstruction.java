@@ -25,4 +25,10 @@ public class LLVMInstruction extends LLVMUser {
 	public LLVMInstruction getPreviousInstruction() {
 		return new LLVMInstruction(Core.LLVMGetPreviousInstruction(instance));
 	}
+	
+	/*
+	public LLVMInstruction matchInstruction(SWIGTYPE_p_LLVMOpaqueValue val) {
+		assert(Core.LLVMIsAInstruction(val));
+	}
+	*/
 }

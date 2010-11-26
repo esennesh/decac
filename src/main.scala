@@ -38,7 +38,8 @@ object Decac {
     BooleanGamma;
     FloatGamma;
     val modules = args.map(arg => compile(arg))
-    for(module <- modules)
+    for(module <- modules) {
       (new LLVMBitWriter(module.compile)).writeBitcodeToFile(module.name + ".llo")
+    }
   }
 }
