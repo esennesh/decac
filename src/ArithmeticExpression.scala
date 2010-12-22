@@ -5,18 +5,18 @@ import scala.Math
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 
-abstract class UninferredArithmetic extends UninferredExpression(new GammaRange(None,Some(FP128Gamma))) {
-  override def children: List[UninferredArithmetic]
+abstract class UninferredArithmetic extends UninferredExpression(new GammaRange(BottomGamma,FP128Gamma)) {
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     rui.constrain(new LesserEq(expressionType,FP128Gamma))
     children.map(child => child.expressionType).foreach(t => rui.constrain(new LesserEq(t,expressionType)))
+    children.foreach(child => child.constrain(rui))
     rui
   }
   override def substitute(substitution: TauSubstitution): ArithmeticExpression
-  protected override def substituteTypes(substitution: TauSubstitution): Tuple2[NumericalGamma,List[ArithmeticExpression]] = {
+  protected override def substituteTypes(substitution: TauSubstitution): Tuple2[NumericalGamma,List[Expression]] = {
     val resultType = substitution.solve(expressionType) match {
       case ngam: NumericalGamma => ngam
-      case _ => throw new Exception("ERROR: Type inference found non-numerical type for arithmetic operation.")
+      case other => throw new Exception("ERROR: Type inference found non-numerical type for arithmetic operation, " + other.mangle)
     }
     (resultType,children.map(child => child.substitute(substitution)))
   }
@@ -29,9 +29,9 @@ case object Subtract extends ArithmeticOperator
 case object Multiply extends ArithmeticOperator
 case object Divide extends ArithmeticOperator
 
-class UninferredOperator(x: UninferredArithmetic,y: UninferredArithmetic,op: ArithmeticOperator) extends UninferredArithmetic {
+class UninferredOperator(x: UninferredExpression,y: UninferredExpression,op: ArithmeticOperator) extends UninferredArithmetic {
   val operator = op
-  override def children: List[UninferredArithmetic] = x :: y :: Nil
+  override def children: List[UninferredExpression] = x :: y :: Nil
   override def substitute(substitution: TauSubstitution): OperatorExpression = {
     val substitutionResult = substituteTypes(substitution)
     val subexprs = substitutionResult._2
@@ -43,32 +43,35 @@ class UninferredInteger(i: Int) extends UninferredArithmetic {
   val value: Int = i
   override def children: List[UninferredArithmetic] = Nil
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
-    if(value >= IntegerConstants.min_unsigned) {
+    val constraint = if(value >= 0) {
       if(value <= IntegerConstants.max_byte)
-        rui.constrain(new LesserEq(expressionType,Byte))
+        new LesserEq(expressionType,Byte)
       else if(value <= IntegerConstants.max_snat)
-        rui.constrain(new LesserEq(expressionType,SNat))
+        new LesserEq(expressionType,SNat)
       else if(value <= IntegerConstants.max_nat)
-        rui.constrain(new LesserEq(expressionType,Nat))
-      else if(value <= IntegerConstants.max_longnat)
-        rui.constrain(new LesserEq(expressionType,LongNat))
+        new LesserEq(expressionType,Nat)
+      else
+        new LesserEq(expressionType,LongNat)
     }
     else {
       if(value >= IntegerConstants.min_octet)
-        rui.constrain(new LesserEq(expressionType,Octet))
+        new LesserEq(expressionType,Octet)
       else if(value >= IntegerConstants.min_sInt)
-        rui.constrain(new LesserEq(expressionType,SInt))
+        new LesserEq(expressionType,SInt)
       else if(value >= IntegerConstants.min_Int)
-        rui.constrain(new LesserEq(expressionType,Int))
-      else if(value >= IntegerConstants.min_longInt)
-        rui.constrain(new LesserEq(expressionType,LongInt))
+        new LesserEq(expressionType,Int)
+      else
+        new LesserEq(expressionType,LongInt)
     }
+    assert(constraint != null)
+    rui.constrain(constraint)
     rui
   }
   override def substitute(substitution: TauSubstitution): IntegerConstant = {
-    val resultType = substituteTypes(substitution)._1 match {
+    val substitutedType = substituteTypes(substitution)._1
+    val resultType = substitutedType match {
       case igam: IntegerGamma => igam
-      case _ => throw new Exception("Type inference should never infer a non-integer type for an integer constant.")
+      case _ => throw new Exception("ERROR: Type inference inferred non-integer type for integer constant: " + substitutedType.mangle)
     }
     new IntegerConstant(value,resultType)
   }
@@ -76,14 +79,13 @@ class UninferredInteger(i: Int) extends UninferredArithmetic {
 
 abstract class ArithmeticExpression(exprType: NumericalGamma) extends Expression(exprType) {
   override val expressionType: NumericalGamma = exprType
-  override def children: List[ArithmeticExpression]
   override def specialize(specialization: BetaSpecialization): SpecializedArithmetic
 }
 
-class OperatorExpression(x: ArithmeticExpression,y: ArithmeticExpression,op: ArithmeticOperator,exprType: NumericalGamma) extends ArithmeticExpression(exprType) {
+class OperatorExpression(x: Expression,y: Expression,op: ArithmeticOperator,exprType: NumericalGamma) extends ArithmeticExpression(exprType) {
   val specializations: Map[BetaSpecialization,SpecializedOperator] = new HashMap[BetaSpecialization,SpecializedOperator]()
   val operator = op
-  override def children: List[ArithmeticExpression] = x :: y :: Nil
+  override def children: List[Expression] = x :: y :: Nil
   override def specialize(specialization: BetaSpecialization): SpecializedOperator = specializations.get(specialization) match {
     case Some(so) => so
     case None => {
@@ -105,15 +107,13 @@ class IntegerConstant(i: Int,exprType: IntegerGamma) extends ArithmeticExpressio
   }
 }
 
-abstract class SpecializedArithmetic(gamma: NumericalGamma) extends SpecializedExpression(gamma) {
-  override def children: List[SpecializedArithmetic]
-}
+abstract class SpecializedArithmetic(gamma: NumericalGamma) extends SpecializedExpression(gamma)
 
-class SpecializedOperator(x: SpecializedArithmetic,y: SpecializedArithmetic,op: ArithmeticOperator,exprType: NumericalGamma) extends SpecializedArithmetic(exprType) {
+class SpecializedOperator(x: SpecializedExpression,y: SpecializedExpression,op: ArithmeticOperator,exprType: NumericalGamma) extends SpecializedArithmetic(exprType) {
   val operator = op
-  override def children: List[SpecializedArithmetic] = x :: y :: Nil
-  def coerce(child: SpecializedArithmetic,builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = expressionType match {
-    case real: RealGamma => children.apply(0).expressionType match {
+  override def children: List[SpecializedExpression] = x :: y :: Nil
+  def coerce(child: SpecializedExpression,builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = expressionType match {
+    case real: RealGamma => child.expressionType match {
       case unsigned: UnsignedIntegerGamma => new LLVMIntegerToFloatCast(builder,child.compile(builder,scope),real.compile,"cast",LLVMIntegerToFloatCast.IntCastType.UNSIGNED)
       case signed: IntegerGamma => new LLVMIntegerToFloatCast(builder,child.compile(builder,scope),real.compile,"cast",LLVMIntegerToFloatCast.IntCastType.SIGNED)
       case floating: RealGamma => child.compile(builder,scope)
@@ -121,17 +121,19 @@ class SpecializedOperator(x: SpecializedArithmetic,y: SpecializedArithmetic,op: 
     case integer: IntegerGamma => child.compile(builder,scope)
   }
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
-    val builtSteps = children.map(child => child.compile(builder,scope))
-    //TODO: Add support for checking the types of the subexpressions and casting to floating-point where necessary.
     val lhs = coerce(children.apply(0),builder,scope)
     val rhs = coerce(children.apply(1),builder,scope)
     operator match {
-      case Add => new LLVMAddInstruction(builder,lhs,rhs,"add")
-      case Subtract => new LLVMSubtractInstruction(builder,lhs,rhs,"subtract")
-      case Multiply => new LLVMMultiplyInstruction(builder,lhs,rhs,"multiply")
-      case Divide => expressionType match {
-        case real: RealGamma => new LLVMFloatDivideInstruction(builder,lhs,rhs,"fdivide")
-        case integer: IntegerGamma => new LLVMSignedDivideInstruction(builder,lhs,rhs,"idivide")
+      case Add => new LLVMAddInstruction(builder,lhs,rhs,!expressionType.isInstanceOf[IntegerGamma],"add")
+      case Subtract => new LLVMSubtractInstruction(builder,lhs,rhs,!expressionType.isInstanceOf[IntegerGamma],"subtract")
+      case Multiply => new LLVMMultiplyInstruction(builder,lhs,rhs,!expressionType.isInstanceOf[IntegerGamma],"multiply")
+      case Divide => {
+        val DivisionType = expressionType match {
+          case real: RealGamma => LLVMDivideInstruction.DivisionType.FLOAT
+          case unsigned: UnsignedIntegerGamma => LLVMDivideInstruction.DivisionType.UNSIGNEDINT
+          case integer: IntegerGamma => LLVMDivideInstruction.DivisionType.SIGNEDINT
+        }
+        new LLVMDivideInstruction(builder,lhs,rhs,DivisionType,"divide")
       }
     }
   }

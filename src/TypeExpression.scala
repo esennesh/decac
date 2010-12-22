@@ -110,7 +110,7 @@ abstract class RhoType extends GammaType {
   def generalize(substitution: TauSubstitution): SigmaType = {
     val tvars = filter(tau => tau.isInstanceOf[TauVariable] && tau.equals(substitution.solve(tau)))
     if(tvars == Nil)
-      this
+      substitution.solve(this).asInstanceOf[RhoType]
     else {
       val head = tvars.head match { case tvar: TauVariable => tvar case _ => throw new Exception("Given something other than a tau variable in what should be a list of tau variables.") }
       val betaHead = new BetaRho(this,head)
@@ -302,7 +302,7 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
     new LLVMFunctionType(compiledRange,compiledDomain.toArray,false)
   }
   
-  override def mangle: String = "(" + domain.head.mangle + domain.tail.map(tau => tau.mangle).foldRight("")((x: String,y: String) => x + "," + y) + ")->" + range.mangle
+  override def mangle: String = "(" + (domain match { case head :: tail => head.mangle + tail.map(tau => tau.mangle).foldLeft("")((x: String,y: String) => x + "," + y) case Nil => "" }) + ")->" + range.mangle
 }
 
 class TauVariable extends TauType {
@@ -315,13 +315,44 @@ class TauVariable extends TauType {
   }
   
   override def mangle: String = toString
+  
+  def refine(low: Option[GammaType],high: Option[GammaType]): GammaRange = {
+    val lower = low match {
+      case Some(gamma) => gamma
+      case None => BottomGamma
+    }
+    val upper = high match {
+      case Some(gamma) => gamma
+      case None => TopGamma
+    }
+    new GammaRange(lower,upper)
+  }
 }
 
-class GammaRange(low: Option[GammaType],high: Option[GammaType]) extends TauVariable {
-  val lowerBound: GammaType = low match { case None => BottomGamma case Some(bound) => bound }
-  val upperBound: GammaType = high match { case None => TopGamma case Some(bound) => bound }
+class GammaRange(l: GammaType,h: GammaType) extends TauVariable {
+  val lowerBound: GammaType = l
+  val upperBound: GammaType = h
   
   override def subtypes(tau: TauType): Boolean = upperBound.subtypes(tau)
+  override def mangle: String = super.mangle + "(" + lowerBound.mangle + "," + upperBound.mangle + ")"
+  
+  override def refine(low: Option[GammaType],high: Option[GammaType]): GammaRange = {
+    val lower = low match {
+      case Some(gamma) => {
+        assert(lowerBound.subtypes(gamma))
+        gamma
+      }
+      case None => lowerBound
+    }
+    val upper = high match {
+      case Some(gamma) => {
+        assert(gamma.subtypes(upperBound))
+        gamma
+      }
+      case None => upperBound
+    }
+    new GammaRange(lower,upper)
+  }
 }
 
 abstract class BetaType extends SigmaType {

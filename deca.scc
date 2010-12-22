@@ -198,7 +198,7 @@ Productions
     {one} argument |
     {many} argument_list comma argument;
     
-  function_arguments = lparen [arguments]:argument_list rparen;
+  function_arguments = lparen [arguments]:argument_list? rparen;
     
   function_definition = 
     {method} method [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [body]:block_expression? |

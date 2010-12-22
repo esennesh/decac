@@ -78,18 +78,26 @@ object ASTProcessor {
   def processArguments(args: PArgumentList,scope: Module): List[Tuple2[String,TauType]] = args match {
     case one: AOneArgumentList => processArgument(one.getArgument match {case real: AArgument => real},scope) :: Nil
     case many: AManyArgumentList => processArgument(many.getArgument match {case real: AArgument => real},scope) :: processArguments(many.getArgumentList,scope)
+    case null => Nil
   }
   
   def processExp1(exp: PExp1,scope: UninferredLexicalScope): UninferredExpression = exp match {
     case variable: AIdentifierExp1 => new UninferredVariable(processQualifiedIdentifier(variable.getQualifiedIdentifier),scope)
+    case integer: APrimitiveIntegerExp1 => new UninferredInteger(integer.getIntegerConstant.getText.toInt)
+    case parens: AParentheticalExp1 => processExpression(parens.getParentheticalExpression.asInstanceOf[AParentheticalExpression].getExpression,scope)
   }
   def processExp2(exp: PExp2,scope: UninferredLexicalScope): UninferredExpression = exp match {
+    case minus: AMinusExp2 => new UninferredOperator(new UninferredInteger(0),processExp2(minus.getExp2,scope),Subtract)
     case others: AOthersExp2 => processExp1(others.getExp1,scope)
   }
   def processExp3(exp: PExp3,scope: UninferredLexicalScope): UninferredExpression = exp match {
+    case mult: AMultiplyExp3 => new UninferredOperator(processExp3(mult.getExp1,scope),processExp2(mult.getExp2,scope),Multiply)
+    case divide: ADivisionExp3 => new UninferredOperator(processExp3(divide.getExp1,scope),processExp2(divide.getExp2,scope),Divide)
     case others: AOthersExp3 => processExp2(others.getExp2,scope)
   }
   def processExp4(exp: PExp4,scope: UninferredLexicalScope): UninferredExpression = exp match {
+    case add: APlusExp4 => new UninferredOperator(processExp4(add.getExp1,scope),processExp3(add.getExp2,scope),Add)
+    case sub: AMinusExp4 => new UninferredOperator(processExp4(sub.getExp1,scope),processExp3(sub.getExp2,scope),Subtract)
     case others: AOthersExp4 => processExp3(others.getExp3,scope)
   }
   def processExp5(exp: PExp5,scope: UninferredLexicalScope): UninferredExpression = exp match {

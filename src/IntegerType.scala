@@ -10,15 +10,17 @@ abstract class NumericalGamma(n: String,p: Option[NumericalGamma]) extends Primi
   val parent: Option[NumericalGamma] = p
   define(new TypeDefinition(this,name,GlobalScope))
   
-  override def subtypes(tau: TauType) = tau match {
+  override def subtypes(tau: TauType) = equals(tau) || (tau match {
     case ntype: NumericalGamma => parent match {
       case Some(par) => par == ntype || par.subtypes(tau)
       case None => false
     }
     case range: GammaRange => subtypes(range.lowerBound)
     case bvar: BetaVariable => true
+    case TopGamma => true
+    case BottomGamma => false
     case _ => false
-  }
+  })
 }
 
 abstract class IntegerGamma(n: String,p: Option[NumericalGamma]) extends NumericalGamma(n,p) {

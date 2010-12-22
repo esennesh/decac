@@ -12,8 +12,10 @@ abstract class Substitution[A <: TauVariable,B <: TauType] {
   val queue: Queue[Tuple2[A,B]] = new Queue[Tuple2[A,B]]()
 
   def solve(tau: TauType): TauType = tau match {
-    case range: GammaRange => solve(range.lowerBound)
-    case alpha: TauVariable => queue.foldLeft[TauType](alpha)((result: TauType,sub: Tuple2[TauVariable,TauType]) => if(sub._1.equals(result)) sub._2 else result)
+    case alpha: TauVariable => queue.foldLeft[TauType](alpha)((result: TauType,sub: Tuple2[TauVariable,TauType]) => if(sub._1.equals(result)) sub._2 else result) match {
+      case range: GammaRange => solve(if(range.lowerBound == BottomGamma) range.upperBound else range.lowerBound)
+      case tau: TauType => tau
+    }
     case rho: RhoType => rho.map(tau => solve(tau))
     case _ => tau
   }
@@ -55,7 +57,10 @@ class BetaSpecialization extends Substitution[BetaVariable,GammaType] {
 class ConstraintSet {
   val stack: Stack[Constraint] = new Stack[Constraint]()
   
-  def substitute(x: TauVariable,y: TauType): Unit = stack.map(constraint => constraint.substitute(x,y))
+  def substitute(x: TauVariable,y: TauType): Unit = {
+    for(constraint <- stack)
+      constraint.substitute(x,y)
+  }
   
   def push(c: Constraint): Unit = stack.push(c)
   
@@ -75,10 +80,12 @@ class RangeUnificationInstance(scope: Option[Module]) {
   def constrain(c: Constraint) = {
     constraints.push(c)
     c.alpha match {
-      case gamma: GammaType => SigmaLattice.add(gamma)
+      case gamma: GammaType => SigmaLattice.find(gamma)
+      case _ => {}
     }
     c.beta match {
-      case gamma: GammaType => SigmaLattice.add(gamma)
+      case gamma: GammaType => SigmaLattice.find(gamma)
+      case _ => {}
     }
   }
   
@@ -114,21 +121,22 @@ abstract class Constraint(x: TauType,y: TauType) {
   }
   
   def infer(rui: RangeUnificationInstance): Unit
+  
+  override def toString: String
 }
 
 case class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
   override def infer(rui: RangeUnificationInstance): Unit = this match {
     case LesserEq(alpha: GammaRange,beta: GammaRange) => {
-      rui.substitute(alpha,new GammaRange(Some(alpha.lowerBound),Some(SigmaLattice.meet(alpha.upperBound,beta.lowerBound,rui))))
-      rui.substitute(beta,new GammaRange(Some(SigmaLattice.join(alpha.upperBound,beta.lowerBound,rui)),Some(beta.upperBound)))
+      rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta.lowerBound,rui))))
+      rui.substitute(beta,beta.refine(Some(SigmaLattice.join(alpha.upperBound,beta.lowerBound,rui)),None))
     }
     case LesserEq(alpha: GammaRange,beta: TauVariable) => rui.substitute(beta,alpha)
     case LesserEq(alpha: TauVariable,beta: GammaRange) => rui.substitute(alpha,beta)
     case LesserEq(alpha: TauVariable,beta: TauVariable) => rui.substitute(alpha,beta)
     
-    case LesserEq(alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,new GammaRange(Some(alpha.lowerBound),Some(SigmaLattice.meet(alpha.upperBound,beta,rui))))
-    case LesserEq(alpha: GammaType,beta: GammaRange) => rui.substitute(beta,new GammaRange(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),Some(beta.upperBound)))
-    
+    case LesserEq(alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta,rui))))
+    case LesserEq(alpha: GammaType,beta: GammaRange) => rui.substitute(beta,beta.refine(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),None))
     case LesserEq(alpha: FunctionArrow,beta: FunctionArrow) => {
       beta.domain.zip(alpha.domain).map(pair => rui.constrain(new LesserEq(pair._1,pair._2)))
       rui.constrain(new LesserEq(alpha.range,beta.range))
@@ -142,6 +150,8 @@ case class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
     case LesserEq(alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(!alpha.subtypes(beta)) throw new Exception("Type inference error: Incorrect <: constraint on base types.")
     case _ => throw new Exception("Type inference error: Invalid type inequality.")
   }
+  
+  override def toString: String = x.mangle + " <: " + y.mangle
 }
 
 case class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
@@ -172,4 +182,6 @@ case class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
     
     case Equal(_,_) => throw new Exception("Type inference error: incompatible types equated to each other.")
   }
+  
+  override def toString: String = x.mangle + " = " + y.mangle
 }

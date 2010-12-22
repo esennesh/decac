@@ -1,18 +1,20 @@
 package decac
 
 import scala.math
+import scala.collection.mutable.Set
+import scala.collection.mutable.HashSet
 import jllvm.LLVMType
 import jllvm.LLVMIntegerType
 
 abstract class LatticeNode {
   val gamma: GammaType
-  protected var parents: List[LatticeNode] = Nil
-  protected var children: List[LatticeNode] = Nil
+  protected val parents: Set[LatticeNode] = new HashSet[LatticeNode]()
+  protected val children: Set[LatticeNode] = new HashSet[LatticeNode]()
   
   def subtype(n: LatticeNode): Boolean = {
-    if(parents.map(parent => parent.subtype(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y) == false && gamma.subtypes(n.gamma)) {
-      parents = n :: parents
-      n.supertype(this)
+    if(!parents.exists(parent => parent.subtype(n)) && gamma.subtypes(n.gamma)) {
+      parents.add(n)
+      n.children.add(this)
       true
     }
     else
@@ -22,9 +24,9 @@ abstract class LatticeNode {
   def subtypes(n: LatticeNode): Boolean = parents.exists(parent => parent == n) || parents.map(parent => parent.subtypes(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y)
   
   def supertype(n: LatticeNode): Boolean = {
-    if(children.map(child => child.supertype(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y) == false && n.gamma.subtypes(gamma)) {
-      children = n :: children
-      n.subtype(this)
+    if(!children.exists(child => child.supertype(n)) && n.gamma.subtypes(gamma)) {
+      children.add(n)
+      n.parents.add(this)
       true
     }
     else
@@ -34,20 +36,22 @@ abstract class LatticeNode {
   def supertypes(n: LatticeNode): Boolean = children.exists(child => child == n) || children.map(child => child.supertypes(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y)
   
   def find(g: GammaType): Option[LatticeNode] = {
-    if(gamma == g)
+    if(gamma.equals(g))
       Some(this)
     else
-      children.map(child => child.find(g)).map(res => res match { case Some(result) => result case None => null }).find(search => search != null)
+      children.map(child => child.find(g)).foldLeft[Option[LatticeNode]](None)((x: Option[LatticeNode],y: Option[LatticeNode]) => if(x != None) x else if(y != None) y else None)
   }
   
-  def getSupertypes: List[LatticeNode] = parents ++ parents.flatMap(parent => parent.getSupertypes)
-  def getSubtypes: List[LatticeNode] = children ++ children.flatMap(child => child.getSubtypes)
+  def getSupertypes: List[LatticeNode] = (parents ++ parents.flatMap(parent => parent.getSupertypes)).toList
+  def getSubtypes: List[LatticeNode] = (children ++ children.flatMap(child => child.getSubtypes)).toList
   
   def assignRepresentation(s: Int): Int
 
-  def rttiSize: Int = parents match {
-    case Nil => math.ceil(math.log(calculateRttiSize) / math.log(2)).toInt
-    case parent :: _ => parent.rttiSize
+  def rttiSize: Int = {
+    if(parents == parents.empty)
+      math.ceil(math.log(calculateRttiSize) / math.log(2)).toInt
+    else
+      parents.head.rttiSize
   }
   
   protected def calculateRttiSize: Int = children.map(child => child.calculateRttiSize).foldLeft(0)((x,y) => x + y)
@@ -102,16 +106,16 @@ object SigmaLattice {
   val bottom: LatticeNode = new GammaNode(BottomGamma)
   
   def addModule(module: Module): Unit = {
-    for(pair <- module.symbols) pair._2 match { case TypeDefinition(sigma: SigmaType,_,_) => add(sigma) }
+    for(pair <- module.symbols) pair._2 match { case TypeDefinition(sigma: SigmaType,_,_) => add(sigma) case _ => {} }
   }
   
   //Meet is the greatest lower bound.
   def meet(x: GammaType,y: GammaType,rui: RangeUnificationInstance): GammaType = {
     val xn: LatticeNode = find(x)
     val yn: LatticeNode = find(y)
-    if(xn.subtypes(yn))
+    if(x.subtypes(y) || x.equals(y))
       x
-    else if(yn.subtypes(xn))
+    else if(y.subtypes(x))
       y
     else {
       val attempts = (xn.getSubtypes ++ yn.getSubtypes).filter(attempt => attempt.subtypes(xn) && attempt.subtypes(yn))
@@ -156,7 +160,7 @@ object SigmaLattice {
     }
   }
   
-  def add(sigma: SigmaType): LatticeNode = {
+  protected def add(sigma: SigmaType): LatticeNode = {
     val node: LatticeNode = sigma match {
       case rho: RhoType => rho.generalize(new TauSubstitution) match {
         //We could recurse here, but rho types without free variables would cause an infinite loop.
