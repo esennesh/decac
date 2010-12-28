@@ -11,9 +11,10 @@ public class LLVMExtendCast extends LLVMCastInstruction {
 		return instructionType;
 	}
 	
-	public LLVMExtendCast(ExtendType type,LLVMInstructionBuilder builder,LLVMValue val,LLVMIntegerType destType,String name) {
+	public LLVMExtendCast(ExtendType type,LLVMInstructionBuilder builder,LLVMValue val,LLVMType destType,String name) {
 		super(destType);
-		assert(val.typeOf() instanceof LLVMIntegerType);
+		assert(val.typeOf() instanceof LLVMIntegerType || val.typeOf() instanceof LLVMRealType);
+		assert(destType instanceof LLVMIntegerType || destType instanceof LLVMRealType);
 		instructionType = type;
 		switch(type) {
 			case ZERO:

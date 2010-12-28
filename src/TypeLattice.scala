@@ -12,7 +12,7 @@ abstract class LatticeNode {
   protected val children: Set[LatticeNode] = new HashSet[LatticeNode]()
   
   def subtype(n: LatticeNode): Boolean = {
-    if(!parents.exists(parent => parent.subtype(n)) && gamma.subtypes(n.gamma)) {
+    if(!parents.exists(parent => parent.subtype(n)) && gamma.subtypes(n.gamma) && !gamma.equals(n.gamma)) {
       parents.add(n)
       n.children.add(this)
       true
@@ -24,7 +24,7 @@ abstract class LatticeNode {
   def subtypes(n: LatticeNode): Boolean = parents.exists(parent => parent == n) || parents.map(parent => parent.subtypes(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y)
   
   def supertype(n: LatticeNode): Boolean = {
-    if(!children.exists(child => child.supertype(n)) && n.gamma.subtypes(gamma)) {
+    if(!children.exists(child => child.supertype(n)) && n.gamma.subtypes(gamma) && !n.gamma.equals(gamma)) {
       children.add(n)
       n.parents.add(this)
       true
@@ -38,8 +38,10 @@ abstract class LatticeNode {
   def find(g: GammaType): Option[LatticeNode] = {
     if(gamma.equals(g))
       Some(this)
-    else
+    else {
+      assert(!children.exists(child => child == this) && !parents.exists(parent => parent == this))
       children.map(child => child.find(g)).foldLeft[Option[LatticeNode]](None)((x: Option[LatticeNode],y: Option[LatticeNode]) => if(x != None) x else if(y != None) y else None)
+    }
   }
   
   def getSupertypes: List[LatticeNode] = (parents ++ parents.flatMap(parent => parent.getSupertypes)).toList

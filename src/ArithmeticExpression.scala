@@ -24,10 +24,18 @@ abstract class UninferredArithmetic extends UninferredExpression(new GammaRange(
 
 abstract class ArithmeticOperator
 
-case object Add extends ArithmeticOperator
-case object Subtract extends ArithmeticOperator
-case object Multiply extends ArithmeticOperator
-case object Divide extends ArithmeticOperator
+case object Add extends ArithmeticOperator {
+  override def toString: String = "+"
+}
+case object Subtract extends ArithmeticOperator {
+  override def toString = "-"
+}
+case object Multiply extends ArithmeticOperator {
+  override def toString = "*"
+}
+case object Divide extends ArithmeticOperator {
+  override def toString = "/"
+}
 
 class UninferredOperator(x: UninferredExpression,y: UninferredExpression,op: ArithmeticOperator) extends UninferredArithmetic {
   val operator = op
@@ -112,11 +120,14 @@ abstract class SpecializedArithmetic(gamma: NumericalGamma) extends SpecializedE
 class SpecializedOperator(x: SpecializedExpression,y: SpecializedExpression,op: ArithmeticOperator,exprType: NumericalGamma) extends SpecializedArithmetic(exprType) {
   val operator = op
   override def children: List[SpecializedExpression] = x :: y :: Nil
-  def coerce(child: SpecializedExpression,builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = expressionType match {
-    case real: RealGamma => child.expressionType match {
-      case unsigned: UnsignedIntegerGamma => new LLVMIntegerToFloatCast(builder,child.compile(builder,scope),real.compile,"cast",LLVMIntegerToFloatCast.IntCastType.UNSIGNED)
-      case signed: IntegerGamma => new LLVMIntegerToFloatCast(builder,child.compile(builder,scope),real.compile,"cast",LLVMIntegerToFloatCast.IntCastType.SIGNED)
-      case floating: RealGamma => child.compile(builder,scope)
+  protected def coerce(child: SpecializedExpression,builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = expressionType match {
+    case real: RealGamma => {
+      val doubled = child.expressionType match {
+        case unsigned: UnsignedIntegerGamma => new LLVMIntegerToFloatCast(builder,child.compile(builder,scope),DoubleGamma.compile,"cast",LLVMIntegerToFloatCast.IntCastType.UNSIGNED)
+        case signed: IntegerGamma => new LLVMIntegerToFloatCast(builder,child.compile(builder,scope),DoubleGamma.compile,"cast",LLVMIntegerToFloatCast.IntCastType.SIGNED)
+        case floating: RealGamma => child.compile(builder,scope)
+      }
+      new LLVMExtendCast(LLVMExtendCast.ExtendType.FLOAT,builder,doubled,real.compile,"cast")
     }
     case integer: IntegerGamma => child.compile(builder,scope)
   }

@@ -40,8 +40,7 @@ object Decac {
     val modules = args.map(arg => compile(arg))
     for(module <- modules) {
       val compiledModule = module.compile
-      compiledModule.dump
-      (new LLVMBitWriter(compiledModule)).writeBitcodeToFile(module.name + ".llo")
+      (new LLVMBitWriter(compiledModule)).writeBitcodeToFile(module.name + ".bc")
     }
   }
 }

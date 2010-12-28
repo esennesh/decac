@@ -5,17 +5,20 @@ import scala.collection.mutable.HashMap
 import jllvm.LLVMFunction
 import jllvm.LLVMInstructionBuilder
 import jllvm.LLVMReturnInstruction
+import jllvm.LLVMIntegerToFloatCast
+import jllvm.LLVMExtendCast
 
-class UninferredFunction(m: Module,n: String,args: List[Tuple2[String,UninferredArgument]],b: (UninferredLexicalScope) => UninferredBlock) {
+class UninferredFunction(m: Module,n: String,args: List[Tuple2[String,UninferredArgument]],r: Option[TauType],b: (UninferredLexicalScope) => UninferredBlock) {
   val name: String = n
   val scope: Module = m
   val fScope = new UninferredLexicalScope(scope,args)
   val arguments = fScope.bindings
   val body = b(fScope)
-  val functionType = new FunctionArrow(arguments.map(arg => arg.variableType),body.expressionType)
+  val functionType = new FunctionArrow(arguments.map(arg => arg.variableType),r match { case Some(tau) => tau case None => new TauVariable })
   
   def infer: FunctionDefinition = {
     val rui = new RangeUnificationInstance(Some(scope))
+    rui.constrain(new LesserEq(body.expressionType,functionType.range))
     body.constrain(rui)
     new FunctionDefinition(this,rui.solve)
   }
@@ -32,6 +35,7 @@ class FunctionDefinition(original: UninferredFunction,substitution: TauSubstitut
   
   functionType match {
     case arrow: FunctionArrow => specialize(Nil)
+    case _ => {}
   }
   
   def specialized = specializations.values
@@ -83,7 +87,20 @@ class SpecializedFunction(org: FunctionDefinition,specializer: BetaSpecializatio
       builder.positionBuilderAtEnd(entry)
       fScope.compile(builder)
       val result = body.compile(builder,fScope)
-      new LLVMReturnInstruction(builder,result)
+      //THIS KLUDGE IS BAD, AND I SHOULD FEEL BAD.
+      //WHAT I REALLY NEED IS A "CAST" OPERATION IMPLEMENTED AS PART OF MY ORDERING ON TYPES.
+      val castedResult = functionType.range match {
+        case real: RealGamma => {
+          val doubled = body.expressionType match {
+            case unsigned: UnsignedIntegerGamma => new LLVMIntegerToFloatCast(builder,result,DoubleGamma.compile,"cast",LLVMIntegerToFloatCast.IntCastType.UNSIGNED)
+            case signed: IntegerGamma => new LLVMIntegerToFloatCast(builder,result,DoubleGamma.compile,"cast",LLVMIntegerToFloatCast.IntCastType.SIGNED)
+            case floating: RealGamma => result
+          }
+          new LLVMExtendCast(LLVMExtendCast.ExtendType.FLOAT,builder,doubled,real.compile,"cast")
+        }
+        case _ => result
+      }
+      new LLVMReturnInstruction(builder,castedResult)
       compiled = true
     }
     function

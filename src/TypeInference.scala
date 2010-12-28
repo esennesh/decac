@@ -137,6 +137,8 @@ case class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
     
     case LesserEq(alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta,rui))))
     case LesserEq(alpha: GammaType,beta: GammaRange) => rui.substitute(beta,beta.refine(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),None))
+    case LesserEq(alpha: GammaType,beta: TauVariable) => rui.substitute(beta,beta.refine(Some(alpha),None))
+    case LesserEq(alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(beta)))
     case LesserEq(alpha: FunctionArrow,beta: FunctionArrow) => {
       beta.domain.zip(alpha.domain).map(pair => rui.constrain(new LesserEq(pair._1,pair._2)))
       rui.constrain(new LesserEq(alpha.range,beta.range))
