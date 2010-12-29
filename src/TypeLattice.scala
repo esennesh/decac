@@ -12,7 +12,7 @@ abstract class LatticeNode {
   protected val children: Set[LatticeNode] = new HashSet[LatticeNode]()
   
   def subtype(n: LatticeNode): Boolean = {
-    if(!parents.exists(parent => parent.subtype(n)) && gamma.subtypes(n.gamma) && !gamma.equals(n.gamma)) {
+    if(!parents.exists(parent => parent.subtype(n)) && gamma.subtypes(n.gamma)) {
       parents.add(n)
       n.children.add(this)
       true
@@ -24,7 +24,7 @@ abstract class LatticeNode {
   def subtypes(n: LatticeNode): Boolean = parents.exists(parent => parent == n) || parents.map(parent => parent.subtypes(n)).foldLeft(false)((x: Boolean,y: Boolean) => x || y)
   
   def supertype(n: LatticeNode): Boolean = {
-    if(!children.exists(child => child.supertype(n)) && n.gamma.subtypes(gamma) && !n.gamma.equals(gamma)) {
+    if(!children.exists(child => child.supertype(n)) && n.gamma.subtypes(gamma)) {
       children.add(n)
       n.parents.add(this)
       true
@@ -117,7 +117,7 @@ object SigmaLattice {
     val yn: LatticeNode = find(y)
     if(x.subtypes(y) || x.equals(y))
       x
-    else if(y.subtypes(x))
+    else if(y.subtypes(x) || y.equals(x))
       y
     else {
       val attempts = (xn.getSubtypes ++ yn.getSubtypes).filter(attempt => attempt.subtypes(xn) && attempt.subtypes(yn))
@@ -137,9 +137,9 @@ object SigmaLattice {
   def join(x: GammaType,y: GammaType,rui: RangeUnificationInstance): GammaType = {
     val xn: LatticeNode = find(x)
     val yn: LatticeNode = find(y)
-    if(xn.subtypes(yn))
+    if(x.subtypes(y) || x.equals(y))
       y
-    else if(yn.subtypes(xn))
+    else if(y.subtypes(x) || y.equals(x))
       x
     else {
       val attempts = (xn.getSupertypes ++ yn.getSupertypes).filter(attempt => xn.subtypes(attempt) && yn.subtypes(attempt))

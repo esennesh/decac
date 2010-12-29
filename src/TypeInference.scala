@@ -97,6 +97,7 @@ class RangeUnificationInstance(scope: Option[Module]) {
   def solve: TauSubstitution = {
     while(constraints.isEmpty != true) {
       val constraint = constraints.pop
+      System.err.println(constraint.toString)
       constraint.infer(this)
     }
     return result
@@ -109,12 +110,18 @@ abstract class Constraint(x: TauType,y: TauType) {
   
   def substitute(from: TauVariable,to: TauType): Unit = {
     alpha match {
-      case a: TauVariable => if(a.equals(from)) alpha = to
+      case a: TauVariable => if(a.equals(from)) {
+        alpha = to
+        System.err.println(a.mangle + " |-> " + to.mangle)
+      }
       case a: RhoType => a.replace(from,to)
       case _ => alpha
     }
     beta match {
-      case b: TauVariable => if(b.equals(from)) beta = to
+      case b: TauVariable => if(b.equals(from)) {
+        beta = to
+        System.err.println(b.mangle + " |-> " + to.mangle)
+      }
       case b: RhoType => b.replace(from,to)
       case _ => beta
     }
@@ -125,65 +132,65 @@ abstract class Constraint(x: TauType,y: TauType) {
   override def toString: String
 }
 
-case class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
-  override def infer(rui: RangeUnificationInstance): Unit = this match {
-    case LesserEq(alpha: GammaRange,beta: GammaRange) => {
+class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
+  override def infer(rui: RangeUnificationInstance): Unit = (alpha,beta) match {
+    case (alpha: GammaRange,beta: GammaRange) => {
       rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta.lowerBound,rui))))
       rui.substitute(beta,beta.refine(Some(SigmaLattice.join(alpha.upperBound,beta.lowerBound,rui)),None))
     }
-    case LesserEq(alpha: GammaRange,beta: TauVariable) => rui.substitute(beta,alpha)
-    case LesserEq(alpha: TauVariable,beta: GammaRange) => rui.substitute(alpha,beta)
-    case LesserEq(alpha: TauVariable,beta: TauVariable) => rui.substitute(alpha,beta)
+    case (alpha: GammaRange,beta: TauVariable) => rui.substitute(beta,alpha)
+    case (alpha: TauVariable,beta: GammaRange) => rui.substitute(alpha,beta)
+    case (alpha: TauVariable,beta: TauVariable) => rui.substitute(alpha,beta)
     
-    case LesserEq(alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta,rui))))
-    case LesserEq(alpha: GammaType,beta: GammaRange) => rui.substitute(beta,beta.refine(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),None))
-    case LesserEq(alpha: GammaType,beta: TauVariable) => rui.substitute(beta,beta.refine(Some(alpha),None))
-    case LesserEq(alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(beta)))
-    case LesserEq(alpha: FunctionArrow,beta: FunctionArrow) => {
+    case (alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta,rui))))
+    case (alpha: GammaType,beta: GammaRange) => rui.substitute(beta,beta.refine(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),None))
+    case (alpha: GammaType,beta: TauVariable) => rui.substitute(beta,beta.refine(Some(alpha),None))
+    case (alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(beta)))
+    case (alpha: FunctionArrow,beta: FunctionArrow) => {
       beta.domain.zip(alpha.domain).map(pair => rui.constrain(new LesserEq(pair._1,pair._2)))
       rui.constrain(new LesserEq(alpha.range,beta.range))
     }
-    case LesserEq(alpha: RecordPi,beta: RecordPi) => {
+    case (alpha: RecordPi,beta: RecordPi) => {
       if(alpha.length >= beta.length)
         alpha.fields.zip(beta.fields).map(pair => rui.constrain(new Equal(pair._1.tau,pair._2.tau)))
       else
         throw new Exception("Type inference error: Pi types set as subtype does not have a greater number of fields than its purported supertype.")
     }
-    case LesserEq(alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(!alpha.subtypes(beta)) throw new Exception("Type inference error: Incorrect <: constraint on base types.")
+    case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(!alpha.subtypes(beta)) throw new Exception("Type inference error: Incorrect <: constraint on base types.")
     case _ => throw new Exception("Type inference error: Invalid type inequality.")
   }
   
-  override def toString: String = x.mangle + " <: " + y.mangle
+  override def toString: String = alpha.mangle + " <: " + beta.mangle
 }
 
-case class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
-  override def infer(rui: RangeUnificationInstance): Unit = this match {
-    case Equal(alpha: GammaRange,beta: GammaRange) => {
+class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
+  override def infer(rui: RangeUnificationInstance): Unit = (alpha,beta) match {
+    case (alpha: GammaRange,beta: GammaRange) => {
       rui.constrain(new Equal(alpha.lowerBound,beta.lowerBound))
       rui.constrain(new Equal(alpha.upperBound,beta.upperBound))
     }
     
-    case Equal(alpha,beta: GammaRange) => throw new Exception("Type inference error: Rho ranges cannot equal any other type.")
-    case Equal(alpha: GammaRange,beta) => throw new Exception("Type inference error: Rho ranges cannot equal any other type.")
+    case (alpha,beta: GammaRange) => throw new Exception("Type inference error: Rho ranges cannot equal any other type.")
+    case (alpha: GammaRange,beta) => throw new Exception("Type inference error: Rho ranges cannot equal any other type.")
     
-    case Equal(alpha: TauVariable,beta: TauVariable) => rui.substitute(alpha,beta)
-    case Equal(alpha: RhoType,beta: TauVariable) => rui.substitute(beta,alpha)
-    case Equal(alpha: TauVariable,beta: RhoType) => rui.substitute(alpha,beta)
+    case (alpha: TauVariable,beta: TauVariable) => rui.substitute(alpha,beta)
+    case (alpha: RhoType,beta: TauVariable) => rui.substitute(beta,alpha)
+    case (alpha: TauVariable,beta: RhoType) => rui.substitute(alpha,beta)
     
-    case Equal(alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(alpha != beta) throw new Exception("Type inference error: Two primitive types set equal to each other that are not equal.")
-    case Equal(alpha: RecordPi,beta: RecordPi) => {
+    case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(alpha != beta) throw new Exception("Type inference error: Two primitive types set equal to each other that are not equal.")
+    case (alpha: RecordPi,beta: RecordPi) => {
       if(alpha.length == beta.length)
         alpha.fields.zip(beta.fields).map(pair => rui.constrain(new Equal(pair._1.tau,pair._2.tau)))
       else
         throw new Exception("Type inference error: Pi types set as equal have different numbers of fields.")
     }
-    case Equal(alpha: FunctionArrow,beta: FunctionArrow) => {
+    case (alpha: FunctionArrow,beta: FunctionArrow) => {
       alpha.domain.zip(beta.domain).map(pair => rui.constrain(new Equal(pair._1,pair._2)))
       rui.constrain(new Equal(alpha.range,beta.range))
     }
     
-    case Equal(_,_) => throw new Exception("Type inference error: incompatible types equated to each other.")
+    case (_,_) => throw new Exception("Type inference error: incompatible types equated to each other.")
   }
   
-  override def toString: String = x.mangle + " = " + y.mangle
+  override def toString: String = alpha.mangle + " = " + beta.mangle
 }

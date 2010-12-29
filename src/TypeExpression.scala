@@ -149,7 +149,7 @@ class RecursiveRho(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
     contents.filter(tau => if(tau == this) false else f(tau))
   }
   
-  override def subtypes(tau: TauType): Boolean = tau == this || (tau match {
+  override def subtypes(tau: TauType): Boolean = tau match {
     case mu: RecursiveRho => {
       val alpha = new TauVariable
       val unrecursiveBody = contents.map(tau => if(tau == this) alpha else tau)
@@ -161,7 +161,7 @@ class RecursiveRho(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
     case tvar: TauVariable => false
     case TopGamma => true
     case _ => false
-  })
+  }
   
   override def equals(tau: TauType): Boolean = tau == this || (tau match {
     case mu: RecursiveRho => {
@@ -198,14 +198,14 @@ class RecordPi(f: List[RecordMember]) extends RhoType {
   val fields: List[RecordMember] = f
   val length: Int = fields.length
   
-  override def subtypes(tau: TauType): Boolean = tau == this || (tau match {
+  override def subtypes(tau: TauType): Boolean = tau match {
     case rec: RecordPi => (length >= rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau)))
     case range: GammaRange => subtypes(range.lowerBound)
     case bvar: BetaVariable => true
     case tvar: TauVariable => false
     case TopGamma => true
     case _ => false
-  })
+  }
   
   override def equals(tau: TauType): Boolean = tau == this || (tau match {
     case rec: RecordPi => (length == rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau)))
@@ -246,13 +246,13 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   val domain = d
   val range = r
   
-  override def subtypes(tau: TauType): Boolean = equals(tau) || (tau match {
+  override def subtypes(tau: TauType): Boolean = tau match {
     case func: FunctionArrow => func.domain.zip(domain).map(pair => pair._1.subtypes(pair._2)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && range.subtypes(func.range)
     case bvar: BetaVariable => true
     case range: GammaRange => subtypes(range.lowerBound)
     case TopGamma => true
     case _ => false
-  })
+  }
   
   override def equals(tau: TauType): Boolean = tau == this || (tau match {
     case func: FunctionArrow => (func.domain.zip(domain).map(pair => pair._1.equals(pair._2)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && func.range.equals(range))
@@ -310,9 +310,7 @@ class TauVariable extends TauType {
     equals(tau)
   }
   
-  override def equals(tau: TauType): Boolean = {
-    tau == this
-  }
+  override def equals(tau: TauType): Boolean = tau == this
   
   override def mangle: String = toString
   
@@ -339,14 +337,16 @@ class GammaRange(l: GammaType,h: GammaType) extends TauVariable {
   override def refine(low: Option[GammaType],high: Option[GammaType]): GammaRange = {
     val lower = low match {
       case Some(gamma) => {
-        assert(lowerBound.subtypes(gamma))
+        if(!lowerBound.subtypes(gamma) && !lowerBound.equals(gamma))
+          throw new Exception(lowerBound.mangle + " </: " + gamma.mangle)
         gamma
       }
       case None => lowerBound
     }
     val upper = high match {
       case Some(gamma) => {
-        assert(gamma.subtypes(upperBound))
+        if(!lowerBound.subtypes(gamma) && !lowerBound.equals(gamma))
+          throw new Exception(gamma.mangle + " </: " + lowerBound.mangle)
         gamma
       }
       case None => upperBound

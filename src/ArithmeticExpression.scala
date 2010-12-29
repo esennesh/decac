@@ -5,10 +5,10 @@ import scala.Math
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 
-abstract class UninferredArithmetic extends UninferredExpression(new GammaRange(BottomGamma,FP128Gamma)) {
+abstract class UninferredArithmetic extends UninferredExpression(new TauVariable) {
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     rui.constrain(new LesserEq(expressionType,FP128Gamma))
-    children.map(child => child.expressionType).foreach(t => rui.constrain(new LesserEq(t,expressionType)))
+    children.foreach(child => rui.constrain(new LesserEq(child.expressionType,expressionType)))
     children.foreach(child => child.constrain(rui))
     rui
   }
