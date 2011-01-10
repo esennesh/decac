@@ -355,9 +355,6 @@ class GammaRange(l: GammaType,h: GammaType) extends TauVariable {
       throw new Exception(lower.mangle + " </: " + upper.mangle)
     new GammaRange(lower,upper)
   }
-  
-  def getUpperBound: GammaType = if(upperBound == TopGamma) lowerBound else upperBound
-  def getLowerBound: GammaType = if(lowerBound == BottomGamma) lowerBound else upperBound
 }
 
 abstract class BetaType extends SigmaType {
