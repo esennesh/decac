@@ -345,14 +345,19 @@ class GammaRange(l: GammaType,h: GammaType) extends TauVariable {
     }
     val upper = high match {
       case Some(gamma) => {
-        if(!lowerBound.subtypes(gamma) && !lowerBound.equals(gamma))
-          throw new Exception(gamma.mangle + " </: " + lowerBound.mangle)
+        if(!gamma.subtypes(upperBound) && !gamma.equals(upperBound))
+          throw new Exception(gamma.mangle + " </: " + upperBound.mangle)
         gamma
       }
       case None => upperBound
     }
+    if(!lower.subtypes(upper) && !lower.equals(upper))
+      throw new Exception(lower.mangle + " </: " + upper.mangle)
     new GammaRange(lower,upper)
   }
+  
+  def getUpperBound: GammaType = if(upperBound == TopGamma) lowerBound else upperBound
+  def getLowerBound: GammaType = if(lowerBound == BottomGamma) lowerBound else upperBound
 }
 
 abstract class BetaType extends SigmaType {

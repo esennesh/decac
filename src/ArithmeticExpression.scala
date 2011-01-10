@@ -8,8 +8,7 @@ import scala.collection.mutable.HashMap
 abstract class UninferredArithmetic extends UninferredExpression(new TauVariable) {
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     rui.constrain(new LesserEq(expressionType,FP128Gamma))
-    children.foreach(child => rui.constrain(new LesserEq(child.expressionType,expressionType)))
-    children.foreach(child => child.constrain(rui))
+    children.foreach(child => {child.constrain(rui) ; rui.constrain(new LesserEq(child.expressionType,expressionType)) })
     rui
   }
   override def substitute(substitution: TauSubstitution): ArithmeticExpression
@@ -53,23 +52,23 @@ class UninferredInteger(i: Int) extends UninferredArithmetic {
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     val constraint = if(value >= 0) {
       if(value <= IntegerConstants.max_byte)
-        new LesserEq(expressionType,Byte)
+        new LesserEq(Byte,expressionType)
       else if(value <= IntegerConstants.max_snat)
-        new LesserEq(expressionType,SNat)
+        new LesserEq(SNat,expressionType)
       else if(value <= IntegerConstants.max_nat)
-        new LesserEq(expressionType,Nat)
+        new LesserEq(Nat,expressionType)
       else
-        new LesserEq(expressionType,LongNat)
+        new LesserEq(LongNat,expressionType)
     }
     else {
       if(value >= IntegerConstants.min_octet)
-        new LesserEq(expressionType,Octet)
+        new LesserEq(Octet,expressionType)
       else if(value >= IntegerConstants.min_sInt)
-        new LesserEq(expressionType,SInt)
+        new LesserEq(SInt,expressionType)
       else if(value >= IntegerConstants.min_Int)
-        new LesserEq(expressionType,Int)
+        new LesserEq(Int,expressionType)
       else
-        new LesserEq(expressionType,LongInt)
+        new LesserEq(LongInt,expressionType)
     }
     assert(constraint != null)
     rui.constrain(constraint)

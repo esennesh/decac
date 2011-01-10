@@ -79,6 +79,7 @@ class RangeUnificationInstance(scope: Option[Module]) {
   
   def constrain(c: Constraint) = {
     constraints.push(c)
+    //System.err.println(c.toString)
     c.alpha match {
       case gamma: GammaType => SigmaLattice.find(gamma)
       case _ => {}
@@ -110,18 +111,12 @@ abstract class Constraint(x: TauType,y: TauType) {
   
   def substitute(from: TauVariable,to: TauType): Unit = {
     alpha match {
-      case a: TauVariable => if(a.equals(from)) {
-        alpha = to
-        System.err.println(a.mangle + " |-> " + to.mangle)
-      }
+      case a: TauVariable => if(a.equals(from)) alpha = to
       case a: RhoType => a.replace(from,to)
       case _ => alpha
     }
     beta match {
-      case b: TauVariable => if(b.equals(from)) {
-        beta = to
-        System.err.println(b.mangle + " |-> " + to.mangle)
-      }
+      case b: TauVariable => if(b.equals(from)) beta = to
       case b: RhoType => b.replace(from,to)
       case _ => beta
     }
@@ -174,8 +169,8 @@ class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
     case (alpha: GammaRange,beta) => throw new Exception("Type inference error: Rho ranges cannot equal any other type.")
     
     case (alpha: TauVariable,beta: TauVariable) => rui.substitute(alpha,beta)
-    case (alpha: RhoType,beta: TauVariable) => rui.substitute(beta,alpha)
-    case (alpha: TauVariable,beta: RhoType) => rui.substitute(alpha,beta)
+    case (alpha: GammaType,beta: TauVariable) => rui.substitute(beta,alpha)
+    case (alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,beta)
     
     case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(alpha != beta) throw new Exception("Type inference error: Two primitive types set equal to each other that are not equal.")
     case (alpha: RecordPi,beta: RecordPi) => {
