@@ -79,7 +79,6 @@ class RangeUnificationInstance(scope: Option[Module]) {
   
   def constrain(c: Constraint) = {
     constraints.push(c)
-    //System.err.println(c.toString)
     c.alpha match {
       case gamma: GammaType => SigmaLattice.find(gamma)
       case _ => {}
@@ -98,7 +97,6 @@ class RangeUnificationInstance(scope: Option[Module]) {
   def solve: TauSubstitution = {
     while(constraints.isEmpty != true) {
       val constraint = constraints.pop
-      System.err.println(constraint.toString)
       constraint.infer(this)
     }
     return result

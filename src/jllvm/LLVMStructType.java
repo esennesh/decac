@@ -3,6 +3,7 @@ package jllvm;
 import jllvm.llvm.Core;
 import jllvm.llvm.SWIGTYPE_p_LLVMOpaqueType;
 import jllvm.llvm.SWIGTYPE_p_p_LLVMOpaqueType;
+import jllvm.llvm.LLVMTypeKind;
 import java.util.*;
 import jllvm.LLVMType;
 
@@ -16,6 +17,11 @@ public class LLVMStructType extends LLVMType {
 		Core.delete_LLVMTypeRefArray(elmnts);
 		instance = tr;
 		llvm_types.put(instance,this);
+	}
+	
+	public LLVMStructType(SWIGTYPE_p_LLVMOpaqueType t) {
+		super(t);
+		assert(Core.LLVMGetTypeKind(t) == LLVMTypeKind.LLVMStructTypeKind);
 	}
 	
 	public long countElementTypes() {

@@ -36,4 +36,6 @@ class EnumeratedGamma(parent: Option[EnumeratedGamma],syms: List[String]) extend
   override def compile: LLVMType = new LLVMIntegerType(representationSize)
 }
 
-object BooleanGamma extends EnumeratedGamma(None,List("true","false"))
+object BooleanGamma extends EnumeratedGamma(None,List("true","false")) {
+  definition = Some(new TypeDefinition(this,"boolean",GlobalScope))
+}

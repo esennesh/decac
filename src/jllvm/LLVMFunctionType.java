@@ -3,6 +3,7 @@ package jllvm;
 import jllvm.llvm.Core;
 import jllvm.llvm.SWIGTYPE_p_LLVMOpaqueType;
 import jllvm.llvm.SWIGTYPE_p_p_LLVMOpaqueType;
+import jllvm.llvm.LLVMTypeKind;
 import java.util.*;
 
 /* Implements every method specified in Core.h for function types. */
@@ -20,6 +21,11 @@ public class LLVMFunctionType extends LLVMType {
 		//Proceed with the constructor as normal.
 		instance = tr;
 		llvm_types.put(instance,this);
+	}
+	
+	public LLVMFunctionType(SWIGTYPE_p_LLVMOpaqueType t) {
+		super(t);
+		assert(Core.LLVMGetTypeKind(t) == LLVMTypeKind.LLVMFunctionTypeKind);
 	}
 	
 	public boolean isVarArg() {

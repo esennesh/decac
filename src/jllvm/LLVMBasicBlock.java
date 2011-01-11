@@ -14,6 +14,7 @@ public class LLVMBasicBlock extends LLVMValue {
 	
 	public LLVMBasicBlock(SWIGTYPE_p_LLVMOpaqueBasicBlock bb) {
 		instance = Core.LLVMBasicBlockAsValue(bb);
+		assert(Core.LLVMValueIsBasicBlock(instance) != 0);
 		llvm_values.put(instance,this);
 	}
 	
@@ -47,10 +48,16 @@ public class LLVMBasicBlock extends LLVMValue {
 	}
 
 	public static LLVMBasicBlock getBasicBlock(SWIGTYPE_p_LLVMOpaqueValue val) {
-		return (LLVMBasicBlock)llvm_values.get(val);
+		assert(val != null);
+		LLVMValue possibility = LLVMValue.getValue(val);
+		if(possibility == null)
+			return new LLVMBasicBlock(val);
+		else
+			return (LLVMBasicBlock)possibility;
 	}
 
 	public static LLVMBasicBlock getBasicBlock(SWIGTYPE_p_LLVMOpaqueBasicBlock bb) {
+		assert(bb != null);
 		return getBasicBlock(Core.LLVMBasicBlockAsValue(bb));
 	}
 	

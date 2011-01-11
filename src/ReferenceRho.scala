@@ -21,7 +21,7 @@ class ReferenceRho(tau: TauType,optional: Boolean,st: ScopeType) extends RhoType
     case gamma: GammaType => {
       val pointer = new LLVMPointerType(gamma.compile,0)
       if(scope == RegionalScopeType)
-        new LLVMStructType((new LLVMPointerType(Nat.compile,0) :: pointer :: Nil).toArray,true)
+        new LLVMStructType((Nat.compile :: pointer :: Nil).toArray,true)
       else
         pointer
     }

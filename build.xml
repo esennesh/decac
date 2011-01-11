@@ -24,6 +24,7 @@
 		<echo message="Compiling C components of jllvm."/>
 		<exec dir="src/jllvm/llvm/" executable="make"/>
 		<echo message="Compiled C components of jllvm."/>
+		<mkdir dir="build/"/>
 		<javac srcdir="src/jllvm" destdir="build" includeantruntime="false"/>
 	</target>
 	<target name="build">

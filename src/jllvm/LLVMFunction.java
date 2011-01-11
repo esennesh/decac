@@ -13,6 +13,11 @@ public class LLVMFunction extends LLVMGlobalValue {
 		llvm_values.put(instance,this);
 	}
 	
+	public LLVMFunction(SWIGTYPE_p_LLVMOpaqueValue val) {
+		super(val);
+		assert(Core.LLVMIsAFunction(val) != null);
+	}
+	
 	public LLVMFunction getNextFunction() {
 		return getFunction(Core.LLVMGetNextFunction(instance));
 	}
@@ -101,7 +106,11 @@ public class LLVMFunction extends LLVMGlobalValue {
 	}
 	
 	public static LLVMFunction getFunction(SWIGTYPE_p_LLVMOpaqueValue f) {
-		return (LLVMFunction)LLVMValue.getValue(f);
+		LLVMValue possibility = LLVMValue.getValue(f);
+		if(possibility == null)
+			return new LLVMFunction(f);
+		else
+			return (LLVMFunction)possibility;
 	}
 	
 	protected void finalize() {

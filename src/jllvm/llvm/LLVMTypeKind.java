@@ -24,7 +24,6 @@ public final class LLVMTypeKind {
   public final static LLVMTypeKind LLVMOpaqueTypeKind = new LLVMTypeKind("LLVMOpaqueTypeKind");
   public final static LLVMTypeKind LLVMVectorTypeKind = new LLVMTypeKind("LLVMVectorTypeKind");
   public final static LLVMTypeKind LLVMMetadataTypeKind = new LLVMTypeKind("LLVMMetadataTypeKind");
-  public final static LLVMTypeKind LLVMUnionTypeKind = new LLVMTypeKind("LLVMUnionTypeKind");
 
   public final int swigValue() {
     return swigValue;
@@ -60,7 +59,7 @@ public final class LLVMTypeKind {
     swigNext = this.swigValue+1;
   }
 
-  private static LLVMTypeKind[] swigValues = { LLVMVoidTypeKind, LLVMFloatTypeKind, LLVMDoubleTypeKind, LLVMX86_FP80TypeKind, LLVMFP128TypeKind, LLVMPPC_FP128TypeKind, LLVMLabelTypeKind, LLVMIntegerTypeKind, LLVMFunctionTypeKind, LLVMStructTypeKind, LLVMArrayTypeKind, LLVMPointerTypeKind, LLVMOpaqueTypeKind, LLVMVectorTypeKind, LLVMMetadataTypeKind, LLVMUnionTypeKind };
+  private static LLVMTypeKind[] swigValues = { LLVMVoidTypeKind, LLVMFloatTypeKind, LLVMDoubleTypeKind, LLVMX86_FP80TypeKind, LLVMFP128TypeKind, LLVMPPC_FP128TypeKind, LLVMLabelTypeKind, LLVMIntegerTypeKind, LLVMFunctionTypeKind, LLVMStructTypeKind, LLVMArrayTypeKind, LLVMPointerTypeKind, LLVMOpaqueTypeKind, LLVMVectorTypeKind, LLVMMetadataTypeKind };
   private static int swigNext = 0;
   private final int swigValue;
   private final String swigName;

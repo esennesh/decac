@@ -14,7 +14,7 @@ class UninferredIf(possibilities: List[Tuple2[UninferredExpression,UninferredExp
     new IfExpression(conditions.zip(results),substituteTypes(substitution)._1)
   }
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
-    cases.map(ifcase => { rui.constrain(new Equal(ifcase._1.expressionType,BooleanGamma)); rui.constrain(new LesserEq(ifcase._2.expressionType,expressionType)) })
+    cases.map(ifcase => { rui.constrain(new LesserEq(ifcase._1.expressionType,BooleanGamma)); rui.constrain(new LesserEq(ifcase._2.expressionType,expressionType)); ifcase._1.constrain(rui); ifcase._2.constrain(rui) })
     return rui
   }
 }
@@ -44,6 +44,8 @@ class SpecializedIf(possibilities: List[Tuple2[SpecializedExpression,Specialized
                    mergeType: LLVMType,
                    scope: Scope[_]): LLVMValue = ifcases match {
     case Nil => {
+      //Insert a final branch to the merge block.
+      new LLVMBranchInstruction(builder,mergeBlock)
       builder.positionBuilderAtEnd(mergeBlock)
       val phi = new LLVMPhiNode(builder,mergeType,"ifphi")
       val caseValues: Array[LLVMValue] = compiled.map(compiledCase => compiledCase._1).toArray
@@ -67,8 +69,7 @@ class SpecializedIf(possibilities: List[Tuple2[SpecializedExpression,Specialized
   }
 
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
-    val function = builder.getInsertBlock.getParent
-    val mergeBlock = function.appendBasicBlock("merge")
+    val mergeBlock = builder.getInsertBlock.getParent.appendBasicBlock("merge")
     val mergeType = expressionType.compile
     compileCases(builder,cases,Nil,mergeBlock,mergeType,scope)
   }

@@ -54,7 +54,6 @@ public class LLVMValue {
 		if(llvm_values == null)
 			llvm_values = new HashMap<SWIGTYPE_p_LLVMOpaqueValue,LLVMValue>();
 		LLVMValue result = llvm_values.get(val);
-		assert(result != null);
 		return result;
 	}
 	
