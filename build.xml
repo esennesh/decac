@@ -29,7 +29,7 @@
 	</target>
 	<target name="build">
 		<mkdir dir="build/"/>
-		<scalac sourcepath="" srcdir="src/" destdir="build" classpathref="scala.classpath">
+		<scalac sourcepath="" srcdir="src/" destdir="build" classpathref="scala.classpath" deprecation="yes">
 			<include name="**/*.scala"/>
 			<exclude name="**/jllvm"/>
 			<exclude name="**/decasyntax"/>

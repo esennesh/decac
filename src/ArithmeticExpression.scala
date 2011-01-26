@@ -15,7 +15,7 @@ abstract class UninferredArithmetic extends UninferredExpression(new TauVariable
   protected override def substituteTypes(substitution: TauSubstitution): Tuple2[NumericalGamma,List[Expression]] = {
     val resultType = substitution.solve(expressionType) match {
       case ngam: NumericalGamma => ngam
-      case other => throw new Exception("ERROR: Type inference found non-numerical type for arithmetic expression, " + other.mangle)
+      case other => throw new Exception("ERROR: Type inference found non-numerical type for arithmetic expression, " + other.toString)
     }
     (resultType,children.map(child => child.substitute(substitution)))
   }
@@ -78,7 +78,7 @@ class UninferredInteger(i: Int) extends UninferredArithmetic {
     val substitutedType = substituteTypes(substitution)._1
     val resultType = substitutedType match {
       case igam: IntegerGamma => igam
-      case _ => throw new Exception("ERROR: Type inference inferred non-integer type for integer constant: " + substitutedType.mangle)
+      case _ => throw new Exception("ERROR: Type inference inferred non-integer type for integer constant: " + substitutedType.toString)
     }
     new IntegerConstant(value,resultType)
   }

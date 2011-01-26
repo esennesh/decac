@@ -76,7 +76,7 @@ class SpecializedFunction(org: FunctionDefinition,specializer: BetaSpecializatio
     case frho: FunctionArrow => frho
     case _ => throw new Exception("Specializing a function's type should never yield anything but an arrow type.")
   }
-  val function = new LLVMFunction(original.scope.compiledModule,name + functionType.mangle,functionType.compile)
+  val function = new LLVMFunction(original.scope.compiledModule,name + functionType.toString,functionType.compile)
   protected var compiled: Boolean = false
   val fScope = org.fScope.specialize(specializer,Some(function.getParameters.toList))
   val body = original.body.specialize(specializer)

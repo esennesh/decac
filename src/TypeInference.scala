@@ -46,7 +46,7 @@ class BetaSpecialization extends Substitution[BetaVariable,GammaType] {
       val result = queue.foldLeft[Option[GammaType]](None)((x: Option[GammaType],sub: Tuple2[BetaVariable,GammaType]) => x match { case Some(gamma) => Some(gamma) case None => if(sub._1 == alpha) Some(sub._2) else None })
       result match {
         case Some(gamma) => gamma
-        case None => throw new Exception("Had no specialization for beta variable " + alpha.mangle + ".")
+        case None => throw new Exception("Had no specialization for beta variable " + alpha.toString + ".")
       }
     }
     case rho: RhoType => rho.map(tau => solve(tau))
@@ -80,11 +80,11 @@ class RangeUnificationInstance(scope: Option[Module]) {
   def constrain(c: Constraint) = {
     constraints.push(c)
     c.alpha match {
-      case gamma: GammaType => SigmaLattice.find(gamma)
+      case gamma: GammaType => SigmaLattice.add(gamma)
       case _ => {}
     }
     c.beta match {
-      case gamma: GammaType => SigmaLattice.find(gamma)
+      case gamma: GammaType => SigmaLattice.add(gamma)
       case _ => {}
     }
   }
@@ -143,17 +143,25 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
       beta.domain.zip(alpha.domain).map(pair => rui.constrain(new LesserEq(pair._1,pair._2)))
       rui.constrain(new LesserEq(alpha.range,beta.range))
     }
-    case (alpha: RecordPi,beta: RecordPi) => {
-      if(alpha.length >= beta.length)
-        alpha.fields.zip(beta.fields).map(pair => rui.constrain(new Equal(pair._1.tau,pair._2.tau)))
-      else
-        throw new Exception("Type inference error: Pi types set as subtype does not have a greater number of fields than its purported supertype.")
+    case (alpha: SumType,beta: SumType) => {
+      val alphaShared = alpha.sumCases.filter(gpx => beta.sumCases.exists(gpy => gpx.constructor == gpy.constructor))
+      //When doing all this zipping, I need to make sure that corresponding elements match up.
+      val shared = alphaShared.zip(beta.sumCases.filter(gpy => alphaShared.contains(gpy)))
+      for(pair <- shared) {
+        val a = pair._1
+        val b = pair._2
+        /*for(guard <- a.guards.zip(b.guards)) {
+          rui.constrain(new Equal(guard._1.instantiation,guard._2.instantiation))
+          rui.constrain(new Equal(guard._1.general,guard._2.general))
+        }*/
+        rui.constrain(new Equal(a.record,b.record))
+      }
     }
-    case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(!alpha.subtypes(beta)) throw new Exception("Type inference error: Incorrect <: constraint on base types.")
-    case _ => throw new Exception("Type inference error: Invalid type inequality.")
+    case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(!TauOrdering.lt(alpha,beta)) throw new Exception("Type inference error: Incorrect <: constraint on base types.")
+    case _ => throw new Exception("Type inference error: " + alpha.toString + " </: " + beta.toString)
   }
   
-  override def toString: String = alpha.mangle + " <: " + beta.mangle
+  override def toString: String = alpha.toString + " <: " + beta.toString
 }
 
 class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
@@ -171,7 +179,7 @@ class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
     case (alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,beta)
     
     case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(alpha != beta) throw new Exception("Type inference error: Two primitive types set equal to each other that are not equal.")
-    case (alpha: RecordPi,beta: RecordPi) => {
+    case (alpha: RecordProduct,beta: RecordProduct) => {
       if(alpha.length == beta.length)
         alpha.fields.zip(beta.fields).map(pair => rui.constrain(new Equal(pair._1.tau,pair._2.tau)))
       else
@@ -185,5 +193,5 @@ class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
     case (_,_) => throw new Exception("Type inference error: incompatible types equated to each other.")
   }
   
-  override def toString: String = alpha.mangle + " = " + beta.mangle
+  override def toString: String = alpha.toString + " = " + beta.toString
 }

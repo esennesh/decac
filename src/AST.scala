@@ -56,9 +56,8 @@ object ASTProcessor {
       }
     }
     case alias: AAliasTypeForm => {
-      val nullable = alias.getNullableAliasClause != null
       val form = processLowerTypeForm(alias.getLowerTypeForm,scope)
-      new ReferenceRho(form,nullable,new GlobalScopeType(Some(scope)))
+      new ReferenceRho(form,new GlobalScopeType(Some(scope)))
     }
     /*case aclass: AClassTypeForm
     case subrange: ASubrangeTypeForm

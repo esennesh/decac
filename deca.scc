@@ -67,12 +67,9 @@ Tokens
   define = 'define';
   new = 'new';
   delete = 'delete';
-  constructor = 'constructor';
-  destructor = 'destructor';
   extends = 'extends';
   class_keyword = 'class';
-  subrange = 'subrange';
-  enum = 'enum';
+  variant_keyword = 'variant';
   exception = 'exception';
   equals = '=';
   different = '<>';
@@ -90,12 +87,10 @@ Tokens
   throw = 'throw';
   else = 'else';
   type = 'type';
-  null_literal = 'null';
   underscore = '_';
   arrow_operator = '->';
   region = 'region';
   region_combining_operator = '++';
-  typesize = 'typesize';
   sizeof = 'sizeof';
   match = 'match';
   return = 'return';
@@ -126,20 +121,17 @@ Productions
   import_declaration = 
     import [name]:qualified_identifier;
     
-  subrange_bound = 
-    {integer} integer_constant |
-    {enum} unqualified_identifier;
+  variant_component = 
+    unqualified_identifier tuple_form?;
     
   type_form =
     {function} function_type_form |
-    {alias} at_operator lower_type_form nullable_alias_clause?  |
-    {class} class_keyword function_arguments? extension_clause? lbracket [member]:member_declaration+ constructor_definition? destructor_definition? rbracket |
-    {subrange} subrange lparen [floor]:subrange_bound comma [ceiling]:subrange_bound rparen [parent]:extension_clause |
-    {enum} enum lparen identifier_list rparen [extension]:extension_clause? |
+    {alias} at_operator lower_type_form |
+    {variant} variant_keyword lbracket variant_component+ rbracket |
+    {class} class_keyword function_arguments? extension_clause? lbracket [member]:member_declaration+ destructor_definition? rbracket |
     {exception} exception lparen identifier_list rparen [extension]:extension_clause? |
     {others} lower_type_form;
   
-  constructor_definition = new [constructor]:block_expression;
   destructor_definition = delete [destructor]:block_expression;
     
   function_type_form = 
@@ -156,18 +148,17 @@ Productions
   tuple_component_list = 
     {one} tuple_component |
     {many} tuple_component_list comma tuple_component;
+    
+  tuple_form = 
+    lsbracket tuple_component_list rsbracket;
   
   lower_type_form =
     {named} [typename]:qualified_identifier [arguments]:type_form_arguments? |
     {parenthetical} recursive_type_naming? lparen type_form rparen |
-    {tuple} lsbracket tuple_component_list rsbracket |
-    {array} lower_type_form lsbracket integer_constant rsbracket |
+    {tuple} tuple_form |
+    {array} lower_type_form lsbracket integer_constant? rsbracket |
     {region} region |
-    {wildcard} underscore |
-    {bottom} null_literal;
-
-  nullable_alias_clause =
-    or_operator null_literal;
+    {wildcard} underscore;
       
   definition = 
     {globaldef} define var? unqualified_identifier type_annotation? assignment_operator expression |
@@ -223,12 +214,10 @@ Productions
   //Increasing precedence levels.
   exp1 =
     {at} at_operator [variable]:qualified_identifier |
-    {type_sizeof} typesize lparen type_form rparen |
-    {expression_sizeof} sizeof lparen expression rparen |
+    {sizeof} sizeof lparen type_form rparen |
     {primitive_integer} integer_constant |
     {primitive_boolean} boolean_constant |
     {primitive_string} string_constant |
-    {primitive_null} null_literal |
     {tuple} lsbracket expression_list rsbracket |
     {lambda} function function_arguments [region]:parenthetical_expression? block_expression |
     {call} function_call_expression |

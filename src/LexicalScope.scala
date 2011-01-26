@@ -53,7 +53,7 @@ class LexicalBinding(n: String,s: LexicalScope,k: LexicalKind) extends VariableB
     case gamma: GammaType => gamma
     /* TODO: WHY IS THIS HERE? */
     case range: GammaRange => range.lowerBound
-    case tau: TauType => throw new Exception("Generalized lexical binding has " + tau.mangle + " type rather than gamma type nor beta-variable type.")
+    case tau: TauType => throw new Exception("Generalized lexical binding has " + tau.toString + " type rather than gamma type nor beta-variable type.")
   }
   def specialize(substitution: BetaSpecialization,arg: Option[LLVMArgument]) = kind match {
     case LexicalLet(initializer) => {

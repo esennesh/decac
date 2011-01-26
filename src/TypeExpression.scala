@@ -1,11 +1,9 @@
 package decac;
 
-import jllvm.LLVMType
-import jllvm.LLVMVoidType
-import jllvm.LLVMFunctionType
-import jllvm.LLVMStructType
-import jllvm.LLVMTypeHandle
-import jllvm.LLVMOpaqueType
+import scala.collection.mutable.Set;
+import scala.collection.mutable.Map
+import scala.collection.mutable.HashMap;
+import jllvm._
 
 trait SigmaType {
   def instantiate(args: List[TauType]): GammaType
@@ -15,9 +13,7 @@ trait SigmaType {
 }
 
 abstract class TauType {
-  def subtypes(tau: TauType): Boolean
-  def equals(tau: TauType): Boolean = tau == this
-  def mangle: String
+  def toString: String
 }
 
 abstract class GammaType extends TauType with SigmaType {
@@ -54,50 +50,26 @@ case class TypeDefinition(t: GammaType,n: String,context: Module) extends Defini
 }
 
 abstract class PrimitiveGamma extends GammaType {
-  override def equals(tau: TauType): Boolean = tau match {
-    case bvar: BetaVariable => true
-    case range: GammaRange => subtypes(range.upperBound) && range.lowerBound.subtypes(this)
-    case tvar: TauVariable => false
-    case _ => tau == this
-  }
-  
-  override def mangle: String = definition match {
+  override def toString: String = definition match {
     case Some(defined) => defined.name
     case None => toString
   }
 }
 
 object TopGamma extends PrimitiveGamma {
-  override def subtypes(tau: TauType): Boolean = tau match {
-    case bvar: BetaVariable => true
-    case range: GammaRange => subtypes(range.lowerBound)
-    case tvar: TauVariable => false
-    case gamma: GammaType => false
-  }
   override def compile: LLVMType = new LLVMVoidType
-  override def mangle: String = "top"
+  override def toString: String = "top"
 }
 
 object BottomGamma extends PrimitiveGamma {
-  override def subtypes(tau: TauType): Boolean = tau match {
-    case bvar: BetaVariable => true
-    case range: GammaRange => subtypes(range.lowerBound)
-    case tvar: TauVariable => false
-    case rho: GammaType => true
-  }
   override def compile: LLVMType = new LLVMVoidType
-  override def mangle: String = "bottom"
+  override def toString: String = "bottom"
 }
 
-class OpaqueGamma extends PrimitiveGamma {
+object OpaqueGamma extends PrimitiveGamma {
   protected val compiled: LLVMOpaqueType = new LLVMOpaqueType
-  override def subtypes(tau: TauType): Boolean = tau match {
-    case bvar: BetaVariable => true
-    case range: GammaRange => subtypes(range.lowerBound)
-    case _ => false
-  }
   override def compile: LLVMType = compiled
-  override def mangle: String = "opaque"
+  override def toString: String = "opaque"
 }
 
 abstract class RhoType extends GammaType {
@@ -137,6 +109,12 @@ class RecursiveRho(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
     case MuBinding(mu) => rho.map(tau => if(tau == mu) this else tau)
   }
   
+  def unfold: RhoType = contents.map(tau => tau)
+  def substitute(from: TauVariable,to: TauType): RecursiveRho = {
+    val unfolded = unfold.replace(from,to)
+    unfolded.filter(tau => tau.isInstanceOf[RecursiveRho]).head.asInstanceOf[RecursiveRho]
+  }
+  
   override def map(f: (TauType) => TauType): RecursiveRho = {
     new RecursiveRho(contents.map(tau => if(tau == this) tau else f(tau)),MuBinding(this))
   }
@@ -149,43 +127,17 @@ class RecursiveRho(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
     contents.filter(tau => if(tau == this) false else f(tau))
   }
   
-  override def subtypes(tau: TauType): Boolean = tau match {
-    case mu: RecursiveRho => {
-      val alpha = new TauVariable
-      val unrecursiveBody = contents.map(tau => if(tau == this) alpha else tau)
-      val rho = mu.map(tau => if(tau == mu) alpha else tau)
-      unrecursiveBody.subtypes(rho)
-    }
-    case range: GammaRange => subtypes(range.lowerBound)
-    case bvar: BetaVariable => true
-    case tvar: TauVariable => false
-    case TopGamma => true
-    case _ => false
-  }
-  
-  override def equals(tau: TauType): Boolean = tau == this || (tau match {
-    case mu: RecursiveRho => {
-      val alpha = new TauVariable
-      val unrecursiveBody = contents.map(tau => if(tau == this) alpha else tau)
-      val rho = mu.map(tau => if(tau == mu) alpha else tau)
-      unrecursiveBody.equals(rho)
-    }
-    case bvar: BetaVariable => true
-    case range: GammaRange => subtypes(range.upperBound) && range.lowerBound.subtypes(this)
-    case _ => false
-  })
-  
   override def compile: LLVMType = {
-    val opaque = new OpaqueGamma
+    val opaque = OpaqueGamma
     val bodyType = contents.map(tau => if(tau == this) opaque else tau).compile
     val bodyHandle = new LLVMTypeHandle(bodyType)
     LLVMTypeHandle.refineType(opaque.compile,bodyType)
     bodyHandle.resolve
   }
   
-  override def mangle: String = {
+  override def toString: String = {
     val alpha = new TauVariable
-    "mu " + alpha.mangle + "." + contents.map(tau => if(tau == this) alpha else tau).mangle
+    "mu " + alpha.toString + "." + contents.map(tau => if(tau == this) alpha else tau).toString
   }
 }
 
@@ -194,32 +146,16 @@ class RecordMember(str: Option[String],t: TauType) {
   val tau = t
 }
 
-class RecordPi(f: List[RecordMember]) extends RhoType {
+class RecordProduct(f: List[RecordMember]) extends RhoType {
   val fields: List[RecordMember] = f
   val length: Int = fields.length
   
-  override def subtypes(tau: TauType): Boolean = tau match {
-    case rec: RecordPi => (length >= rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau)))
-    case range: GammaRange => subtypes(range.lowerBound)
-    case bvar: BetaVariable => true
-    case tvar: TauVariable => false
-    case TopGamma => true
-    case _ => false
+  override def map(f: (TauType) => TauType): RecordProduct = {
+    new RecordProduct(fields.map(field => new RecordMember(field.name,field.tau match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
   }
   
-  override def equals(tau: TauType): Boolean = tau == this || (tau match {
-    case rec: RecordPi => (length == rec.length && fields.zip(rec.fields).forall(pair => pair._1.tau.equals(pair._2.tau)))
-    case bvar: BetaVariable => true
-    case range: GammaRange => subtypes(range.upperBound) && range.lowerBound.subtypes(this)
-    case _ => false
-  })
-  
-  override def map(f: (TauType) => TauType): RecordPi = {
-    new RecordPi(fields.map(field => new RecordMember(field.name,field.tau match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
-  }
-  
-  override def scopeMap(f: (ScopeType) => ScopeType): RecordPi = {
-    new RecordPi(fields.map(field => new RecordMember(field.name,field.tau match { case rho: RhoType => rho.scopeMap(f) case _ => field.tau })))
+  override def scopeMap(f: (ScopeType) => ScopeType): RecordProduct = {
+    new RecordProduct(fields.map(field => new RecordMember(field.name,field.tau match { case rho: RhoType => rho.scopeMap(f) case _ => field.tau })))
   }
   
   override def filter(p: (TauType) => Boolean): List[TauType] = {
@@ -234,32 +170,19 @@ class RecordPi(f: List[RecordMember]) extends RhoType {
   override def compile: LLVMStructType = {
     val compiledFields = fields.map(field => field.tau match {
       case gammaField: GammaType => gammaField.compile
-      case _ => throw new Exception("Cannot compile non-gamma field type " + field.tau.mangle + " of record type " + mangle + ".")
+      case _ => throw new Exception("Cannot compile non-gamma field type " + field.tau.toString + " of record type " + toString + ".")
     })
-    new LLVMStructType((SigmaLattice.find(this).represent :: compiledFields).toArray,true)
+    new LLVMStructType(compiledFields.toArray,true)
   }
   
-  override def mangle: String = "pi" + fields.map(field => field.name + ":" + field.tau.mangle).foldRight("")((head: String,tail: String) => "_" + head + tail)
+  override def toString: String = "{" + fields.map(field => field.name + ":" + field.tau.toString).foldRight("")((head: String,tail: String) => "_" + head + tail) + "}"
 }
+
+object EmptyRecord extends RecordProduct(Nil)
 
 class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   val domain = d
   val range = r
-  
-  override def subtypes(tau: TauType): Boolean = tau match {
-    case func: FunctionArrow => func.domain.zip(domain).map(pair => pair._1.subtypes(pair._2)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && range.subtypes(func.range)
-    case bvar: BetaVariable => true
-    case range: GammaRange => subtypes(range.lowerBound)
-    case TopGamma => true
-    case _ => false
-  }
-  
-  override def equals(tau: TauType): Boolean = tau == this || (tau match {
-    case func: FunctionArrow => (func.domain.zip(domain).map(pair => pair._1.equals(pair._2)).foldLeft(true)((x: Boolean,y: Boolean) => x && y) && func.range.equals(range))
-    case bvar: BetaVariable => true
-    case range: GammaRange => subtypes(range.upperBound) && range.lowerBound.subtypes(this)
-    case _ => false
-  })
   
   override def map(f: (TauType) => TauType): FunctionArrow = {
     val mappedDomain = domain.map(tau => tau match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(tau) })
@@ -293,26 +216,148 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   override def compile: LLVMFunctionType = {
     val compiledRange: LLVMType = range match {
       case gammaRange: GammaType => gammaRange.compile
-      case _ => throw new Exception("Cannot compile non-gamma range type " + range.mangle + " of arrow type " + mangle + ".")
+      case _ => throw new Exception("Cannot compile non-gamma range type " + range.toString + " of arrow type " + toString + ".")
     }
     val compiledDomain: List[LLVMType] = domain.map(tau => tau match {
       case gammaDomain: GammaType => gammaDomain.compile
-      case _ => throw new Exception("Cannot compile non-gamma domain type " + tau.mangle + " of arrow type " + mangle + ".")
+      case _ => throw new Exception("Cannot compile non-gamma domain type " + tau.toString + " of arrow type " + toString + ".")
     })
     new LLVMFunctionType(compiledRange,compiledDomain.toArray,false)
   }
   
-  override def mangle: String = "(" + (domain match { case head :: tail => head.mangle + tail.map(tau => tau.mangle).foldLeft("")((x: String,y: String) => x + "," + y) case Nil => "" }) + ")->" + range.mangle
+  override def toString: String = "(" + (domain match { case head :: tail => head.toString + tail.foldLeft("")((x: String,y: TauType) => x + "," + y.toString) case Nil => "" }) + ")->" + range.toString
 }
 
-class TauVariable extends TauType {
-  override def subtypes(tau: TauType): Boolean = {
-    equals(tau)
+/*case class CaseGuard(instantiation: TauType,general: TauType) {
+  def satisfiable: Boolean = TauOrdering.equiv(instantiation,general)
+  def specialize(tvar: TypeParameter,tau: TauType): CaseGuard = general match {
+    case rho: RhoType => CaseGuard(instantiation,rho.replace(tvar,tau))
+    case param: TypeParameter => CaseGuard(instantiation,if(param == tvar) tau else param)
+    case _ => this
+  }
+  override def toString: String = instantiation.toString + "<=" + general.toString
+}*/
+
+case class GuardedProduct(/*guards: Set[CaseGuard],*/name: Option[String],record: RecordProduct) {
+  val constructor = DataConstructors.constructor(name)
+  /*assert(guards.forall(g => g.instantiation match { case rho: RhoType => rho.filter(tau => tau.isInstanceOf[TauVariable]).forall(tvar => record.filter(tau => tau == tvar) != Nil) case _ => true }))*/
+  
+  //def inhabited: Boolean = guards.forall(guard => guard.satisfiable)
+  
+  def replace(tvar: TypeParameter,tau: TauType): GuardedProduct = {
+    //val replacedGuards = guards.map(guard => guard.specialize(tvar,tau))
+    val replacedProduct = record.replace(tvar,tau).asInstanceOf[RecordProduct]
+    GuardedProduct(/*replacedGuards,*/name,replacedProduct)
   }
   
-  override def equals(tau: TauType): Boolean = tau == this
+  def map(f: (TauType) => TauType): GuardedProduct = {
+    /* val newGuards = guards.map(guard => CaseGuard(guard.instantiation,guard.general match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(guard.general) })) */
+    val newRecord = record.map(f)
+    GuardedProduct(/*newGuards,*/name,newRecord)
+  }
+  override def toString: String = {
+    /*val guardStrings = guards.map(guard => guard.toString)
+    val lets = guardStrings.toList match {
+      case first :: rest => first + rest.foldLeft("")((x: String,y: String) => x + "," + y)
+      case Nil => ""
+    }*/
+    //val contents = "[" + lets + "]" + record.toString
+    name match {
+      case Some(str) => str + "(" + /*contents*/record.toString + ")"
+      case None => /*contents*/record.toString
+    }
+  }
+}
+
+class SumType(addends: List[GuardedProduct]) extends RhoType {
+  val sumCases = addends
+
+  /*if(addends.map(gp => !gp.inhabited).foldLeft(false)((x: Boolean,y: Boolean) => x && y))
+    throw new Exception("GADT " + toString + " has no inhabitant values.")*/
+    
+  override def map(f: (TauType) => TauType): SumType = new SumType(sumCases.map(sumCase => sumCase.map(f)))
+  override def scopeMap(f: (ScopeType) => ScopeType): SumType = {
+    val scopedCases = sumCases.map(c => GuardedProduct(/*c.guards.map(guard => CaseGuard(guard.instantiation,guard.general match { case rho: RhoType => rho.scopeMap(f) case _ => guard.general })),*/c.name,c.record.scopeMap(f)))
+    new SumType(scopedCases)
+  }
+  override def filter(p: (TauType) => Boolean): List[TauType] = {
+    var result: List[TauType] = Nil
+    sumCases.foreach(c => result = result ++ c.record.filter(p))
+    /*sumCases.foreach(c => c.guards.foreach(guard => if(p(guard.instantiation)) result = result ++ (guard.instantiation :: Nil)))*/
+    result
+  }
+  override def toString: String = {
+    val sum = sumCases match {
+      case head :: tail => head.toString + tail.map(x => x.toString).foldLeft("")((x: String,y: String) => x + " + " + y)
+      case Nil => ""
+    }
+    "<" + sum + ">"
+  }
   
-  override def mangle: String = toString
+  //Holy crap these functions are inefficient and ugly.  I *need* to rewrite these.
+  protected def equalFields(recs: List[RecordProduct]): List[Option[RecordMember]] = recs match {
+    case last :: Nil => last.fields.map(field => Some(field))
+    case first :: rest => equalFields(rest).zip(first.fields).map(pair => pair._1 match { case Some(mem) => if(TauOrdering.equiv(mem.tau,pair._2.tau)) Some(mem) else None case None => None })
+    case Nil => Nil
+  }
+  
+  protected def firstEqualFields(fields: List[Option[RecordMember]]): List[RecordMember] = fields match {
+    case first :: rest => first match {
+      case Some(field) => field :: firstEqualFields(rest)
+      case None => Nil
+    }
+    case Nil => Nil
+  }
+    
+  def minimalRecord: RecordProduct = {
+    val fields = firstEqualFields(equalFields(sumCases.map(gp => gp.record)))
+    new RecordProduct(fields)
+  }
+  
+  def enumeration: Boolean = sumCases.forall(gp => gp.record.length == 0)
+  
+  override def compile: LLVMType = {
+    val largestConstructor = sumCases.sortWith((x: GuardedProduct,y: GuardedProduct) => x.constructor > y.constructor).head.constructor
+    val representationSize = math.floor(math.log(largestConstructor) / math.log(2)).toInt + 1
+    assert(representationSize > 0)
+    if(enumeration) {
+      new LLVMIntegerType(representationSize)
+    }
+    else {
+      val minrec = minimalRecord
+      val fields = new LLVMIntegerType(representationSize) :: new LLVMPointerType(minrec.compile,0) :: Nil
+      new LLVMStructType(fields.toArray,true)
+    }
+  }
+}
+
+object BooleanGamma extends SumType(GuardedProduct(/*Set.empty[CaseGuard],*/Some("false"),EmptyRecord) :: GuardedProduct(/*Set.empty[CaseGuard],*/Some("true"),EmptyRecord) :: Nil)
+
+object DataConstructors {
+  var next = 0
+  val constructors = new HashMap[String,Int]
+  
+  protected def freshConstructor(name: Option[String]): Int = {
+    val result = next
+    next = next + 1
+    name match {
+      case Some(str) => constructors.put(str,result)
+      case None => {}
+    }
+    result
+  }
+  
+  def constructor(name: Option[String]): Int = name match {
+    case Some(str) => constructors.get(str) match {
+      case Some(result) => result
+      case None => freshConstructor(name)
+    }
+    case None => freshConstructor(None)
+  }
+}
+
+class TauVariable extends TauType { 
+  override def toString: String = toString
   
   def refine(low: Option[GammaType],high: Option[GammaType]): GammaRange = {
     val lower = low match {
@@ -327,32 +372,33 @@ class TauVariable extends TauType {
   }
 }
 
+class TypeParameter extends TauVariable
+
 class GammaRange(l: GammaType,h: GammaType) extends TauVariable {
   val lowerBound: GammaType = l
   val upperBound: GammaType = h
-  
-  override def subtypes(tau: TauType): Boolean = upperBound.subtypes(tau)
-  override def mangle: String = super.mangle + "(" + lowerBound.mangle + "," + upperBound.mangle + ")"
+ 
+  override def toString: String = super.toString + "(" + lowerBound.toString + "," + upperBound.toString + ")"
   
   override def refine(low: Option[GammaType],high: Option[GammaType]): GammaRange = {
     val lower = low match {
       case Some(gamma) => {
-        if(!lowerBound.subtypes(gamma) && !lowerBound.equals(gamma))
-          throw new Exception(lowerBound.mangle + " </: " + gamma.mangle)
+        if(!TauOrdering.lteq(lowerBound,gamma))
+          throw new Exception(lowerBound.toString + " </: " + gamma.toString)
         gamma
       }
       case None => lowerBound
     }
     val upper = high match {
       case Some(gamma) => {
-        if(!gamma.subtypes(upperBound) && !gamma.equals(upperBound))
-          throw new Exception(gamma.mangle + " </: " + upperBound.mangle)
+        if(!TauOrdering.lteq(gamma,upperBound))
+          throw new Exception(gamma.toString + " </: " + upperBound.toString)
         gamma
       }
       case None => upperBound
     }
-    if(!lower.subtypes(upper) && !lower.equals(upper))
-      throw new Exception(lower.mangle + " </: " + upper.mangle)
+    if(!TauOrdering.lteq(lower,upper))
+      throw new Exception(lower.toString + " </: " + upper.toString)
     new GammaRange(lower,upper)
   }
 }
@@ -371,7 +417,7 @@ abstract class BetaType extends SigmaType {
   override def body: RhoType
 }
 
-class BetaVariable(b: BetaType) extends TauVariable {
+class BetaVariable(b: BetaType) extends TypeParameter {
   val beta: BetaType = b
 }
 
