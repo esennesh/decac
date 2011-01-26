@@ -102,17 +102,23 @@ abstract class RhoType extends GammaType {
 abstract class RecursiveVariable
 case class UnrecursiveAlpha(alpha: TauVariable) extends RecursiveVariable
 case class MuBinding(mu: RecursiveRho) extends RecursiveVariable
+case class FutureRecursion() extends RecursiveVariable
 
 class RecursiveRho(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
   val contents: RhoType = alpha match {
     case UnrecursiveAlpha(alpha) => rho.replace(alpha,this)
     case MuBinding(mu) => rho.map(tau => if(tau == mu) this else tau)
+    case FutureRecursion() => rho
   }
   
   def unfold: RhoType = contents.map(tau => tau)
   def substitute(from: TauVariable,to: TauType): RecursiveRho = {
     val unfolded = unfold.replace(from,to)
     unfolded.filter(tau => tau.isInstanceOf[RecursiveRho]).head.asInstanceOf[RecursiveRho]
+  }
+  
+  override def replace(from: TauVariable,to: TauType): RecursiveRho = {
+    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
   }
   
   override def map(f: (TauType) => TauType): RecursiveRho = {
@@ -150,6 +156,10 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
   val fields: List[RecordMember] = f
   val length: Int = fields.length
   
+  override def replace(from: TauVariable,to: TauType): RecordProduct = {
+    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
+  }
+  
   override def map(f: (TauType) => TauType): RecordProduct = {
     new RecordProduct(fields.map(field => new RecordMember(field.name,field.tau match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
   }
@@ -176,6 +186,8 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
   }
   
   override def toString: String = "{" + fields.map(field => field.name + ":" + field.tau.toString).foldRight("")((head: String,tail: String) => "_" + head + tail) + "}"
+  
+  def ++(rec: RecordProduct): RecordProduct = new RecordProduct(fields ++ rec.fields)
 }
 
 object EmptyRecord extends RecordProduct(Nil)
@@ -183,6 +195,10 @@ object EmptyRecord extends RecordProduct(Nil)
 class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   val domain = d
   val range = r
+  
+  override def replace(from: TauVariable,to: TauType): FunctionArrow = {
+    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
+  }
   
   override def map(f: (TauType) => TauType): FunctionArrow = {
     val mappedDomain = domain.map(tau => tau match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(tau) })
@@ -238,8 +254,17 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   override def toString: String = instantiation.toString + "<=" + general.toString
 }*/
 
-case class GuardedProduct(/*guards: Set[CaseGuard],*/name: Option[String],record: RecordProduct) {
-  val constructor = DataConstructors.constructor(name)
+abstract class DataConstructor
+case class NameConstructor(name: String) extends DataConstructor
+case class NamelessConstructor(representation: Int) extends DataConstructor
+case class NoConstructor() extends DataConstructor
+
+case class GuardedProduct(/*guards: Set[CaseGuard],*/name: DataConstructor,record: RecordProduct) {
+  val constructor = name match {
+    case NamelessConstructor(repr) => repr
+    case NameConstructor(str) => DataConstructors.constructor(Some(str))
+    case NoConstructor() => DataConstructors.constructor(None)
+  }
   /*assert(guards.forall(g => g.instantiation match { case rho: RhoType => rho.filter(tau => tau.isInstanceOf[TauVariable]).forall(tvar => record.filter(tau => tau == tvar) != Nil) case _ => true }))*/
   
   //def inhabited: Boolean = guards.forall(guard => guard.satisfiable)
@@ -263,8 +288,8 @@ case class GuardedProduct(/*guards: Set[CaseGuard],*/name: Option[String],record
     }*/
     //val contents = "[" + lets + "]" + record.toString
     name match {
-      case Some(str) => str + "(" + /*contents*/record.toString + ")"
-      case None => /*contents*/record.toString
+      case NameConstructor(str) => str + "(" + /*contents*/record.toString + ")"
+      case _ => /*contents*/record.toString
     }
   }
 }
@@ -274,6 +299,10 @@ class SumType(addends: List[GuardedProduct]) extends RhoType {
 
   /*if(addends.map(gp => !gp.inhabited).foldLeft(false)((x: Boolean,y: Boolean) => x && y))
     throw new Exception("GADT " + toString + " has no inhabitant values.")*/
+    
+  override def replace(from: TauVariable,to: TauType): SumType = {
+    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
+  }
     
   override def map(f: (TauType) => TauType): SumType = new SumType(sumCases.map(sumCase => sumCase.map(f)))
   override def scopeMap(f: (ScopeType) => ScopeType): SumType = {
@@ -331,7 +360,35 @@ class SumType(addends: List[GuardedProduct]) extends RhoType {
   }
 }
 
-object BooleanGamma extends SumType(GuardedProduct(/*Set.empty[CaseGuard],*/Some("false"),EmptyRecord) :: GuardedProduct(/*Set.empty[CaseGuard],*/Some("true"),EmptyRecord) :: Nil)
+class OpenSum(base: GuardedProduct) extends SumType(base :: Nil) {
+  protected var openCases = base :: Nil
+  override val sumCases = openCases
+  val recursiveThis = new RecursiveRho(this,FutureRecursion())
+  
+  override def replace(from: TauVariable,to: TauType): OpenSum = {
+    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
+  }
+  
+  override def map(f: (TauType) => TauType): OpenSum = {
+    val newCases = sumCases.map(sumCase => sumCase.map(f))
+    val result = new OpenSum(newCases.last)
+    result.openCases = newCases.map(gp => gp.map(tau => if(tau == recursiveThis) result.recursiveThis else tau))
+    result
+  }
+  
+  def expand(addend: GuardedProduct,selfReference: TauVariable,addBase: Boolean): GuardedProduct = {
+    val record = if(addBase) minimalRecord ++ addend.record.replace(selfReference,recursiveThis) else addend.record.replace(selfReference,recursiveThis)
+    val name = addend.name match {
+      case NoConstructor() => NamelessConstructor(addend.constructor)
+      case _ => addend.name
+    }
+    val newCase = new GuardedProduct(name,record)
+    openCases = newCase :: openCases
+    newCase
+  }
+}
+
+object BooleanGamma extends SumType(GuardedProduct(/*Set.empty[CaseGuard],*/NameConstructor("false"),EmptyRecord) :: GuardedProduct(/*Set.empty[CaseGuard],*/NameConstructor("true"),EmptyRecord) :: Nil)
 
 object DataConstructors {
   var next = 0
