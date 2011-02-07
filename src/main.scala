@@ -35,7 +35,7 @@ object Decac {
     //We reference the singletons for the primitive types to get their classes loaded and their names declared.
     Byte;
     Octet;
-    BooleanGamma;
+    BuiltInSums;
     FloatGamma;
     val modules = args.map(arg => compile(arg))
     for(module <- modules) {

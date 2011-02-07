@@ -40,7 +40,8 @@ object ASTProcessor {
     case named: ANamedLowerTypeForm => {
       val name = processQualifiedIdentifier(named.getTypename)
       scope.lookup(name) match {
-        case TypeDefinition(gamma,_,_) => gamma
+        //TODO: Add support for using type arguments
+        case defin: TypeDefinition => defin.sigma.freshlyInstantiate
         case _ => throw new Exception("Used an identifier in a type annotation that referred to a non-type definition.")
       }
     }

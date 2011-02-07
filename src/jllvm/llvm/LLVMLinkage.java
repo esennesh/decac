@@ -6,7 +6,6 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package jllvm.llvm;
 
 public final class LLVMLinkage {
   public final static LLVMLinkage LLVMExternalLinkage = new LLVMLinkage("LLVMExternalLinkage");

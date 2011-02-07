@@ -69,8 +69,13 @@ class ConstraintSet {
   def isEmpty = stack.isEmpty
 }
 
+abstract class Assumption(x: TauVariable,y: TauVariable)
+case class Subtype(x: TauVariable,y: TauVariable) extends Assumption(x,y)
+case class Equality(x: TauVariable,y: TauVariable) extends Assumption(x,y)
+
 class RangeUnificationInstance(scope: Option[Module]) {
   protected val constraints = new ConstraintSet()
+  val assumptions = new Stack[Assumption]()
   protected val result = new TauSubstitution
   scope match {
     case Some(module) => SigmaLattice.addModule(module)
@@ -127,35 +132,49 @@ abstract class Constraint(x: TauType,y: TauType) {
 
 class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
   override def infer(rui: RangeUnificationInstance): Unit = (alpha,beta) match {
+    //Cases for handling ranges and variables.
     case (alpha: GammaRange,beta: GammaRange) => {
       rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta.lowerBound,rui))))
       rui.substitute(beta,beta.refine(Some(SigmaLattice.join(alpha.upperBound,beta.lowerBound,rui)),None))
     }
     case (alpha: GammaRange,beta: TauVariable) => rui.substitute(beta,alpha)
     case (alpha: TauVariable,beta: GammaRange) => rui.substitute(alpha,beta)
-    case (alpha: TauVariable,beta: TauVariable) => rui.substitute(alpha,beta)
-    
+    case (alpha: TauVariable,beta: TauVariable) => {
+      if(rui.assumptions.contains(Subtype(beta,alpha)))
+        throw new Exception("Assumption " + beta.toString + " <: " + alpha.toString + " contradicts constraint.")
+      else if(!rui.assumptions.contains(Subtype(alpha,beta)))
+        rui.substitute(alpha,beta)
+    }
     case (alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta,rui))))
     case (alpha: GammaType,beta: GammaRange) => rui.substitute(beta,beta.refine(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),None))
     case (alpha: GammaType,beta: TauVariable) => rui.substitute(beta,beta.refine(Some(alpha),None))
     case (alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(beta)))
+    //Cases for type constructors.
+    case (alpha: ReferenceRho,beta: ReferenceRho) => {
+      (alpha.target,beta.target) match {
+        case (varx: SumType,vary: SumType) => {
+          varx.sumCases.zip(vary.sumCases).foreach(pair => rui.constrain(new Equal(pair._1.record,pair._2.record)))
+        }
+        case _ => rui.constrain(new Equal(alpha.target,beta.target))
+      }
+      if(!ScopeTypeOrdering.lt(alpha.scope,beta.scope))
+        throw new Exception("Type inference error: reference type " + alpha.toString + " has smaller scope than " + beta.toString)
+    }
+    case (alpha: RecursiveRho,beta: RecursiveRho) => {
+      val unfoldx = alpha.derecurse
+      val unfoldy = beta.derecurse
+      rui.assumptions.push(Subtype(unfoldx._1,unfoldy._1))
+      (new LesserEq(unfoldx._2,unfoldy._2)).infer(rui)
+      rui.assumptions.pop
+    }
+    case (rx: RhoType,ry: RecursiveRho) => rui.constrain(new LesserEq(rx,ry.unfold))
+    case (alpha: SumType,beta: SumType) => {
+      val shared = alpha.sumCases.zip(beta.sumCases)
+      shared.foreach(pair => rui.constrain(new Equal(pair._1.record,pair._2.record)))
+    }
     case (alpha: FunctionArrow,beta: FunctionArrow) => {
       beta.domain.zip(alpha.domain).map(pair => rui.constrain(new LesserEq(pair._1,pair._2)))
       rui.constrain(new LesserEq(alpha.range,beta.range))
-    }
-    case (alpha: SumType,beta: SumType) => {
-      val alphaShared = alpha.sumCases.filter(gpx => beta.sumCases.exists(gpy => gpx.constructor == gpy.constructor))
-      //When doing all this zipping, I need to make sure that corresponding elements match up.
-      val shared = alphaShared.zip(beta.sumCases.filter(gpy => alphaShared.contains(gpy)))
-      for(pair <- shared) {
-        val a = pair._1
-        val b = pair._2
-        /*for(guard <- a.guards.zip(b.guards)) {
-          rui.constrain(new Equal(guard._1.instantiation,guard._2.instantiation))
-          rui.constrain(new Equal(guard._1.general,guard._2.general))
-        }*/
-        rui.constrain(new Equal(a.record,b.record))
-      }
     }
     case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(!TauOrdering.lt(alpha,beta)) throw new Exception("Type inference error: Incorrect <: constraint on base types.")
     case _ => throw new Exception("Type inference error: " + alpha.toString + " </: " + beta.toString)
@@ -175,9 +194,24 @@ class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
     case (alpha: GammaRange,beta) => throw new Exception("Type inference error: Rho ranges cannot equal any other type.")
     
     case (alpha: TauVariable,beta: TauVariable) => rui.substitute(alpha,beta)
-    case (alpha: GammaType,beta: TauVariable) => rui.substitute(beta,alpha)
-    case (alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,beta)
-    
+    case (alpha: GammaType,beta: TauVariable) => alpha match {
+      case rho: RhoType => {
+        if(rho.filter(tau => tau == beta) != Nil)
+          rui.substitute(beta,new RecursiveMu(rho,UnrecursiveAlpha(beta)))
+        else
+          rui.substitute(beta,alpha)
+      }
+      case _ => rui.substitute(beta,alpha)
+    }
+    case (alpha: TauVariable,beta: GammaType) => beta match {
+      case rho: RhoType => {
+        if(rho.filter(tau => tau == alpha) != Nil)
+          rui.substitute(alpha,new RecursiveMu(rho,UnrecursiveAlpha(alpha)))
+        else
+          rui.substitute(alpha,beta)
+      }
+      case _ => rui.substitute(alpha,beta)
+    }
     case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(alpha != beta) throw new Exception("Type inference error: Two primitive types set equal to each other that are not equal.")
     case (alpha: RecordProduct,beta: RecordProduct) => {
       if(alpha.length == beta.length)

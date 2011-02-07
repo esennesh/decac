@@ -19,9 +19,12 @@ abstract class TauType {
 abstract class GammaType extends TauType with SigmaType {
   protected var definition: Option[TypeDefinition] = None
   
-  def define(d: TypeDefinition): Option[TypeDefinition] = {
-    definition = Some(d)
-    return definition
+  def define(d: TypeDefinition): Option[TypeDefinition] = definition match {
+    case Some(defined) => Some(defined)
+    case None => {
+      definition = Some(d)
+      return definition
+    }
   }
   
   def compile: LLVMType
@@ -41,12 +44,29 @@ abstract class GammaType extends TauType with SigmaType {
   }
   
   override def body: GammaType = this
+  
+  override def toString: String = definition match {
+    case Some(defined) => defined.name
+    case None => mangle
+  }
+  
+  def mangle: String
 }
 
-case class TypeDefinition(t: GammaType,n: String,context: Module) extends Definition {
-  val gamma = t
+class TypeDefinition(t: SigmaType,n: String,context: Module) extends Definition {
+  val sigma: SigmaType = t
   val name = n
   val scope = { context.define(this); context }
+  protected val specializations = new HashMap[List[GammaType],GammaType]()
+  
+  def instantiate(params: List[TauType]): GammaType = {
+    val result = sigma.instantiate(params)
+    if(params.forall(param => param match { case tvar: TauVariable => false case rho: RhoType => rho.filter(tau => !tau.isInstanceOf[GammaType]) != Nil case _ => true }))
+      specializations.put(params.map(param => param.asInstanceOf[GammaType]),result)
+    result
+  }
+  
+  def getSpecializations: Iterable[GammaType] = specializations.values
 }
 
 abstract class PrimitiveGamma extends GammaType {
@@ -58,18 +78,18 @@ abstract class PrimitiveGamma extends GammaType {
 
 object TopGamma extends PrimitiveGamma {
   override def compile: LLVMType = new LLVMVoidType
-  override def toString: String = "top"
+  override def mangle: String = "top"
 }
 
 object BottomGamma extends PrimitiveGamma {
   override def compile: LLVMType = new LLVMVoidType
-  override def toString: String = "bottom"
+  override def mangle: String = "bottom"
 }
 
 object OpaqueGamma extends PrimitiveGamma {
   protected val compiled: LLVMOpaqueType = new LLVMOpaqueType
   override def compile: LLVMType = compiled
-  override def toString: String = "opaque"
+  override def mangle: String = "opaque"
 }
 
 abstract class RhoType extends GammaType {
@@ -101,10 +121,10 @@ abstract class RhoType extends GammaType {
 
 abstract class RecursiveVariable
 case class UnrecursiveAlpha(alpha: TauVariable) extends RecursiveVariable
-case class MuBinding(mu: RecursiveRho) extends RecursiveVariable
+case class MuBinding(mu: RecursiveMu) extends RecursiveVariable
 case class FutureRecursion() extends RecursiveVariable
 
-class RecursiveRho(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
+class RecursiveMu(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
   val contents: RhoType = alpha match {
     case UnrecursiveAlpha(alpha) => rho.replace(alpha,this)
     case MuBinding(mu) => rho.map(tau => if(tau == mu) this else tau)
@@ -112,21 +132,25 @@ class RecursiveRho(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
   }
   
   def unfold: RhoType = contents.map(tau => tau)
-  def substitute(from: TauVariable,to: TauType): RecursiveRho = {
+  def derecurse: Tuple2[TauVariable,RhoType] = {
+    val alpha = new TauVariable
+    (alpha,contents.map(tau => if(tau == this) alpha else tau))
+  }
+  def substitute(from: TauVariable,to: TauType): RecursiveMu = {
     val unfolded = unfold.replace(from,to)
-    unfolded.filter(tau => tau.isInstanceOf[RecursiveRho]).head.asInstanceOf[RecursiveRho]
+    unfolded.filter(tau => tau.isInstanceOf[RecursiveMu]).head.asInstanceOf[RecursiveMu]
   }
   
-  override def replace(from: TauVariable,to: TauType): RecursiveRho = {
+  override def replace(from: TauVariable,to: TauType): RecursiveMu = {
     map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
   }
   
-  override def map(f: (TauType) => TauType): RecursiveRho = {
-    new RecursiveRho(contents.map(tau => if(tau == this) tau else f(tau)),MuBinding(this))
+  override def map(f: (TauType) => TauType): RecursiveMu = {
+    new RecursiveMu(contents.map(tau => if(tau == this) tau else f(tau)),MuBinding(this))
   }
   
-  override def scopeMap(f: (ScopeType) => ScopeType): RecursiveRho = {
-    new RecursiveRho(contents.scopeMap(f),MuBinding(this))
+  override def scopeMap(f: (ScopeType) => ScopeType): RecursiveMu = {
+    new RecursiveMu(contents.scopeMap(f),MuBinding(this))
   }
   
   override def filter(f: (TauType) => Boolean): List[TauType] = {
@@ -141,7 +165,7 @@ class RecursiveRho(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
     bodyHandle.resolve
   }
   
-  override def toString: String = {
+  override def mangle: String = {
     val alpha = new TauVariable
     "mu " + alpha.toString + "." + contents.map(tau => if(tau == this) alpha else tau).toString
   }
@@ -161,7 +185,7 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
   }
   
   override def map(f: (TauType) => TauType): RecordProduct = {
-    new RecordProduct(fields.map(field => new RecordMember(field.name,field.tau match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
+    new RecordProduct(fields.map(field => new RecordMember(field.name,field.tau match { case mu: RecursiveMu => f(mu) case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
   }
   
   override def scopeMap(f: (ScopeType) => ScopeType): RecordProduct = {
@@ -185,7 +209,7 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
     new LLVMStructType(compiledFields.toArray,true)
   }
   
-  override def toString: String = "{" + fields.map(field => field.name + ":" + field.tau.toString).foldRight("")((head: String,tail: String) => "_" + head + tail) + "}"
+  override def mangle: String = "{" + fields.map(field => field.name + ":" + field.tau.toString).foldRight("")((head: String,tail: String) => "_" + head + tail) + "}"
   
   def ++(rec: RecordProduct): RecordProduct = new RecordProduct(fields ++ rec.fields)
 }
@@ -201,7 +225,7 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   }
   
   override def map(f: (TauType) => TauType): FunctionArrow = {
-    val mappedDomain = domain.map(tau => tau match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(tau) })
+    val mappedDomain = domain.map(tau => tau match { case mu: RecursiveMu => f(mu) case rho: RhoType => rho.map(f) case _ => f(tau) })
     val mappedRange = range match { case rho: RhoType => rho.map(f) case _ => f(range) }
     new FunctionArrow(mappedDomain,mappedRange)
   }
@@ -241,64 +265,37 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
     new LLVMFunctionType(compiledRange,compiledDomain.toArray,false)
   }
   
-  override def toString: String = "(" + (domain match { case head :: tail => head.toString + tail.foldLeft("")((x: String,y: TauType) => x + "," + y.toString) case Nil => "" }) + ")->" + range.toString
+  override def mangle: String = "(" + (domain match { case head :: tail => head.toString + tail.foldLeft("")((x: String,y: TauType) => x + "," + y.toString) case Nil => "" }) + ")->" + range.toString
 }
 
-/*case class CaseGuard(instantiation: TauType,general: TauType) {
-  def satisfiable: Boolean = TauOrdering.equiv(instantiation,general)
-  def specialize(tvar: TypeParameter,tau: TauType): CaseGuard = general match {
-    case rho: RhoType => CaseGuard(instantiation,rho.replace(tvar,tau))
-    case param: TypeParameter => CaseGuard(instantiation,if(param == tvar) tau else param)
-    case _ => this
-  }
-  override def toString: String = instantiation.toString + "<=" + general.toString
-}*/
+case class DataConstructor(name: Option[String],representation: Option[Int])
 
-abstract class DataConstructor
-case class NameConstructor(name: String) extends DataConstructor
-case class NamelessConstructor(representation: Int) extends DataConstructor
-case class NoConstructor() extends DataConstructor
-
-case class GuardedProduct(/*guards: Set[CaseGuard],*/name: DataConstructor,record: RecordProduct) {
-  val constructor = name match {
-    case NamelessConstructor(repr) => repr
-    case NameConstructor(str) => DataConstructors.constructor(Some(str))
-    case NoConstructor() => DataConstructors.constructor(None)
+case class TaggedProduct(name: DataConstructor,record: RecordProduct) {
+  val constructor = name.representation match {
+    case Some(i) => i
+    case None => CaseTagger.constructor(name.name)
   }
-  /*assert(guards.forall(g => g.instantiation match { case rho: RhoType => rho.filter(tau => tau.isInstanceOf[TauVariable]).forall(tvar => record.filter(tau => tau == tvar) != Nil) case _ => true }))*/
   
-  //def inhabited: Boolean = guards.forall(guard => guard.satisfiable)
-  
-  def replace(tvar: TypeParameter,tau: TauType): GuardedProduct = {
-    //val replacedGuards = guards.map(guard => guard.specialize(tvar,tau))
+  def replace(tvar: TauVariable,tau: TauType): TaggedProduct = {
     val replacedProduct = record.replace(tvar,tau).asInstanceOf[RecordProduct]
-    GuardedProduct(/*replacedGuards,*/name,replacedProduct)
+    TaggedProduct(DataConstructor(name.name,Some(constructor)),replacedProduct)
   }
   
-  def map(f: (TauType) => TauType): GuardedProduct = {
-    /* val newGuards = guards.map(guard => CaseGuard(guard.instantiation,guard.general match { case mu: RecursiveRho => f(mu) case rho: RhoType => rho.map(f) case _ => f(guard.general) })) */
+  def map(f: (TauType) => TauType): TaggedProduct = {
     val newRecord = record.map(f)
-    GuardedProduct(/*newGuards,*/name,newRecord)
+    TaggedProduct(DataConstructor(name.name,Some(constructor)),newRecord)
   }
+  
   override def toString: String = {
-    /*val guardStrings = guards.map(guard => guard.toString)
-    val lets = guardStrings.toList match {
-      case first :: rest => first + rest.foldLeft("")((x: String,y: String) => x + "," + y)
-      case Nil => ""
-    }*/
-    //val contents = "[" + lets + "]" + record.toString
-    name match {
-      case NameConstructor(str) => str + "(" + /*contents*/record.toString + ")"
-      case _ => /*contents*/record.toString
+    name.name match {
+      case Some(str) => str + record.toString
+      case None => record.toString
     }
   }
 }
 
-class SumType(addends: List[GuardedProduct]) extends RhoType {
+class SumType(addends: List[TaggedProduct]) extends RhoType {
   val sumCases = addends
-
-  /*if(addends.map(gp => !gp.inhabited).foldLeft(false)((x: Boolean,y: Boolean) => x && y))
-    throw new Exception("GADT " + toString + " has no inhabitant values.")*/
     
   override def replace(from: TauVariable,to: TauType): SumType = {
     map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
@@ -306,16 +303,15 @@ class SumType(addends: List[GuardedProduct]) extends RhoType {
     
   override def map(f: (TauType) => TauType): SumType = new SumType(sumCases.map(sumCase => sumCase.map(f)))
   override def scopeMap(f: (ScopeType) => ScopeType): SumType = {
-    val scopedCases = sumCases.map(c => GuardedProduct(/*c.guards.map(guard => CaseGuard(guard.instantiation,guard.general match { case rho: RhoType => rho.scopeMap(f) case _ => guard.general })),*/c.name,c.record.scopeMap(f)))
+    val scopedCases = sumCases.map(c => TaggedProduct(c.name,c.record.scopeMap(f)))
     new SumType(scopedCases)
   }
   override def filter(p: (TauType) => Boolean): List[TauType] = {
     var result: List[TauType] = Nil
     sumCases.foreach(c => result = result ++ c.record.filter(p))
-    /*sumCases.foreach(c => c.guards.foreach(guard => if(p(guard.instantiation)) result = result ++ (guard.instantiation :: Nil)))*/
     result
   }
-  override def toString: String = {
+  override def mangle: String = {
     val sum = sumCases match {
       case head :: tail => head.toString + tail.map(x => x.toString).foldLeft("")((x: String,y: String) => x + " + " + y)
       case Nil => ""
@@ -345,8 +341,9 @@ class SumType(addends: List[GuardedProduct]) extends RhoType {
   
   def enumeration: Boolean = sumCases.forall(gp => gp.record.length == 0)
   
+  //TODO: I'm no longer using boxed representation of tagged-union types, I'm using C-style union representation!  I need to figure out how to represent the C-style unions in LLVM correctly!
   override def compile: LLVMType = {
-    val largestConstructor = sumCases.sortWith((x: GuardedProduct,y: GuardedProduct) => x.constructor > y.constructor).head.constructor
+    val largestConstructor = sumCases.sortWith((x: TaggedProduct,y: TaggedProduct) => x.constructor > y.constructor).head.constructor
     val representationSize = math.floor(math.log(largestConstructor) / math.log(2)).toInt + 1
     assert(representationSize > 0)
     if(enumeration) {
@@ -360,10 +357,10 @@ class SumType(addends: List[GuardedProduct]) extends RhoType {
   }
 }
 
-class OpenSum(base: GuardedProduct) extends SumType(base :: Nil) {
+class OpenSum(base: TaggedProduct) extends SumType(base :: Nil) {
   protected var openCases = base :: Nil
   override val sumCases = openCases
-  val recursiveThis = new RecursiveRho(this,FutureRecursion())
+  val recursiveThis = new RecursiveMu(this,FutureRecursion())
   
   override def replace(from: TauVariable,to: TauType): OpenSum = {
     map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
@@ -376,22 +373,20 @@ class OpenSum(base: GuardedProduct) extends SumType(base :: Nil) {
     result
   }
   
-  def expand(addend: GuardedProduct,selfReference: TauVariable,addBase: Boolean): GuardedProduct = {
+  def expand(addend: TaggedProduct,selfReference: TauVariable,addBase: Boolean): TaggedProduct = {
     val record = if(addBase) minimalRecord ++ addend.record.replace(selfReference,recursiveThis) else addend.record.replace(selfReference,recursiveThis)
     val name = addend.name match {
       case NoConstructor() => NamelessConstructor(addend.constructor)
       case _ => addend.name
     }
-    val newCase = new GuardedProduct(name,record)
+    val newCase = new TaggedProduct(name,record)
     openCases = newCase :: openCases
     newCase
   }
 }
 
-object BooleanGamma extends SumType(GuardedProduct(/*Set.empty[CaseGuard],*/NameConstructor("false"),EmptyRecord) :: GuardedProduct(/*Set.empty[CaseGuard],*/NameConstructor("true"),EmptyRecord) :: Nil)
-
-object DataConstructors {
-  var next = 0
+object CaseTagger {
+  protected var next = 0
   val constructors = new HashMap[String,Int]
   
   protected def freshConstructor(name: Option[String]): Int = {
@@ -428,8 +423,6 @@ class TauVariable extends TauType {
     new GammaRange(lower,upper)
   }
 }
-
-class TypeParameter extends TauVariable
 
 class GammaRange(l: GammaType,h: GammaType) extends TauVariable {
   val lowerBound: GammaType = l
@@ -474,7 +467,7 @@ abstract class BetaType extends SigmaType {
   override def body: RhoType
 }
 
-class BetaVariable(b: BetaType) extends TypeParameter {
+class BetaVariable(b: BetaType) extends TauVariable {
   val beta: BetaType = b
 }
 
@@ -507,6 +500,16 @@ class BetaRho(r: RhoType,tvar: TauVariable) extends BetaType {
   }
   
   override def body: RhoType = rho
+}
+
+object BuiltInSums {
+  val BooleanGamma = {
+    val cases = TaggedProduct(DataConstructor(Some("false"),None),EmptyRecord) :: TaggedProduct(DataConstructor(Some("true"),None),EmptyRecord) :: Nil
+    val result = new SumType(cases)
+    result.define(new TypeDefinition(result,"boolean",GlobalScope))
+    result
+  }
+  val option: SigmaType = (new SumType(TaggedProduct(DataConstructor(Some("Some"),None),new RecordProduct(new RecordMember(None,new TauVariable) :: Nil)) :: TaggedProduct(DataConstructor(Some("None"),None),EmptyRecord) :: Nil)).generalize(new TauSubstitution)
 }
 
 class BetaBeta(b: BetaType,tvar: TauVariable) extends BetaType {

@@ -9,6 +9,8 @@ abstract class NumericalGamma(n: String,p: Option[NumericalGamma]) extends Primi
   val name: String = n
   val parent: Option[NumericalGamma] = p
   define(new TypeDefinition(this,name,GlobalScope))
+  
+  override def mangle: String = name
 }
 
 abstract class IntegerGamma(n: String,p: Option[NumericalGamma]) extends NumericalGamma(n,p) {

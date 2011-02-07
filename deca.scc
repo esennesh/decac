@@ -94,6 +94,7 @@ Tokens
   sizeof = 'sizeof';
   match = 'match';
   return = 'return';
+  option_marker = '?';
   
   blank = eol | tab | ' ';
   tabspace = [tab + ' '];
@@ -130,6 +131,7 @@ Productions
     {variant} variant_keyword lbracket variant_component+ rbracket |
     {class} class_keyword function_arguments? extension_clause? lbracket [member]:member_declaration+ destructor_definition? rbracket |
     {exception} exception lparen identifier_list rparen [extension]:extension_clause? |
+    {option} lower_type_form option_marker |
     {others} lower_type_form;
   
   destructor_definition = delete [destructor]:block_expression;

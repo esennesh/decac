@@ -6,7 +6,6 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package jllvm.llvm;
 
 public final class LLVMOpcode {
   public final static LLVMOpcode LLVMRet = new LLVMOpcode("LLVMRet", CoreJNI.LLVMRet_get());

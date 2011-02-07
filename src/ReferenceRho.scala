@@ -34,5 +34,5 @@ class ReferenceRho(tau: TauType,st: ScopeType) extends RhoType {
     case _ => if(p(target) == true) target :: Nil else Nil
   }
   
-  override def toString: String = scope.toString + "|-" + target.toString + "*"
+  override def mangle: String = scope.toString + "|-" + target.toString + "*"
 }

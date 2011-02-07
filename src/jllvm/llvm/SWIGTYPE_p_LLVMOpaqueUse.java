@@ -6,7 +6,6 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package jllvm.llvm;
 
 public class SWIGTYPE_p_LLVMOpaqueUse {
   private long swigCPtr;

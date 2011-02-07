@@ -6,7 +6,6 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package jllvm.llvm;
 
 public final class LLVMIntPredicate {
   public final static LLVMIntPredicate LLVMIntEQ = new LLVMIntPredicate("LLVMIntEQ", CoreJNI.LLVMIntEQ_get());

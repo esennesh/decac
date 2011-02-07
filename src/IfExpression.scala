@@ -14,7 +14,7 @@ class UninferredIf(possibilities: List[Tuple2[UninferredExpression,UninferredExp
     new IfExpression(conditions.zip(results),substituteTypes(substitution)._1)
   }
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
-    cases.map(ifcase => { rui.constrain(new LesserEq(ifcase._1.expressionType,BooleanGamma)); rui.constrain(new LesserEq(ifcase._2.expressionType,expressionType)); ifcase._1.constrain(rui); ifcase._2.constrain(rui) })
+    cases.map(ifcase => { rui.constrain(new LesserEq(ifcase._1.expressionType,BuiltInSums.BooleanGamma)); rui.constrain(new LesserEq(ifcase._2.expressionType,expressionType)); ifcase._1.constrain(rui); ifcase._2.constrain(rui) })
     return rui
   }
 }
@@ -55,7 +55,8 @@ class SpecializedIf(possibilities: List[Tuple2[SpecializedExpression,Specialized
     }
     case ifcase :: rest => {
       //val decaTrue = GlobalScope.lookup("true")
-      val condition = new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,ifcase._1.compile(builder,scope),LLVMConstantInteger.constantInteger(new LLVMIntegerType(1),1,false),"condition")
+      val comparator = ifcase._1.compile(builder,scope)
+      val condition = new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,comparator,LLVMConstantInteger.constantInteger(new LLVMIntegerType(1),1,false),"condition")
       val thenBlock = mergeBlock.insertBasicBlockBefore("then")
       val elseBlock = mergeBlock.insertBasicBlockBefore("else")
       val ifBranch = new LLVMBranchInstruction(builder,condition,thenBlock,elseBlock)

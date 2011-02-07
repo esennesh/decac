@@ -38,7 +38,7 @@ class Module(m: Module,n: String) extends Scope[Definition](m) with Definition {
           val builder = new LLVMInstructionBuilder
           function.specialized.foreach(func => func.compile(builder))
         }
-        case TypeDefinition(gamma,name,_) => compiledModule.addTypeName(name,gamma.compile)
+        case defin: TypeDefinition => defin.getSpecializations.foreach(gamma => compiledModule.addTypeName(name,gamma.compile))
         case global: ModuleVariableDefinition => {
           val compiledGlobal = compiledModule.addGlobal(global.variableType.compile,global.name)
           //TODO: Add code for constant expressions, and use it to set the initializer on global variables.

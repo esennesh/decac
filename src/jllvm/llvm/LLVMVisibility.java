@@ -6,7 +6,6 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package jllvm.llvm;
 
 public final class LLVMVisibility {
   public final static LLVMVisibility LLVMDefaultVisibility = new LLVMVisibility("LLVMDefaultVisibility");
