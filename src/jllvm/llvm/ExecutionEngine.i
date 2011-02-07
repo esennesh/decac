@@ -4,8 +4,10 @@
 %}
 
 %include "carrays.i"
+%array_functions(LLVMValueRef,LLVMValueRefArray)
 %array_functions(LLVMGenericValueRef,LLVMGenericValueRefArray)
 %array_functions(LLVMExecutionEngineRef,LLVMExecutionEngineRefArray)
+%array_functions(LLVMModuleRef,LLVMModuleRefArray)
 %array_functions(char*,StringArray)
 /*===-- llvm-c/ExecutionEngine.h - ExecutionEngine Lib C Iface --*- C++ -*-===*\
 |*                                                                            *|
@@ -39,6 +41,9 @@ void LLVMLinkInJIT(void);
 void LLVMLinkInInterpreter(void);
 
 typedef int LLVMBool;
+typedef struct LLVMOpaqueModule *LLVMModuleRef;
+typedef struct LLVMOpaqueTargetData *LLVMTargetDataRef;
+typedef struct LLVMOpaqueValue *LLVMValueRef;
 typedef struct LLVMOpaqueGenericValue *LLVMGenericValueRef;
 typedef struct LLVMOpaqueExecutionEngine *LLVMExecutionEngineRef;
 typedef struct LLVMOpaqueType *LLVMTypeRef;
@@ -126,7 +131,7 @@ LLVMBool LLVMRemoveModule(LLVMExecutionEngineRef EE, LLVMModuleRef M,
                                   LLVMModuleRef *OutMod, char **OutError); */
 
 LLVMBool LLVMFindFunction(LLVMExecutionEngineRef EE, const char *Name,
-                          LLVMValueRef *OUTPUT);
+                          LLVMValueRef *OutFunc);
 
 LLVMTargetDataRef LLVMGetExecutionEngineTargetData(LLVMExecutionEngineRef EE);
 

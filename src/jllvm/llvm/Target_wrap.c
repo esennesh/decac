@@ -208,18 +208,14 @@ SWIGEXPORT void JNICALL Java_jllvm_llvm_TargetJNI_LLVMInitializeAllTargets(JNIEn
 }
 
 
-SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMInitializeNativeTarget(JNIEnv *jenv, jclass jcls) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_TargetJNI_LLVMInitializeNativeTarget(JNIEnv *jenv, jclass jcls) {
+  jint jresult = 0 ;
   LLVMBool result;
   
   (void)jenv;
   (void)jcls;
-  result = LLVMInitializeNativeTarget();
-  {
-    LLVMBool * resultptr = (LLVMBool *) malloc(sizeof(LLVMBool));
-    memmove(resultptr, &result, sizeof(LLVMBool));
-    *(LLVMBool **)&jresult = resultptr;
-  }
+  result = (LLVMBool)LLVMInitializeNativeTarget();
+  jresult = (jint)result; 
   return jresult;
 }
 
@@ -245,18 +241,12 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_TargetJNI_LLVMCreateTargetData(JNIEnv *
 
 SWIGEXPORT void JNICALL Java_jllvm_llvm_TargetJNI_LLVMAddTargetData(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMTargetDataRef arg1 = (LLVMTargetDataRef) 0 ;
-  LLVMPassManagerRef arg2 ;
-  LLVMPassManagerRef *argp2 ;
+  LLVMPassManagerRef arg2 = (LLVMPassManagerRef) 0 ;
   
   (void)jenv;
   (void)jcls;
   arg1 = *(LLVMTargetDataRef *)&jarg1; 
-  argp2 = *(LLVMPassManagerRef **)&jarg2; 
-  if (!argp2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Attempt to dereference null LLVMPassManagerRef");
-    return ;
-  }
-  arg2 = *argp2; 
+  arg2 = *(LLVMPassManagerRef *)&jarg2; 
   LLVMAddTargetData(arg1,arg2);
 }
 

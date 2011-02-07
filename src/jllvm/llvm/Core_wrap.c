@@ -258,7 +258,7 @@ static void LLVMBasicBlockRefArray_setitem(LLVMBasicBlockRef *ary, int index, LL
 extern "C" {
 #endif
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_new_1LLVMTypeRefArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_new_1LLVMTypeRefArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
   jlong jresult = 0 ;
   int arg1 ;
   LLVMTypeRef *result = 0 ;
@@ -272,7 +272,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_new_1LLVMTypeRefArray(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_delete_1LLVMTypeRefArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_delete_1LLVMTypeRefArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMTypeRef *arg1 = (LLVMTypeRef *) 0 ;
   
   (void)jenv;
@@ -282,7 +282,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_delete_1LLVMTypeRefArray(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMTypeRefArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMTypeRefArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   jlong jresult = 0 ;
   LLVMTypeRef *arg1 = (LLVMTypeRef *) 0 ;
   int arg2 ;
@@ -298,7 +298,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMTypeRefArray_1getitem(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMTypeRefArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMTypeRefArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
   LLVMTypeRef *arg1 = (LLVMTypeRef *) 0 ;
   int arg2 ;
   LLVMTypeRef arg3 = (LLVMTypeRef) 0 ;
@@ -312,7 +312,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMTypeRefArray_1setitem(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_new_1LLVMValueRefArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_new_1LLVMValueRefArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
   jlong jresult = 0 ;
   int arg1 ;
   LLVMValueRef *result = 0 ;
@@ -326,7 +326,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_new_1LLVMValueRefArray(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_delete_1LLVMValueRefArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_delete_1LLVMValueRefArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMValueRef *arg1 = (LLVMValueRef *) 0 ;
   
   (void)jenv;
@@ -336,7 +336,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_delete_1LLVMValueRefArray(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMValueRefArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMValueRefArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef *arg1 = (LLVMValueRef *) 0 ;
   int arg2 ;
@@ -352,7 +352,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMValueRefArray_1getitem(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMValueRefArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMValueRefArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
   LLVMValueRef *arg1 = (LLVMValueRef *) 0 ;
   int arg2 ;
   LLVMValueRef arg3 = (LLVMValueRef) 0 ;
@@ -366,7 +366,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMValueRefArray_1setitem(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_new_1UnsignedIntArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_new_1UnsignedIntArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
   jlong jresult = 0 ;
   int arg1 ;
   unsigned int *result = 0 ;
@@ -380,7 +380,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_new_1UnsignedIntArray(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_delete_1UnsignedIntArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_delete_1UnsignedIntArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   unsigned int *arg1 = (unsigned int *) 0 ;
   
   (void)jenv;
@@ -390,7 +390,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_delete_1UnsignedIntArray(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_UnsignedIntArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_UnsignedIntArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   jlong jresult = 0 ;
   unsigned int *arg1 = (unsigned int *) 0 ;
   int arg2 ;
@@ -406,7 +406,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_UnsignedIntArray_1getitem(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_UnsignedIntArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_UnsignedIntArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
   unsigned int *arg1 = (unsigned int *) 0 ;
   int arg2 ;
   unsigned int arg3 ;
@@ -420,7 +420,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_UnsignedIntArray_1setitem(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_new_1LLVMBasicBlockRefArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_new_1LLVMBasicBlockRefArray(JNIEnv *jenv, jclass jcls, jint jarg1) {
   jlong jresult = 0 ;
   int arg1 ;
   LLVMBasicBlockRef *result = 0 ;
@@ -434,7 +434,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_new_1LLVMBasicBlockRefArray(JNIEnv *jenv, 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_delete_1LLVMBasicBlockRefArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_delete_1LLVMBasicBlockRefArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMBasicBlockRef *arg1 = (LLVMBasicBlockRef *) 0 ;
   
   (void)jenv;
@@ -444,7 +444,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_delete_1LLVMBasicBlockRefArray(JNIEnv *jenv
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBasicBlockRefArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBasicBlockRefArray_1getitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   jlong jresult = 0 ;
   LLVMBasicBlockRef *arg1 = (LLVMBasicBlockRef *) 0 ;
   int arg2 ;
@@ -460,7 +460,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBasicBlockRefArray_1getitem(JNIEnv *je
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMBasicBlockRefArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMBasicBlockRefArray_1setitem(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
   LLVMBasicBlockRef *arg1 = (LLVMBasicBlockRef *) 0 ;
   int arg2 ;
   LLVMBasicBlockRef arg3 = (LLVMBasicBlockRef) 0 ;
@@ -474,7 +474,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMBasicBlockRefArray_1setitem(JNIEnv *jen
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMZExtAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMZExtAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -486,7 +486,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMZExtAttribute_1get(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSExtAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMSExtAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -498,7 +498,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSExtAttribute_1get(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoReturnAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMNoReturnAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -510,7 +510,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoReturnAttribute_1get(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInRegAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMInRegAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -522,7 +522,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInRegAttribute_1get(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMStructRetAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMStructRetAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -534,7 +534,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMStructRetAttribute_1get(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoUnwindAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMNoUnwindAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -546,7 +546,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoUnwindAttribute_1get(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoAliasAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMNoAliasAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -558,7 +558,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoAliasAttribute_1get(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMByValAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMByValAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -570,7 +570,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMByValAttribute_1get(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNestAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMNestAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -582,7 +582,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNestAttribute_1get(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMReadNoneAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMReadNoneAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -594,7 +594,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMReadNoneAttribute_1get(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMReadOnlyAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMReadOnlyAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -606,7 +606,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMReadOnlyAttribute_1get(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoInlineAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMNoInlineAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -618,7 +618,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoInlineAttribute_1get(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAlwaysInlineAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMAlwaysInlineAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -630,7 +630,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAlwaysInlineAttribute_1get(JNIEnv *jenv
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMOptimizeForSizeAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMOptimizeForSizeAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -642,7 +642,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMOptimizeForSizeAttribute_1get(JNIEnv *j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMStackProtectAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMStackProtectAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -654,7 +654,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMStackProtectAttribute_1get(JNIEnv *jenv
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMStackProtectReqAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMStackProtectReqAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -666,7 +666,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMStackProtectReqAttribute_1get(JNIEnv *j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAlignment_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMAlignment_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -678,7 +678,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAlignment_1get(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoCaptureAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMNoCaptureAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -690,7 +690,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoCaptureAttribute_1get(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoRedZoneAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMNoRedZoneAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -702,7 +702,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoRedZoneAttribute_1get(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoImplicitFloatAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMNoImplicitFloatAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -714,7 +714,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNoImplicitFloatAttribute_1get(JNIEnv *j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNakedAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMNakedAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -726,7 +726,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMNakedAttribute_1get(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInlineHintAttribute_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMInlineHintAttribute_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -738,7 +738,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInlineHintAttribute_1get(JNIEnv *jenv, 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMStackAlignment_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMStackAlignment_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMAttribute result;
   
@@ -750,7 +750,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMStackAlignment_1get(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMRet_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMRet_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -762,7 +762,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMRet_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMBr_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMBr_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -774,7 +774,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMBr_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSwitch_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMSwitch_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -786,7 +786,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSwitch_1get(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIndirectBr_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIndirectBr_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -798,7 +798,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIndirectBr_1get(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInvoke_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMInvoke_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -810,7 +810,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInvoke_1get(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMUnwind_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMUnwind_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -822,7 +822,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMUnwind_1get(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMUnreachable_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMUnreachable_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -834,7 +834,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMUnreachable_1get(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAdd_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMAdd_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -846,7 +846,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAdd_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFAdd_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFAdd_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -858,7 +858,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFAdd_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSub_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMSub_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -870,7 +870,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSub_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFSub_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFSub_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -882,7 +882,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFSub_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMMul_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMMul_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -894,7 +894,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMMul_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFMul_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFMul_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -906,7 +906,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFMul_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMUDiv_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMUDiv_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -918,7 +918,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMUDiv_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSDiv_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMSDiv_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -930,7 +930,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSDiv_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFDiv_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFDiv_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -942,7 +942,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFDiv_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMURem_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMURem_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -954,7 +954,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMURem_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSRem_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMSRem_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -966,7 +966,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSRem_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFRem_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFRem_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -978,7 +978,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFRem_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMShl_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMShl_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -990,7 +990,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMShl_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMLShr_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMLShr_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1002,7 +1002,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMLShr_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAShr_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMAShr_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1014,7 +1014,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAShr_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAnd_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMAnd_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1026,7 +1026,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAnd_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMOr_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMOr_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1038,7 +1038,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMOr_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMXor_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMXor_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1050,7 +1050,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMXor_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAlloca_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMAlloca_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1062,7 +1062,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAlloca_1get(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMLoad_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMLoad_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1074,7 +1074,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMLoad_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMStore_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMStore_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1086,7 +1086,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMStore_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetElementPtr_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetElementPtr_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1098,7 +1098,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetElementPtr_1get(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMTrunc_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMTrunc_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1110,7 +1110,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMTrunc_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMZExt_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMZExt_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1122,7 +1122,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMZExt_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSExt_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMSExt_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1134,7 +1134,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSExt_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFPToUI_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFPToUI_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1146,7 +1146,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFPToUI_1get(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFPToSI_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFPToSI_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1158,7 +1158,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFPToSI_1get(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMUIToFP_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMUIToFP_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1170,7 +1170,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMUIToFP_1get(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSIToFP_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMSIToFP_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1182,7 +1182,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSIToFP_1get(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFPTrunc_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFPTrunc_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1194,7 +1194,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFPTrunc_1get(JNIEnv *jenv, jclass jcls)
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFPExt_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFPExt_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1206,7 +1206,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFPExt_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMPtrToInt_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMPtrToInt_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1218,7 +1218,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMPtrToInt_1get(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIntToPtr_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIntToPtr_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1230,7 +1230,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIntToPtr_1get(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMBitCast_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMBitCast_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1242,7 +1242,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMBitCast_1get(JNIEnv *jenv, jclass jcls)
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMICmp_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMICmp_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1254,7 +1254,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMICmp_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFCmp_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFCmp_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1266,7 +1266,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFCmp_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMPHI_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMPHI_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1278,7 +1278,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMPHI_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMCall_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMCall_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1290,7 +1290,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMCall_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSelect_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMSelect_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1302,7 +1302,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMSelect_1get(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMVAArg_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMVAArg_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1314,7 +1314,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMVAArg_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMExtractElement_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMExtractElement_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1326,7 +1326,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMExtractElement_1get(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInsertElement_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMInsertElement_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1338,7 +1338,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInsertElement_1get(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMShuffleVector_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMShuffleVector_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1350,7 +1350,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMShuffleVector_1get(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMExtractValue_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMExtractValue_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1362,7 +1362,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMExtractValue_1get(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInsertValue_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMInsertValue_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMOpcode result;
   
@@ -1374,7 +1374,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInsertValue_1get(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMCCallConv_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMCCallConv_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMCallConv result;
   
@@ -1386,7 +1386,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMCCallConv_1get(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFastCallConv_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFastCallConv_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMCallConv result;
   
@@ -1398,7 +1398,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFastCallConv_1get(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMColdCallConv_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMColdCallConv_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMCallConv result;
   
@@ -1410,7 +1410,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMColdCallConv_1get(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMX86StdcallCallConv_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMX86StdcallCallConv_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMCallConv result;
   
@@ -1422,7 +1422,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMX86StdcallCallConv_1get(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMX86FastcallCallConv_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMX86FastcallCallConv_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMCallConv result;
   
@@ -1434,7 +1434,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMX86FastcallCallConv_1get(JNIEnv *jenv, 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIntEQ_1get(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIntEQ_1get(JNIEnv *jenv, jclass jcls) {
   jint jresult = 0 ;
   LLVMIntPredicate result;
   
@@ -1446,7 +1446,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIntEQ_1get(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeMessage(JNIEnv *jenv, jclass jcls, jstring jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDisposeMessage(JNIEnv *jenv, jclass jcls, jstring jarg1) {
   char *arg1 = (char *) 0 ;
   
   (void)jenv;
@@ -1461,7 +1461,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeMessage(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMContextCreate(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMContextCreate(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMContextRef result;
   
@@ -1473,7 +1473,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMContextCreate(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetGlobalContext(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetGlobalContext(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMContextRef result;
   
@@ -1485,7 +1485,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetGlobalContext(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMContextDispose(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMContextDispose(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   
   (void)jenv;
@@ -1495,7 +1495,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMContextDispose(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetMDKindIDInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetMDKindIDInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -1518,7 +1518,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetMDKindIDInContext(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetMDKindID(JNIEnv *jenv, jclass jcls, jstring jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetMDKindID(JNIEnv *jenv, jclass jcls, jstring jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   char *arg1 = (char *) 0 ;
   unsigned int arg2 ;
@@ -1539,7 +1539,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetMDKindID(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMModuleCreateWithName(JNIEnv *jenv, jclass jcls, jstring jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMModuleCreateWithName(JNIEnv *jenv, jclass jcls, jstring jarg1) {
   jlong jresult = 0 ;
   char *arg1 = (char *) 0 ;
   LLVMModuleRef result;
@@ -1558,7 +1558,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMModuleCreateWithName(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMModuleCreateWithNameInContext(JNIEnv *jenv, jclass jcls, jstring jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMModuleCreateWithNameInContext(JNIEnv *jenv, jclass jcls, jstring jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   char *arg1 = (char *) 0 ;
   LLVMContextRef arg2 = (LLVMContextRef) 0 ;
@@ -1579,7 +1579,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMModuleCreateWithNameInContext(JNIEnv *
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeModule(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDisposeModule(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   
   (void)jenv;
@@ -1589,7 +1589,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeModule(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jstring JNICALL Java_CoreJNI_LLVMGetDataLayout(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jstring JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetDataLayout(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jstring jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   char *result = 0 ;
@@ -1603,7 +1603,7 @@ SWIGEXPORT jstring JNICALL Java_CoreJNI_LLVMGetDataLayout(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetDataLayout(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetDataLayout(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   char *arg2 = (char *) 0 ;
   
@@ -1620,7 +1620,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetDataLayout(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jstring JNICALL Java_CoreJNI_LLVMGetTarget(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jstring JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetTarget(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jstring jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   char *result = 0 ;
@@ -1634,7 +1634,7 @@ SWIGEXPORT jstring JNICALL Java_CoreJNI_LLVMGetTarget(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetTarget(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetTarget(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   char *arg2 = (char *) 0 ;
   
@@ -1651,7 +1651,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetTarget(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAddTypeName(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddTypeName(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
   jint jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -1674,7 +1674,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMAddTypeName(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDeleteTypeName(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDeleteTypeName(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   char *arg2 = (char *) 0 ;
   
@@ -1691,7 +1691,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDeleteTypeName(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetTypeByName(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetTypeByName(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -1712,7 +1712,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetTypeByName(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDumpModule(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDumpModule(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   
   (void)jenv;
@@ -1722,7 +1722,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDumpModule(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetTypeKind(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetTypeKind(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMTypeKind result;
@@ -1736,7 +1736,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetTypeKind(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetTypeContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetTypeContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMContextRef result;
@@ -1750,7 +1750,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetTypeContext(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt1TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInt1TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -1764,7 +1764,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt1TypeInContext(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt8TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInt8TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -1778,7 +1778,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt8TypeInContext(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt16TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInt16TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -1792,7 +1792,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt16TypeInContext(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt32TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInt32TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -1806,7 +1806,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt32TypeInContext(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt64TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInt64TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -1820,7 +1820,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt64TypeInContext(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIntTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIntTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   unsigned int arg2 ;
@@ -1836,7 +1836,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIntTypeInContext(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt1Type(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInt1Type(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -1848,7 +1848,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt1Type(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt8Type(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInt8Type(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -1860,7 +1860,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt8Type(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt16Type(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInt16Type(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -1872,7 +1872,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt16Type(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt32Type(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInt32Type(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -1884,7 +1884,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt32Type(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt64Type(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInt64Type(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -1896,7 +1896,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInt64Type(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIntType(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIntType(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   unsigned int arg1 ;
   LLVMTypeRef result;
@@ -1910,7 +1910,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIntType(JNIEnv *jenv, jclass jcls, jlo
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetIntTypeWidth(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetIntTypeWidth(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned int result;
@@ -1924,7 +1924,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetIntTypeWidth(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMFloatTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMFloatTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -1938,7 +1938,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMFloatTypeInContext(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMDoubleTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMDoubleTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -1952,7 +1952,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMDoubleTypeInContext(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMX86FP80TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMX86FP80TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -1966,7 +1966,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMX86FP80TypeInContext(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMFP128TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMFP128TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -1980,7 +1980,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMFP128TypeInContext(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMPPCFP128TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMPPCFP128TypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -1994,7 +1994,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMPPCFP128TypeInContext(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMFloatType(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMFloatType(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -2006,7 +2006,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMFloatType(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMDoubleType(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMDoubleType(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -2018,7 +2018,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMDoubleType(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMX86FP80Type(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMX86FP80Type(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -2030,7 +2030,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMX86FP80Type(JNIEnv *jenv, jclass jcls)
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMFP128Type(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMFP128Type(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -2042,7 +2042,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMFP128Type(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMPPCFP128Type(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMPPCFP128Type(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -2054,7 +2054,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMPPCFP128Type(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMFunctionType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jint jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMFunctionType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jint jarg4) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMTypeRef *arg2 = (LLVMTypeRef *) 0 ;
@@ -2074,7 +2074,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMFunctionType(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsFunctionVarArg(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsFunctionVarArg(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMBool result;
@@ -2088,7 +2088,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsFunctionVarArg(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetReturnType(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetReturnType(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMTypeRef result;
@@ -2102,7 +2102,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetReturnType(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountParamTypes(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCountParamTypes(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned int result;
@@ -2116,7 +2116,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountParamTypes(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMGetParamTypes(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetParamTypes(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMTypeRef *arg2 = (LLVMTypeRef *) 0 ;
   
@@ -2128,7 +2128,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMGetParamTypes(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMStructTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jint jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMStructTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jint jarg4) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef *arg2 = (LLVMTypeRef *) 0 ;
@@ -2148,7 +2148,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMStructTypeInContext(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMStructType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jint jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMStructType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jint jarg3) {
   jlong jresult = 0 ;
   LLVMTypeRef *arg1 = (LLVMTypeRef *) 0 ;
   unsigned int arg2 ;
@@ -2166,7 +2166,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMStructType(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountStructElementTypes(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCountStructElementTypes(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned int result;
@@ -2180,7 +2180,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountStructElementTypes(JNIEnv *jenv, 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMGetStructElementTypes(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetStructElementTypes(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMTypeRef *arg2 = (LLVMTypeRef *) 0 ;
   
@@ -2192,7 +2192,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMGetStructElementTypes(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsPackedStruct(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsPackedStruct(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMBool result;
@@ -2206,7 +2206,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsPackedStruct(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMUnionTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMUnionTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef *arg2 = (LLVMTypeRef *) 0 ;
@@ -2224,7 +2224,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMUnionTypeInContext(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMUnionType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMUnionType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMTypeRef *arg1 = (LLVMTypeRef *) 0 ;
   unsigned int arg2 ;
@@ -2240,7 +2240,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMUnionType(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountUnionElementTypes(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCountUnionElementTypes(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned int result;
@@ -2254,7 +2254,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountUnionElementTypes(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMGetUnionElementTypes(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetUnionElementTypes(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMTypeRef *arg2 = (LLVMTypeRef *) 0 ;
   
@@ -2266,7 +2266,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMGetUnionElementTypes(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMArrayType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMArrayType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned int arg2 ;
@@ -2282,7 +2282,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMArrayType(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMPointerType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMPointerType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned int arg2 ;
@@ -2298,7 +2298,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMPointerType(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMVectorType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMVectorType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned int arg2 ;
@@ -2314,7 +2314,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMVectorType(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetElementType(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetElementType(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMTypeRef result;
@@ -2328,7 +2328,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetElementType(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetArrayLength(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetArrayLength(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned int result;
@@ -2342,7 +2342,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetArrayLength(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPointerAddressSpace(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetPointerAddressSpace(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned int result;
@@ -2356,7 +2356,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPointerAddressSpace(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetVectorSize(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetVectorSize(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned int result;
@@ -2370,7 +2370,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetVectorSize(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMVoidTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMVoidTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -2384,7 +2384,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMVoidTypeInContext(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMLabelTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMLabelTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -2398,7 +2398,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMLabelTypeInContext(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMOpaqueTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMOpaqueTypeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMTypeRef result;
@@ -2412,7 +2412,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMOpaqueTypeInContext(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMVoidType(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMVoidType(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -2424,7 +2424,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMVoidType(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMLabelType(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMLabelType(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -2436,7 +2436,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMLabelType(JNIEnv *jenv, jclass jcls) {
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMOpaqueType(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMOpaqueType(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMTypeRef result;
   
@@ -2448,7 +2448,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMOpaqueType(JNIEnv *jenv, jclass jcls) 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateTypeHandle(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCreateTypeHandle(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMTypeHandleRef result;
@@ -2462,7 +2462,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateTypeHandle(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMRefineType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMRefineType(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
   
@@ -2474,7 +2474,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMRefineType(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMResolveTypeHandle(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMResolveTypeHandle(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeHandleRef arg1 = (LLVMTypeHandleRef) 0 ;
   LLVMTypeRef result;
@@ -2488,7 +2488,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMResolveTypeHandle(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeTypeHandle(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDisposeTypeHandle(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMTypeHandleRef arg1 = (LLVMTypeHandleRef) 0 ;
   
   (void)jenv;
@@ -2498,7 +2498,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeTypeHandle(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMTypeOf(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMTypeOf(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef result;
@@ -2512,7 +2512,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMTypeOf(JNIEnv *jenv, jclass jcls, jlon
 }
 
 
-SWIGEXPORT jstring JNICALL Java_CoreJNI_LLVMGetValueName(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jstring JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetValueName(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jstring jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   char *result = 0 ;
@@ -2526,7 +2526,7 @@ SWIGEXPORT jstring JNICALL Java_CoreJNI_LLVMGetValueName(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetValueName(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetValueName(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   char *arg2 = (char *) 0 ;
   
@@ -2543,7 +2543,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetValueName(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDumpValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDumpValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   
   (void)jenv;
@@ -2553,7 +2553,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDumpValue(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMReplaceAllUsesWith(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMReplaceAllUsesWith(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
   
@@ -2565,7 +2565,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMReplaceAllUsesWith(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMHasMetadata(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMHasMetadata(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   int result;
@@ -2579,7 +2579,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMHasMetadata(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetMetadata(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetMetadata(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
@@ -2595,7 +2595,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetMetadata(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetMetadata(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetMetadata(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
   LLVMValueRef arg3 = (LLVMValueRef) 0 ;
@@ -2609,7 +2609,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetMetadata(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAArgument(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAArgument(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2623,7 +2623,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAArgument(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsABasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsABasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2637,7 +2637,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsABasicBlock(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAInlineAsm(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAInlineAsm(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2651,7 +2651,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAInlineAsm(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUser(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAUser(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2665,7 +2665,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUser(JNIEnv *jenv, jclass jcls, jlo
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstant(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAConstant(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2679,7 +2679,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstant(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantAggregateZero(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAConstantAggregateZero(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2693,7 +2693,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantAggregateZero(JNIEnv *jenv,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAConstantArray(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2707,7 +2707,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantArray(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantExpr(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAConstantExpr(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2721,7 +2721,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantExpr(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantFP(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAConstantFP(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2735,7 +2735,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantFP(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantInt(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAConstantInt(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2749,7 +2749,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantInt(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantPointerNull(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAConstantPointerNull(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2763,7 +2763,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantPointerNull(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantStruct(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAConstantStruct(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2777,7 +2777,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantStruct(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantVector(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAConstantVector(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2791,7 +2791,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAConstantVector(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAGlobalValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAGlobalValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2805,7 +2805,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAGlobalValue(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2819,7 +2819,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFunction(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAGlobalAlias(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAGlobalAlias(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2833,7 +2833,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAGlobalAlias(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAGlobalVariable(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAGlobalVariable(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2847,7 +2847,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAGlobalVariable(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUndefValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAUndefValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2861,7 +2861,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUndefValue(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2875,7 +2875,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAInstruction(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsABinaryOperator(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsABinaryOperator(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2889,7 +2889,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsABinaryOperator(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsACallInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsACallInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2903,7 +2903,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsACallInst(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAIntrinsicInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAIntrinsicInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2917,7 +2917,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAIntrinsicInst(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsADbgInfoIntrinsic(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsADbgInfoIntrinsic(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2931,7 +2931,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsADbgInfoIntrinsic(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsADbgDeclareInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsADbgDeclareInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2945,7 +2945,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsADbgDeclareInst(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAEHSelectorInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAEHSelectorInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2959,7 +2959,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAEHSelectorInst(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAMemIntrinsic(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAMemIntrinsic(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2973,7 +2973,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAMemIntrinsic(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAMemCpyInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAMemCpyInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -2987,7 +2987,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAMemCpyInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAMemMoveInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAMemMoveInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3001,7 +3001,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAMemMoveInst(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAMemSetInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAMemSetInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3015,7 +3015,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAMemSetInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsACmpInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsACmpInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3029,7 +3029,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsACmpInst(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFCmpInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAFCmpInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3043,7 +3043,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFCmpInst(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAICmpInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAICmpInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3057,7 +3057,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAICmpInst(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAExtractElementInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAExtractElementInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3071,7 +3071,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAExtractElementInst(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAGetElementPtrInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAGetElementPtrInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3085,7 +3085,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAGetElementPtrInst(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAInsertElementInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAInsertElementInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3099,7 +3099,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAInsertElementInst(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAInsertValueInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAInsertValueInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3113,7 +3113,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAInsertValueInst(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAPHINode(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAPHINode(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3127,7 +3127,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAPHINode(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsASelectInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsASelectInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3141,7 +3141,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsASelectInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAShuffleVectorInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAShuffleVectorInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3155,7 +3155,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAShuffleVectorInst(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAStoreInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAStoreInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3169,7 +3169,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAStoreInst(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsATerminatorInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsATerminatorInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3183,7 +3183,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsATerminatorInst(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsABranchInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsABranchInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3197,7 +3197,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsABranchInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAInvokeInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAInvokeInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3211,7 +3211,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAInvokeInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAReturnInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAReturnInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3225,7 +3225,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAReturnInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsASwitchInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsASwitchInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3239,7 +3239,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsASwitchInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUnreachableInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAUnreachableInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3253,7 +3253,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUnreachableInst(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUnwindInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAUnwindInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3267,7 +3267,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUnwindInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUnaryInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAUnaryInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3281,7 +3281,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUnaryInstruction(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAAllocaInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAAllocaInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3295,7 +3295,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAAllocaInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsACastInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsACastInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3309,7 +3309,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsACastInst(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsABitCastInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsABitCastInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3323,7 +3323,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsABitCastInst(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFPExtInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAFPExtInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3337,7 +3337,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFPExtInst(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFPToSIInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAFPToSIInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3351,7 +3351,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFPToSIInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFPToUIInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAFPToUIInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3365,7 +3365,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFPToUIInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFPTruncInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAFPTruncInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3379,7 +3379,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAFPTruncInst(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAIntToPtrInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAIntToPtrInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3393,7 +3393,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAIntToPtrInst(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAPtrToIntInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAPtrToIntInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3407,7 +3407,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAPtrToIntInst(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsASExtInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsASExtInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3421,7 +3421,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsASExtInst(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsASIToFPInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsASIToFPInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3435,7 +3435,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsASIToFPInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsATruncInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsATruncInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3449,7 +3449,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsATruncInst(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUIToFPInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAUIToFPInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3463,7 +3463,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAUIToFPInst(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAZExtInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAZExtInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3477,7 +3477,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAZExtInst(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAExtractValueInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAExtractValueInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3491,7 +3491,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAExtractValueInst(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsALoadInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsALoadInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3505,7 +3505,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsALoadInst(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAVAArgInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsAVAArgInst(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -3519,7 +3519,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMIsAVAArgInst(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstUse(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetFirstUse(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMUseRef result;
@@ -3533,7 +3533,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstUse(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextUse(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetNextUse(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMUseRef arg1 = (LLVMUseRef) 0 ;
   LLVMUseRef result;
@@ -3547,7 +3547,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextUse(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetUser(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetUser(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMUseRef arg1 = (LLVMUseRef) 0 ;
   LLVMValueRef result;
@@ -3561,7 +3561,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetUser(JNIEnv *jenv, jclass jcls, jlo
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetUsedValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetUsedValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMUseRef arg1 = (LLVMUseRef) 0 ;
   LLVMValueRef result;
@@ -3575,7 +3575,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetUsedValue(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetOperand(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetOperand(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
@@ -3591,7 +3591,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetOperand(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNull(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNull(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMValueRef result;
@@ -3605,7 +3605,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNull(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstAllOnes(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstAllOnes(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMValueRef result;
@@ -3619,7 +3619,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstAllOnes(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetUndef(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetUndef(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMValueRef result;
@@ -3633,7 +3633,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetUndef(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsConstant(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsConstant(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool result;
@@ -3647,7 +3647,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsConstant(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsNull(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsNull(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool result;
@@ -3661,7 +3661,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsNull(JNIEnv *jenv, jclass jcls, jlong
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsUndef(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsUndef(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool result;
@@ -3675,7 +3675,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsUndef(JNIEnv *jenv, jclass jcls, jlon
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstPointerNull(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstPointerNull(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMValueRef result;
@@ -3689,7 +3689,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstPointerNull(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMMDStringInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMMDStringInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -3712,7 +3712,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMMDStringInContext(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMMDString(JNIEnv *jenv, jclass jcls, jstring jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMMDString(JNIEnv *jenv, jclass jcls, jstring jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   char *arg1 = (char *) 0 ;
   unsigned int arg2 ;
@@ -3733,7 +3733,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMMDString(JNIEnv *jenv, jclass jcls, js
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMMDNodeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMMDNodeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMValueRef *arg2 = (LLVMValueRef *) 0 ;
@@ -3751,7 +3751,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMMDNodeInContext(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMMDNode(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMMDNode(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef *arg1 = (LLVMValueRef *) 0 ;
   unsigned int arg2 ;
@@ -3767,7 +3767,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMMDNode(JNIEnv *jenv, jclass jcls, jlon
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstInt(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg2, jint jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstInt(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg2, jint jarg3) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   unsigned long long arg2 ;
@@ -3807,7 +3807,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstInt(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstIntOfString(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstIntOfString(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -3836,7 +3836,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstIntOfString(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstIntOfStringAndSize(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3, jlong jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstIntOfStringAndSize(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3, jlong jarg4) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -3867,7 +3867,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstIntOfStringAndSize(JNIEnv *jenv, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstReal(JNIEnv *jenv, jclass jcls, jlong jarg1, jdouble jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstReal(JNIEnv *jenv, jclass jcls, jlong jarg1, jdouble jarg2) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   double arg2 ;
@@ -3883,7 +3883,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstReal(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstRealOfString(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstRealOfString(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -3904,7 +3904,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstRealOfString(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstRealOfStringAndSize(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstRealOfStringAndSize(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -3927,7 +3927,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstRealOfStringAndSize(JNIEnv *jenv,
 }
 
 
-SWIGEXPORT jobject JNICALL Java_CoreJNI_LLVMConstIntGetZExtValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jobject JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstIntGetZExtValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jobject jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned long long result;
@@ -3957,7 +3957,7 @@ SWIGEXPORT jobject JNICALL Java_CoreJNI_LLVMConstIntGetZExtValue(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstIntGetSExtValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstIntGetSExtValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   long long result;
@@ -3971,7 +3971,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstIntGetSExtValue(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstStringInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3, jint jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstStringInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3, jint jarg4) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -3996,7 +3996,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstStringInContext(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstStructInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jint jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstStructInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jint jarg4) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMValueRef *arg2 = (LLVMValueRef *) 0 ;
@@ -4016,7 +4016,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstStructInContext(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstString(JNIEnv *jenv, jclass jcls, jstring jarg1, jlong jarg2, jint jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstString(JNIEnv *jenv, jclass jcls, jstring jarg1, jlong jarg2, jint jarg3) {
   jlong jresult = 0 ;
   char *arg1 = (char *) 0 ;
   unsigned int arg2 ;
@@ -4039,7 +4039,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstString(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstArray(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstArray(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMValueRef *arg2 = (LLVMValueRef *) 0 ;
@@ -4057,7 +4057,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstArray(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstStruct(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jint jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstStruct(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jint jarg3) {
   jlong jresult = 0 ;
   LLVMValueRef *arg1 = (LLVMValueRef *) 0 ;
   unsigned int arg2 ;
@@ -4075,7 +4075,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstStruct(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstVector(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstVector(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef *arg1 = (LLVMValueRef *) 0 ;
   unsigned int arg2 ;
@@ -4091,7 +4091,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstVector(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstUnion(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstUnion(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4107,7 +4107,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstUnion(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetConstOpcode(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetConstOpcode(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMOpcode result;
@@ -4121,7 +4121,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetConstOpcode(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAlignOf(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMAlignOf(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMValueRef result;
@@ -4135,7 +4135,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAlignOf(JNIEnv *jenv, jclass jcls, jlo
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMSizeOf(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMSizeOf(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   LLVMValueRef result;
@@ -4149,7 +4149,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMSizeOf(JNIEnv *jenv, jclass jcls, jlon
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNeg(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNeg(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -4163,7 +4163,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNeg(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNSWNeg(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNSWNeg(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -4177,7 +4177,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNSWNeg(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNUWNeg(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNUWNeg(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -4191,7 +4191,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNUWNeg(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFNeg(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFNeg(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -4205,7 +4205,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFNeg(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNot(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNot(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -4219,7 +4219,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNot(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4235,7 +4235,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstAdd(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNSWAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNSWAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4251,7 +4251,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNSWAdd(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNUWAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNUWAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4267,7 +4267,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNUWAdd(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4283,7 +4283,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFAdd(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4299,7 +4299,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSub(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNSWSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNSWSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4315,7 +4315,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNSWSub(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNUWSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNUWSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4331,7 +4331,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNUWSub(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4347,7 +4347,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFSub(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4363,7 +4363,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstMul(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNSWMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNSWMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4379,7 +4379,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNSWMul(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNUWMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstNUWMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4395,7 +4395,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstNUWMul(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4411,7 +4411,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFMul(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstUDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstUDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4427,7 +4427,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstUDiv(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstSDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4443,7 +4443,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSDiv(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstExactSDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstExactSDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4459,7 +4459,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstExactSDiv(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4475,7 +4475,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFDiv(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstURem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstURem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4491,7 +4491,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstURem(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSRem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstSRem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4507,7 +4507,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSRem(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFRem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFRem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4523,7 +4523,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFRem(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstAnd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstAnd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4539,7 +4539,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstAnd(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstOr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstOr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4555,7 +4555,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstOr(JNIEnv *jenv, jclass jcls, jlo
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstXor(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstXor(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4571,7 +4571,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstXor(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstICmp(JNIEnv *jenv, jclass jcls, jint jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstICmp(JNIEnv *jenv, jclass jcls, jint jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMIntPredicate arg1 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4589,7 +4589,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstICmp(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFCmp(JNIEnv *jenv, jclass jcls, jint jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFCmp(JNIEnv *jenv, jclass jcls, jint jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMRealPredicate arg1 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4607,7 +4607,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFCmp(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstShl(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstShl(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4623,7 +4623,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstShl(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstLShr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstLShr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4639,7 +4639,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstLShr(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstAShr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstAShr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4655,7 +4655,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstAShr(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstGEP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstGEP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef *arg2 = (LLVMValueRef *) 0 ;
@@ -4673,7 +4673,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstGEP(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstInBoundsGEP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstInBoundsGEP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef *arg2 = (LLVMValueRef *) 0 ;
@@ -4691,7 +4691,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstInBoundsGEP(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstTrunc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstTrunc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4707,7 +4707,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstTrunc(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstSExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4723,7 +4723,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSExt(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstZExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstZExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4739,7 +4739,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstZExt(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFPTrunc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFPTrunc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4755,7 +4755,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFPTrunc(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFPExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFPExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4771,7 +4771,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFPExt(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstUIToFP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstUIToFP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4787,7 +4787,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstUIToFP(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSIToFP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstSIToFP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4803,7 +4803,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSIToFP(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFPToUI(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFPToUI(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4819,7 +4819,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFPToUI(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFPToSI(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFPToSI(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4835,7 +4835,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFPToSI(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstPtrToInt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstPtrToInt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4851,7 +4851,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstPtrToInt(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstIntToPtr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstIntToPtr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4867,7 +4867,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstIntToPtr(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4883,7 +4883,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstBitCast(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstZExtOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstZExtOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4899,7 +4899,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstZExtOrBitCast(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSExtOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstSExtOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4915,7 +4915,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSExtOrBitCast(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstTruncOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstTruncOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4931,7 +4931,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstTruncOrBitCast(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstPointerCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstPointerCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4947,7 +4947,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstPointerCast(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstIntCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jint jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstIntCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jint jarg3) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4965,7 +4965,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstIntCast(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFPCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstFPCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -4981,7 +4981,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstFPCast(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSelect(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstSelect(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -4999,7 +4999,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstSelect(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstExtractElement(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstExtractElement(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -5015,7 +5015,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstExtractElement(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstInsertElement(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstInsertElement(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -5033,7 +5033,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstInsertElement(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstShuffleVector(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstShuffleVector(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -5051,7 +5051,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstShuffleVector(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstExtractValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstExtractValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int *arg2 = (unsigned int *) 0 ;
@@ -5069,7 +5069,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstExtractValue(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstInsertValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstInsertValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -5089,7 +5089,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstInsertValue(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstInlineAsm(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jstring jarg3, jint jarg4, jint jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMConstInlineAsm(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jstring jarg3, jint jarg4, jint jarg5) {
   jlong jresult = 0 ;
   LLVMTypeRef arg1 = (LLVMTypeRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -5121,7 +5121,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMConstInlineAsm(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBlockAddress(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBlockAddress(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBasicBlockRef arg2 = (LLVMBasicBlockRef) 0 ;
@@ -5137,7 +5137,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBlockAddress(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetGlobalParent(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetGlobalParent(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMModuleRef result;
@@ -5151,7 +5151,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetGlobalParent(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsDeclaration(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsDeclaration(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool result;
@@ -5165,7 +5165,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsDeclaration(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetLinkage(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetLinkage(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMLinkage result;
@@ -5179,7 +5179,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetLinkage(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetLinkage(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetLinkage(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMLinkage arg2 ;
   
@@ -5191,7 +5191,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetLinkage(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jstring JNICALL Java_CoreJNI_LLVMGetSection(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jstring JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetSection(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jstring jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   char *result = 0 ;
@@ -5205,7 +5205,7 @@ SWIGEXPORT jstring JNICALL Java_CoreJNI_LLVMGetSection(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetSection(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetSection(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   char *arg2 = (char *) 0 ;
   
@@ -5222,7 +5222,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetSection(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetVisibility(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetVisibility(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMVisibility result;
@@ -5236,7 +5236,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetVisibility(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetVisibility(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetVisibility(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMVisibility arg2 ;
   
@@ -5248,7 +5248,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetVisibility(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetAlignment(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetAlignment(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int result;
@@ -5262,7 +5262,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetAlignment(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetAlignment(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetAlignment(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
   
@@ -5274,7 +5274,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetAlignment(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAddGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -5297,7 +5297,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAddGlobal(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAddGlobalInAddressSpace(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3, jlong jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddGlobalInAddressSpace(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3, jlong jarg4) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -5322,7 +5322,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAddGlobalInAddressSpace(JNIEnv *jenv, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNamedGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetNamedGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -5343,7 +5343,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNamedGlobal(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetFirstGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMValueRef result;
@@ -5357,7 +5357,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstGlobal(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetLastGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetLastGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMValueRef result;
@@ -5371,7 +5371,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetLastGlobal(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetNextGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -5385,7 +5385,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextGlobal(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPreviousGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetPreviousGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -5399,7 +5399,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPreviousGlobal(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDeleteGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDeleteGlobal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   
   (void)jenv;
@@ -5409,7 +5409,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDeleteGlobal(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetInitializer(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetInitializer(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -5423,7 +5423,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetInitializer(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetInitializer(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetInitializer(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
   
@@ -5435,7 +5435,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetInitializer(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsThreadLocal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsThreadLocal(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool result;
@@ -5449,7 +5449,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsThreadLocal(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetThreadLocal(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetThreadLocal(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool arg2 ;
   
@@ -5461,7 +5461,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetThreadLocal(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsGlobalConstant(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsGlobalConstant(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool result;
@@ -5475,7 +5475,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsGlobalConstant(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetGlobalConstant(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetGlobalConstant(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool arg2 ;
   
@@ -5487,7 +5487,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetGlobalConstant(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAddAlias(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddAlias(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -5512,7 +5512,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAddAlias(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAddFunction(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddFunction(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -5535,7 +5535,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAddFunction(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNamedFunction(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetNamedFunction(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -5556,7 +5556,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNamedFunction(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetFirstFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMValueRef result;
@@ -5570,7 +5570,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstFunction(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetLastFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetLastFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMValueRef result;
@@ -5584,7 +5584,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetLastFunction(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetNextFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -5598,7 +5598,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextFunction(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPreviousFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetPreviousFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -5612,7 +5612,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPreviousFunction(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDeleteFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDeleteFunction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   
   (void)jenv;
@@ -5622,7 +5622,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDeleteFunction(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetIntrinsicID(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetIntrinsicID(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int result;
@@ -5636,7 +5636,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetIntrinsicID(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFunctionCallConv(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetFunctionCallConv(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int result;
@@ -5650,7 +5650,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFunctionCallConv(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetFunctionCallConv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetFunctionCallConv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
   
@@ -5662,7 +5662,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetFunctionCallConv(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jstring JNICALL Java_CoreJNI_LLVMGetGC(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jstring JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetGC(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jstring jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   char *result = 0 ;
@@ -5676,7 +5676,7 @@ SWIGEXPORT jstring JNICALL Java_CoreJNI_LLVMGetGC(JNIEnv *jenv, jclass jcls, jlo
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetGC(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetGC(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   char *arg2 = (char *) 0 ;
   
@@ -5693,7 +5693,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetGC(JNIEnv *jenv, jclass jcls, jlong 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddFunctionAttr(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddFunctionAttr(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMAttribute arg2 ;
   
@@ -5705,7 +5705,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddFunctionAttr(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetFunctionAttr(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetFunctionAttr(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMAttribute result;
@@ -5719,7 +5719,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetFunctionAttr(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMRemoveFunctionAttr(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMRemoveFunctionAttr(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMAttribute arg2 ;
   
@@ -5731,7 +5731,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMRemoveFunctionAttr(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountParams(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCountParams(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int result;
@@ -5745,7 +5745,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountParams(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMGetParams(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetParams(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef *arg2 = (LLVMValueRef *) 0 ;
   
@@ -5757,7 +5757,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMGetParams(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetParam(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetParam(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
@@ -5773,7 +5773,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetParam(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetParamParent(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetParamParent(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -5787,7 +5787,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetParamParent(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstParam(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetFirstParam(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -5801,7 +5801,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstParam(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetLastParam(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetLastParam(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -5815,7 +5815,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetLastParam(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextParam(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetNextParam(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -5829,7 +5829,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextParam(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPreviousParam(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetPreviousParam(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -5843,7 +5843,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPreviousParam(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddAttribute(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddAttribute(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMAttribute arg2 ;
   
@@ -5855,7 +5855,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddAttribute(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMRemoveAttribute(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMRemoveAttribute(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMAttribute arg2 ;
   
@@ -5867,7 +5867,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMRemoveAttribute(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetAttribute(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetAttribute(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMAttribute result;
@@ -5881,7 +5881,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMGetAttribute(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetParamAlignment(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetParamAlignment(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
   
@@ -5893,7 +5893,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetParamAlignment(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBasicBlockAsValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBasicBlockAsValue(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBasicBlockRef arg1 = (LLVMBasicBlockRef) 0 ;
   LLVMValueRef result;
@@ -5907,7 +5907,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBasicBlockAsValue(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMValueIsBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMValueIsBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool result;
@@ -5921,7 +5921,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMValueIsBasicBlock(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMValueAsBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMValueAsBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBasicBlockRef result;
@@ -5935,7 +5935,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMValueAsBasicBlock(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetBasicBlockParent(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetBasicBlockParent(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBasicBlockRef arg1 = (LLVMBasicBlockRef) 0 ;
   LLVMValueRef result;
@@ -5949,7 +5949,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetBasicBlockParent(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountBasicBlocks(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCountBasicBlocks(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int result;
@@ -5963,7 +5963,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountBasicBlocks(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMGetBasicBlocks(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetBasicBlocks(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBasicBlockRef *arg2 = (LLVMBasicBlockRef *) 0 ;
   
@@ -5975,7 +5975,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMGetBasicBlocks(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetFirstBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBasicBlockRef result;
@@ -5989,7 +5989,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstBasicBlock(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetLastBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetLastBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBasicBlockRef result;
@@ -6003,7 +6003,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetLastBasicBlock(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetNextBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBasicBlockRef arg1 = (LLVMBasicBlockRef) 0 ;
   LLVMBasicBlockRef result;
@@ -6017,7 +6017,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextBasicBlock(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPreviousBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetPreviousBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBasicBlockRef arg1 = (LLVMBasicBlockRef) 0 ;
   LLVMBasicBlockRef result;
@@ -6031,7 +6031,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPreviousBasicBlock(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetEntryBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetEntryBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBasicBlockRef result;
@@ -6045,7 +6045,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetEntryBasicBlock(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAppendBasicBlockInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMAppendBasicBlockInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6068,7 +6068,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAppendBasicBlockInContext(JNIEnv *jenv
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInsertBasicBlockInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInsertBasicBlockInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMBasicBlockRef arg2 = (LLVMBasicBlockRef) 0 ;
@@ -6091,7 +6091,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInsertBasicBlockInContext(JNIEnv *jenv
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAppendBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMAppendBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -6112,7 +6112,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMAppendBasicBlock(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInsertBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMInsertBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2) {
   jlong jresult = 0 ;
   LLVMBasicBlockRef arg1 = (LLVMBasicBlockRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -6133,7 +6133,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMInsertBasicBlock(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDeleteBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDeleteBasicBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMBasicBlockRef arg1 = (LLVMBasicBlockRef) 0 ;
   
   (void)jenv;
@@ -6143,7 +6143,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDeleteBasicBlock(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetInstructionParent(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetInstructionParent(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBasicBlockRef result;
@@ -6157,7 +6157,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetInstructionParent(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetFirstInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBasicBlockRef arg1 = (LLVMBasicBlockRef) 0 ;
   LLVMValueRef result;
@@ -6171,7 +6171,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetFirstInstruction(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetLastInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetLastInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBasicBlockRef arg1 = (LLVMBasicBlockRef) 0 ;
   LLVMValueRef result;
@@ -6185,7 +6185,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetLastInstruction(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetNextInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -6199,7 +6199,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetNextInstruction(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPreviousInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetPreviousInstruction(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef result;
@@ -6213,7 +6213,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetPreviousInstruction(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetInstructionCallConv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetInstructionCallConv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
   
@@ -6225,7 +6225,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetInstructionCallConv(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetInstructionCallConv(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetInstructionCallConv(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int result;
@@ -6239,7 +6239,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetInstructionCallConv(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddInstrAttribute(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jint jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddInstrAttribute(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jint jarg3) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
   LLVMAttribute arg3 ;
@@ -6253,7 +6253,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddInstrAttribute(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMRemoveInstrAttribute(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jint jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMRemoveInstrAttribute(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jint jarg3) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
   LLVMAttribute arg3 ;
@@ -6267,7 +6267,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMRemoveInstrAttribute(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetInstrParamAlignment(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetInstrParamAlignment(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
   unsigned int arg3 ;
@@ -6281,7 +6281,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetInstrParamAlignment(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsTailCall(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMIsTailCall(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool result;
@@ -6295,7 +6295,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMIsTailCall(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetTailCall(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetTailCall(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBool arg2 ;
   
@@ -6307,7 +6307,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetTailCall(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddIncoming(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddIncoming(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef *arg2 = (LLVMValueRef *) 0 ;
   LLVMBasicBlockRef *arg3 = (LLVMBasicBlockRef *) 0 ;
@@ -6323,7 +6323,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddIncoming(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountIncoming(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCountIncoming(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int result;
@@ -6337,7 +6337,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCountIncoming(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetIncomingValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetIncomingValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
@@ -6353,7 +6353,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetIncomingValue(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetIncomingBlock(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetIncomingBlock(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   unsigned int arg2 ;
@@ -6369,7 +6369,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetIncomingBlock(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateBuilderInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCreateBuilderInContext(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMBuilderRef result;
@@ -6383,7 +6383,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateBuilderInContext(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateBuilder(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCreateBuilder(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMBuilderRef result;
   
@@ -6395,7 +6395,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateBuilder(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMPositionBuilder(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMPositionBuilder(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMBasicBlockRef arg2 = (LLVMBasicBlockRef) 0 ;
   LLVMValueRef arg3 = (LLVMValueRef) 0 ;
@@ -6409,7 +6409,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMPositionBuilder(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMPositionBuilderBefore(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMPositionBuilderBefore(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
   
@@ -6421,7 +6421,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMPositionBuilderBefore(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMPositionBuilderAtEnd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMPositionBuilderAtEnd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMBasicBlockRef arg2 = (LLVMBasicBlockRef) 0 ;
   
@@ -6433,7 +6433,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMPositionBuilderAtEnd(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetInsertBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetInsertBlock(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMBasicBlockRef result;
@@ -6447,7 +6447,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetInsertBlock(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMClearInsertionPosition(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMClearInsertionPosition(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   
   (void)jenv;
@@ -6457,7 +6457,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMClearInsertionPosition(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMInsertIntoBuilder(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMInsertIntoBuilder(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
   
@@ -6469,7 +6469,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMInsertIntoBuilder(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMInsertIntoBuilderWithName(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMInsertIntoBuilderWithName(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
   char *arg3 = (char *) 0 ;
@@ -6488,7 +6488,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMInsertIntoBuilderWithName(JNIEnv *jenv,
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeBuilder(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDisposeBuilder(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   
   (void)jenv;
@@ -6498,7 +6498,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeBuilder(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetCurrentDebugLocation(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetCurrentDebugLocation(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
   
@@ -6510,7 +6510,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetCurrentDebugLocation(JNIEnv *jenv, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetCurrentDebugLocation(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMGetCurrentDebugLocation(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef result;
@@ -6524,7 +6524,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMGetCurrentDebugLocation(JNIEnv *jenv, 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetInstDebugLocation(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMSetInstDebugLocation(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
   
@@ -6536,7 +6536,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMSetInstDebugLocation(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildRetVoid(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildRetVoid(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef result;
@@ -6550,7 +6550,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildRetVoid(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildRet(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildRet(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6566,7 +6566,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildRet(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildAggregateRet(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildAggregateRet(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef *arg2 = (LLVMValueRef *) 0 ;
@@ -6584,7 +6584,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildAggregateRet(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildBr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildBr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMBasicBlockRef arg2 = (LLVMBasicBlockRef) 0 ;
@@ -6600,7 +6600,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildBr(JNIEnv *jenv, jclass jcls, jlo
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildCondBr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildCondBr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6620,7 +6620,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildCondBr(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSwitch(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildSwitch(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6640,7 +6640,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSwitch(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildIndirectBr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildIndirectBr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6658,7 +6658,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildIndirectBr(JNIEnv *jenv, jclass j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildInvoke(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jlong jarg5, jlong jarg6, jstring jarg7) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildInvoke(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jlong jarg5, jlong jarg6, jstring jarg7) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6689,7 +6689,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildInvoke(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildUnwind(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildUnwind(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef result;
@@ -6703,7 +6703,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildUnwind(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildUnreachable(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildUnreachable(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef result;
@@ -6717,7 +6717,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildUnreachable(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddCase(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddCase(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
   LLVMBasicBlockRef arg3 = (LLVMBasicBlockRef) 0 ;
@@ -6731,7 +6731,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddCase(JNIEnv *jenv, jclass jcls, jlon
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddDestination(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMAddDestination(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMBasicBlockRef arg2 = (LLVMBasicBlockRef) 0 ;
   
@@ -6743,7 +6743,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMAddDestination(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6768,7 +6768,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildAdd(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNSWAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildNSWAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6793,7 +6793,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNSWAdd(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNUWAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildNUWAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6818,7 +6818,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNUWAdd(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFAdd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6843,7 +6843,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFAdd(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6868,7 +6868,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSub(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNSWSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildNSWSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6893,7 +6893,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNSWSub(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNUWSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildNUWSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6918,7 +6918,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNUWSub(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFSub(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6943,7 +6943,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFSub(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6968,7 +6968,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildMul(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNSWMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildNSWMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -6993,7 +6993,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNSWMul(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNUWMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildNUWMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7018,7 +7018,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNUWMul(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFMul(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7043,7 +7043,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFMul(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildUDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildUDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7068,7 +7068,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildUDiv(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildSDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7093,7 +7093,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSDiv(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildExactSDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildExactSDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7118,7 +7118,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildExactSDiv(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFDiv(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7143,7 +7143,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFDiv(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildURem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildURem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7168,7 +7168,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildURem(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSRem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildSRem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7193,7 +7193,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSRem(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFRem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFRem(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7218,7 +7218,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFRem(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildShl(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildShl(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7243,7 +7243,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildShl(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildLShr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildLShr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7268,7 +7268,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildLShr(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildAShr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildAShr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7293,7 +7293,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildAShr(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildAnd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildAnd(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7318,7 +7318,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildAnd(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildOr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildOr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7343,7 +7343,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildOr(JNIEnv *jenv, jclass jcls, jlo
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildXor(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildXor(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7368,7 +7368,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildXor(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildBinOp(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildBinOp(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMOpcode arg2 ;
@@ -7395,7 +7395,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildBinOp(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNeg(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildNeg(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7418,7 +7418,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNeg(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNSWNeg(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildNSWNeg(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7441,7 +7441,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNSWNeg(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNUWNeg(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildNUWNeg(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7464,7 +7464,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNUWNeg(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFNeg(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFNeg(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7487,7 +7487,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFNeg(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNot(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildNot(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7510,7 +7510,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildNot(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildMalloc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildMalloc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -7533,7 +7533,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildMalloc(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildArrayMalloc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildArrayMalloc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -7558,7 +7558,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildArrayMalloc(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildAlloca(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildAlloca(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -7581,7 +7581,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildAlloca(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildArrayAlloca(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildArrayAlloca(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -7606,7 +7606,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildArrayAlloca(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFree(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFree(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7622,7 +7622,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFree(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildLoad(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildLoad(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7645,7 +7645,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildLoad(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildStore(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildStore(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7663,7 +7663,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildStore(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildGEP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildGEP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7690,7 +7690,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildGEP(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildInBoundsGEP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildInBoundsGEP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7717,7 +7717,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildInBoundsGEP(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildStructGEP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildStructGEP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7742,7 +7742,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildStructGEP(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildGlobalString(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildGlobalString(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -7770,7 +7770,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildGlobalString(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildGlobalStringPtr(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildGlobalStringPtr(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   char *arg2 = (char *) 0 ;
@@ -7798,7 +7798,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildGlobalStringPtr(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildTrunc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildTrunc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7823,7 +7823,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildTrunc(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildZExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildZExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7848,7 +7848,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildZExt(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildSExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7873,7 +7873,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSExt(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFPToUI(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFPToUI(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7898,7 +7898,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFPToUI(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFPToSI(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFPToSI(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7923,7 +7923,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFPToSI(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildUIToFP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildUIToFP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7948,7 +7948,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildUIToFP(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSIToFP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildSIToFP(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7973,7 +7973,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSIToFP(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFPTrunc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFPTrunc(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -7998,7 +7998,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFPTrunc(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFPExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFPExt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8023,7 +8023,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFPExt(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildPtrToInt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildPtrToInt(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8048,7 +8048,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildPtrToInt(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildIntToPtr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildIntToPtr(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8073,7 +8073,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildIntToPtr(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8098,7 +8098,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildBitCast(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildZExtOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildZExtOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8123,7 +8123,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildZExtOrBitCast(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSExtOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildSExtOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8148,7 +8148,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSExtOrBitCast(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildTruncOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildTruncOrBitCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8173,7 +8173,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildTruncOrBitCast(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMOpcode arg2 ;
@@ -8200,7 +8200,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildCast(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildPointerCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildPointerCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8225,7 +8225,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildPointerCast(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildIntCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildIntCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8250,7 +8250,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildIntCast(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFPCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFPCast(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8275,7 +8275,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFPCast(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildICmp(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildICmp(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMIntPredicate arg2 ;
@@ -8302,7 +8302,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildICmp(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFCmp(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildFCmp(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMRealPredicate arg2 ;
@@ -8329,7 +8329,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildFCmp(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildPhi(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildPhi(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMTypeRef arg2 = (LLVMTypeRef) 0 ;
@@ -8352,7 +8352,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildPhi(JNIEnv *jenv, jclass jcls, jl
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildCall(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildCall(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8379,7 +8379,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildCall(JNIEnv *jenv, jclass jcls, j
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSelect(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildSelect(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8406,7 +8406,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildSelect(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildVAArg(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildVAArg(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8431,7 +8431,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildVAArg(JNIEnv *jenv, jclass jcls, 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildExtractElement(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildExtractElement(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8456,7 +8456,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildExtractElement(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildInsertElement(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildInsertElement(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8483,7 +8483,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildInsertElement(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildShuffleVector(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildShuffleVector(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8510,7 +8510,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildShuffleVector(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildExtractValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildExtractValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8535,7 +8535,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildExtractValue(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildInsertValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildInsertValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4, jstring jarg5) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8562,7 +8562,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildInsertValue(JNIEnv *jenv, jclass 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildIsNull(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildIsNull(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8585,7 +8585,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildIsNull(JNIEnv *jenv, jclass jcls,
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildIsNotNull(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildIsNotNull(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jstring jarg3) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8608,7 +8608,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildIsNotNull(JNIEnv *jenv, jclass jc
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildPtrDiff(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMBuildPtrDiff(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jstring jarg4) {
   jlong jresult = 0 ;
   LLVMBuilderRef arg1 = (LLVMBuilderRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8633,7 +8633,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMBuildPtrDiff(JNIEnv *jenv, jclass jcls
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateModuleProviderForExistingModule(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCreateModuleProviderForExistingModule(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMModuleProviderRef result;
@@ -8647,7 +8647,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateModuleProviderForExistingModule(
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeModuleProvider(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDisposeModuleProvider(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMModuleProviderRef arg1 = (LLVMModuleProviderRef) 0 ;
   
   (void)jenv;
@@ -8657,7 +8657,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeModuleProvider(JNIEnv *jenv, jcl
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMCreateMemoryBufferWithContentsOfFile(JNIEnv *jenv, jclass jcls, jstring jarg1, jlong jarg2, jlong jarg3) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMCreateMemoryBufferWithContentsOfFile(JNIEnv *jenv, jclass jcls, jstring jarg1, jlong jarg2, jlong jarg3) {
   jint jresult = 0 ;
   char *arg1 = (char *) 0 ;
   LLVMMemoryBufferRef *arg2 = (LLVMMemoryBufferRef *) 0 ;
@@ -8680,7 +8680,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMCreateMemoryBufferWithContentsOfFile(JN
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMCreateMemoryBufferWithSTDIN(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMCreateMemoryBufferWithSTDIN(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jint jresult = 0 ;
   LLVMMemoryBufferRef *arg1 = (LLVMMemoryBufferRef *) 0 ;
   char **arg2 = (char **) 0 ;
@@ -8696,7 +8696,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMCreateMemoryBufferWithSTDIN(JNIEnv *jen
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeMemoryBuffer(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDisposeMemoryBuffer(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMMemoryBufferRef arg1 = (LLVMMemoryBufferRef) 0 ;
   
   (void)jenv;
@@ -8706,7 +8706,7 @@ SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposeMemoryBuffer(JNIEnv *jenv, jclas
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreatePassManager(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCreatePassManager(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   LLVMPassManagerRef result;
   
@@ -8718,7 +8718,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreatePassManager(JNIEnv *jenv, jclass
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateFunctionPassManagerForModule(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCreateFunctionPassManagerForModule(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMPassManagerRef result;
@@ -8732,7 +8732,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateFunctionPassManagerForModule(JNI
 }
 
 
-SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateFunctionPassManager(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_jllvm_llvm_CoreJNI_LLVMCreateFunctionPassManager(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jlong jresult = 0 ;
   LLVMModuleProviderRef arg1 = (LLVMModuleProviderRef) 0 ;
   LLVMPassManagerRef result;
@@ -8746,7 +8746,7 @@ SWIGEXPORT jlong JNICALL Java_CoreJNI_LLVMCreateFunctionPassManager(JNIEnv *jenv
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMRunPassManager(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMRunPassManager(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jint jresult = 0 ;
   LLVMPassManagerRef arg1 = (LLVMPassManagerRef) 0 ;
   LLVMModuleRef arg2 = (LLVMModuleRef) 0 ;
@@ -8762,7 +8762,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMRunPassManager(JNIEnv *jenv, jclass jcl
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInitializeFunctionPassManager(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMInitializeFunctionPassManager(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMPassManagerRef arg1 = (LLVMPassManagerRef) 0 ;
   LLVMBool result;
@@ -8776,7 +8776,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMInitializeFunctionPassManager(JNIEnv *j
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMRunFunctionPassManager(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMRunFunctionPassManager(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jint jresult = 0 ;
   LLVMPassManagerRef arg1 = (LLVMPassManagerRef) 0 ;
   LLVMValueRef arg2 = (LLVMValueRef) 0 ;
@@ -8792,7 +8792,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMRunFunctionPassManager(JNIEnv *jenv, jc
 }
 
 
-SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFinalizeFunctionPassManager(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_CoreJNI_LLVMFinalizeFunctionPassManager(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   jint jresult = 0 ;
   LLVMPassManagerRef arg1 = (LLVMPassManagerRef) 0 ;
   LLVMBool result;
@@ -8806,7 +8806,7 @@ SWIGEXPORT jint JNICALL Java_CoreJNI_LLVMFinalizeFunctionPassManager(JNIEnv *jen
 }
 
 
-SWIGEXPORT void JNICALL Java_CoreJNI_LLVMDisposePassManager(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_jllvm_llvm_CoreJNI_LLVMDisposePassManager(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   LLVMPassManagerRef arg1 = (LLVMPassManagerRef) 0 ;
   
   (void)jenv;

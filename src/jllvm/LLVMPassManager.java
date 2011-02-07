@@ -1,6 +1,7 @@
 package jllvm;
 
 import jllvm.llvm.Core;
+import jllvm.llvm.Target;
 import jllvm.llvm.SWIGTYPE_p_LLVMOpaquePassManager;
 
 public abstract class LLVMPassManager {
@@ -8,6 +9,10 @@ public abstract class LLVMPassManager {
 	
 	public SWIGTYPE_p_LLVMOpaquePassManager getInstance() {
 		return instance;
+	}
+	
+	public void addTargetData(LLVMTargetData target) {
+		Target.LLVMAddTargetData(target.getInstance(),instance);
 	}
 	
 	protected void finalize() {

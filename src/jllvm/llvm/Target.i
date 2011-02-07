@@ -32,6 +32,8 @@ extern "C" {
 
 enum LLVMByteOrdering { LLVMBigEndian, LLVMLittleEndian };
 
+typedef int LLVMBool;
+typedef struct LLVMOpaquePassManager *LLVMPassManagerRef;
 typedef struct LLVMOpaqueTargetData *LLVMTargetDataRef;
 typedef struct LLVMStructLayout *LLVMStructLayoutRef;
 typedef struct LLVMOpaqueType *LLVMTypeRef;

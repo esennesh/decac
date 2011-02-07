@@ -6,6 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
+package jllvm.llvm;
 
 public final class LLVMCallConv {
   public final static LLVMCallConv LLVMCCallConv = new LLVMCallConv("LLVMCCallConv", CoreJNI.LLVMCCallConv_get());

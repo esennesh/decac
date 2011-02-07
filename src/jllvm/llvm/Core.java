@@ -6,6 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
+package jllvm.llvm;
 
 public class Core {
   public static SWIGTYPE_p_p_LLVMOpaqueType new_LLVMTypeRefArray(int nelements) {

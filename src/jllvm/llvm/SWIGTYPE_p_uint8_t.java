@@ -6,6 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
+package jllvm.llvm;
 
 public class SWIGTYPE_p_uint8_t {
   private long swigCPtr;

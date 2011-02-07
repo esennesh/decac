@@ -6,6 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
+package jllvm.llvm;
 
 public final class LLVMTypeKind {
   public final static LLVMTypeKind LLVMVoidTypeKind = new LLVMTypeKind("LLVMVoidTypeKind");

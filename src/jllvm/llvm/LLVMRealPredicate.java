@@ -6,6 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
+package jllvm.llvm;
 
 public final class LLVMRealPredicate {
   public final static LLVMRealPredicate LLVMRealPredicateFalse = new LLVMRealPredicate("LLVMRealPredicateFalse");

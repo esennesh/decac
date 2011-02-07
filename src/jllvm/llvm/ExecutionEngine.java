@@ -6,8 +6,27 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
+package jllvm.llvm;
 
 public class ExecutionEngine {
+  public static SWIGTYPE_p_p_LLVMOpaqueValue new_LLVMValueRefArray(int nelements) {
+    long cPtr = ExecutionEngineJNI.new_LLVMValueRefArray(nelements);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_p_LLVMOpaqueValue(cPtr, false);
+  }
+
+  public static void delete_LLVMValueRefArray(SWIGTYPE_p_p_LLVMOpaqueValue ary) {
+    ExecutionEngineJNI.delete_LLVMValueRefArray(SWIGTYPE_p_p_LLVMOpaqueValue.getCPtr(ary));
+  }
+
+  public static SWIGTYPE_p_LLVMOpaqueValue LLVMValueRefArray_getitem(SWIGTYPE_p_p_LLVMOpaqueValue ary, int index) {
+    long cPtr = ExecutionEngineJNI.LLVMValueRefArray_getitem(SWIGTYPE_p_p_LLVMOpaqueValue.getCPtr(ary), index);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_LLVMOpaqueValue(cPtr, false);
+  }
+
+  public static void LLVMValueRefArray_setitem(SWIGTYPE_p_p_LLVMOpaqueValue ary, int index, SWIGTYPE_p_LLVMOpaqueValue value) {
+    ExecutionEngineJNI.LLVMValueRefArray_setitem(SWIGTYPE_p_p_LLVMOpaqueValue.getCPtr(ary), index, SWIGTYPE_p_LLVMOpaqueValue.getCPtr(value));
+  }
+
   public static SWIGTYPE_p_p_LLVMOpaqueGenericValue new_LLVMGenericValueRefArray(int nelements) {
     long cPtr = ExecutionEngineJNI.new_LLVMGenericValueRefArray(nelements);
     return (cPtr == 0) ? null : new SWIGTYPE_p_p_LLVMOpaqueGenericValue(cPtr, false);
@@ -42,6 +61,24 @@ public class ExecutionEngine {
 
   public static void LLVMExecutionEngineRefArray_setitem(SWIGTYPE_p_p_LLVMOpaqueExecutionEngine ary, int index, SWIGTYPE_p_LLVMOpaqueExecutionEngine value) {
     ExecutionEngineJNI.LLVMExecutionEngineRefArray_setitem(SWIGTYPE_p_p_LLVMOpaqueExecutionEngine.getCPtr(ary), index, SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(value));
+  }
+
+  public static SWIGTYPE_p_p_LLVMOpaqueModule new_LLVMModuleRefArray(int nelements) {
+    long cPtr = ExecutionEngineJNI.new_LLVMModuleRefArray(nelements);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_p_LLVMOpaqueModule(cPtr, false);
+  }
+
+  public static void delete_LLVMModuleRefArray(SWIGTYPE_p_p_LLVMOpaqueModule ary) {
+    ExecutionEngineJNI.delete_LLVMModuleRefArray(SWIGTYPE_p_p_LLVMOpaqueModule.getCPtr(ary));
+  }
+
+  public static SWIGTYPE_p_LLVMOpaqueModule LLVMModuleRefArray_getitem(SWIGTYPE_p_p_LLVMOpaqueModule ary, int index) {
+    long cPtr = ExecutionEngineJNI.LLVMModuleRefArray_getitem(SWIGTYPE_p_p_LLVMOpaqueModule.getCPtr(ary), index);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_LLVMOpaqueModule(cPtr, false);
+  }
+
+  public static void LLVMModuleRefArray_setitem(SWIGTYPE_p_p_LLVMOpaqueModule ary, int index, SWIGTYPE_p_LLVMOpaqueModule value) {
+    ExecutionEngineJNI.LLVMModuleRefArray_setitem(SWIGTYPE_p_p_LLVMOpaqueModule.getCPtr(ary), index, SWIGTYPE_p_LLVMOpaqueModule.getCPtr(value));
   }
 
   public static SWIGTYPE_p_p_char new_StringArray(int nelements) {
@@ -129,17 +166,17 @@ public class ExecutionEngine {
     ExecutionEngineJNI.LLVMRunStaticDestructors(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE));
   }
 
-  public static int LLVMRunFunctionAsMain(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMValueRef F, long ArgC, SWIGTYPE_p_p_char ArgV, SWIGTYPE_p_p_char EnvP) {
-    return ExecutionEngineJNI.LLVMRunFunctionAsMain(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMValueRef.getCPtr(F), ArgC, SWIGTYPE_p_p_char.getCPtr(ArgV), SWIGTYPE_p_p_char.getCPtr(EnvP));
+  public static int LLVMRunFunctionAsMain(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMOpaqueValue F, long ArgC, SWIGTYPE_p_p_char ArgV, SWIGTYPE_p_p_char EnvP) {
+    return ExecutionEngineJNI.LLVMRunFunctionAsMain(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMOpaqueValue.getCPtr(F), ArgC, SWIGTYPE_p_p_char.getCPtr(ArgV), SWIGTYPE_p_p_char.getCPtr(EnvP));
   }
 
-  public static SWIGTYPE_p_LLVMOpaqueGenericValue LLVMRunFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMValueRef F, long NumArgs, SWIGTYPE_p_p_LLVMOpaqueGenericValue Args) {
-    long cPtr = ExecutionEngineJNI.LLVMRunFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMValueRef.getCPtr(F), NumArgs, SWIGTYPE_p_p_LLVMOpaqueGenericValue.getCPtr(Args));
+  public static SWIGTYPE_p_LLVMOpaqueGenericValue LLVMRunFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMOpaqueValue F, long NumArgs, SWIGTYPE_p_p_LLVMOpaqueGenericValue Args) {
+    long cPtr = ExecutionEngineJNI.LLVMRunFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMOpaqueValue.getCPtr(F), NumArgs, SWIGTYPE_p_p_LLVMOpaqueGenericValue.getCPtr(Args));
     return (cPtr == 0) ? null : new SWIGTYPE_p_LLVMOpaqueGenericValue(cPtr, false);
   }
 
-  public static void LLVMFreeMachineCodeForFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMValueRef F) {
-    ExecutionEngineJNI.LLVMFreeMachineCodeForFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMValueRef.getCPtr(F));
+  public static void LLVMFreeMachineCodeForFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMOpaqueValue F) {
+    ExecutionEngineJNI.LLVMFreeMachineCodeForFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMOpaqueValue.getCPtr(F));
   }
 
   public static void LLVMAddModule(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMOpaqueModule M) {
@@ -150,20 +187,21 @@ public class ExecutionEngine {
     return ExecutionEngineJNI.LLVMRemoveModule(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMOpaqueModule.getCPtr(M), SWIGTYPE_p_p_LLVMOpaqueModule.getCPtr(OutMod), SWIGTYPE_p_p_char.getCPtr(OutErr));
   }
 
-  public static int LLVMFindFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, String Name, SWIGTYPE_p_LLVMValueRef OUTPUT) {
-    return ExecutionEngineJNI.LLVMFindFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), Name, SWIGTYPE_p_LLVMValueRef.getCPtr(OUTPUT));
+  public static int LLVMFindFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, String Name, SWIGTYPE_p_p_LLVMOpaqueValue OutFunc) {
+    return ExecutionEngineJNI.LLVMFindFunction(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), Name, SWIGTYPE_p_p_LLVMOpaqueValue.getCPtr(OutFunc));
   }
 
-  public static SWIGTYPE_p_LLVMTargetDataRef LLVMGetExecutionEngineTargetData(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE) {
-    return new SWIGTYPE_p_LLVMTargetDataRef(ExecutionEngineJNI.LLVMGetExecutionEngineTargetData(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE)), true);
+  public static SWIGTYPE_p_LLVMOpaqueTargetData LLVMGetExecutionEngineTargetData(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE) {
+    long cPtr = ExecutionEngineJNI.LLVMGetExecutionEngineTargetData(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE));
+    return (cPtr == 0) ? null : new SWIGTYPE_p_LLVMOpaqueTargetData(cPtr, false);
   }
 
-  public static void LLVMAddGlobalMapping(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMValueRef Global, SWIGTYPE_p_void Addr) {
-    ExecutionEngineJNI.LLVMAddGlobalMapping(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMValueRef.getCPtr(Global), SWIGTYPE_p_void.getCPtr(Addr));
+  public static void LLVMAddGlobalMapping(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMOpaqueValue Global, SWIGTYPE_p_void Addr) {
+    ExecutionEngineJNI.LLVMAddGlobalMapping(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMOpaqueValue.getCPtr(Global), SWIGTYPE_p_void.getCPtr(Addr));
   }
 
-  public static SWIGTYPE_p_void LLVMGetPointerToGlobal(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMValueRef Global) {
-    long cPtr = ExecutionEngineJNI.LLVMGetPointerToGlobal(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMValueRef.getCPtr(Global));
+  public static SWIGTYPE_p_void LLVMGetPointerToGlobal(SWIGTYPE_p_LLVMOpaqueExecutionEngine EE, SWIGTYPE_p_LLVMOpaqueValue Global) {
+    long cPtr = ExecutionEngineJNI.LLVMGetPointerToGlobal(SWIGTYPE_p_LLVMOpaqueExecutionEngine.getCPtr(EE), SWIGTYPE_p_LLVMOpaqueValue.getCPtr(Global));
     return (cPtr == 0) ? null : new SWIGTYPE_p_void(cPtr, false);
   }
 

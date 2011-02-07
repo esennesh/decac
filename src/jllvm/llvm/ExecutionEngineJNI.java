@@ -6,8 +6,13 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
+package jllvm.llvm;
 
 class ExecutionEngineJNI {
+  public final static native long new_LLVMValueRefArray(int jarg1);
+  public final static native void delete_LLVMValueRefArray(long jarg1);
+  public final static native long LLVMValueRefArray_getitem(long jarg1, int jarg2);
+  public final static native void LLVMValueRefArray_setitem(long jarg1, int jarg2, long jarg3);
   public final static native long new_LLVMGenericValueRefArray(int jarg1);
   public final static native void delete_LLVMGenericValueRefArray(long jarg1);
   public final static native long LLVMGenericValueRefArray_getitem(long jarg1, int jarg2);
@@ -16,6 +21,10 @@ class ExecutionEngineJNI {
   public final static native void delete_LLVMExecutionEngineRefArray(long jarg1);
   public final static native long LLVMExecutionEngineRefArray_getitem(long jarg1, int jarg2);
   public final static native void LLVMExecutionEngineRefArray_setitem(long jarg1, int jarg2, long jarg3);
+  public final static native long new_LLVMModuleRefArray(int jarg1);
+  public final static native void delete_LLVMModuleRefArray(long jarg1);
+  public final static native long LLVMModuleRefArray_getitem(long jarg1, int jarg2);
+  public final static native void LLVMModuleRefArray_setitem(long jarg1, int jarg2, long jarg3);
   public final static native long new_StringArray(int jarg1);
   public final static native void delete_StringArray(long jarg1);
   public final static native String StringArray_getitem(long jarg1, int jarg2);

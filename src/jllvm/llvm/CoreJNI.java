@@ -6,6 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
+package jllvm.llvm;
 
 class CoreJNI {
   public final static native long new_LLVMTypeRefArray(int jarg1);

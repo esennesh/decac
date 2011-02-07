@@ -6,6 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
+package jllvm.llvm;
 
 public final class LLVMAttribute {
   public final static LLVMAttribute LLVMZExtAttribute = new LLVMAttribute("LLVMZExtAttribute", CoreJNI.LLVMZExtAttribute_get());

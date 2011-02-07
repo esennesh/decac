@@ -8,18 +8,18 @@
 
 package jllvm.llvm;
 
-public class SWIGTYPE_p_LLVMOpaquePassManager {
+public class SWIGTYPE_p_p_LLVMOpaqueModule {
   private long swigCPtr;
 
-  protected SWIGTYPE_p_LLVMOpaquePassManager(long cPtr, boolean futureUse) {
+  protected SWIGTYPE_p_p_LLVMOpaqueModule(long cPtr, boolean futureUse) {
     swigCPtr = cPtr;
   }
 
-  protected SWIGTYPE_p_LLVMOpaquePassManager() {
+  protected SWIGTYPE_p_p_LLVMOpaqueModule() {
     swigCPtr = 0;
   }
 
-  protected static long getCPtr(SWIGTYPE_p_LLVMOpaquePassManager obj) {
+  protected static long getCPtr(SWIGTYPE_p_p_LLVMOpaqueModule obj) {
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 }

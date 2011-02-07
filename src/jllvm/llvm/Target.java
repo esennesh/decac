@@ -17,8 +17,8 @@ public class Target {
     TargetJNI.LLVMInitializeAllTargets();
   }
 
-  public static SWIGTYPE_p_LLVMBool LLVMInitializeNativeTarget() {
-    return new SWIGTYPE_p_LLVMBool(TargetJNI.LLVMInitializeNativeTarget(), true);
+  public static int LLVMInitializeNativeTarget() {
+    return TargetJNI.LLVMInitializeNativeTarget();
   }
 
   public static SWIGTYPE_p_LLVMOpaqueTargetData LLVMCreateTargetData(String StringRep) {
@@ -26,8 +26,8 @@ public class Target {
     return (cPtr == 0) ? null : new SWIGTYPE_p_LLVMOpaqueTargetData(cPtr, false);
   }
 
-  public static void LLVMAddTargetData(SWIGTYPE_p_LLVMOpaqueTargetData arg0, SWIGTYPE_p_LLVMPassManagerRef arg1) {
-    TargetJNI.LLVMAddTargetData(SWIGTYPE_p_LLVMOpaqueTargetData.getCPtr(arg0), SWIGTYPE_p_LLVMPassManagerRef.getCPtr(arg1));
+  public static void LLVMAddTargetData(SWIGTYPE_p_LLVMOpaqueTargetData arg0, SWIGTYPE_p_LLVMOpaquePassManager arg1) {
+    TargetJNI.LLVMAddTargetData(SWIGTYPE_p_LLVMOpaqueTargetData.getCPtr(arg0), SWIGTYPE_p_LLVMOpaquePassManager.getCPtr(arg1));
   }
 
   public static String LLVMCopyStringRepOfTargetData(SWIGTYPE_p_LLVMOpaqueTargetData arg0) {
