@@ -212,6 +212,11 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
   override def mangle: String = "{" + fields.map(field => field.name + ":" + field.tau.toString).foldRight("")((head: String,tail: String) => "_" + head + tail) + "}"
   
   def ++(rec: RecordProduct): RecordProduct = new RecordProduct(fields ++ rec.fields)
+  
+  def sizeOf: Int = {
+    val target = new LLVMTargetData("i686-pc-linux-gnu")
+    target.storeSizeOfType(compile).toInt
+  }
 }
 
 object EmptyRecord extends RecordProduct(Nil)
@@ -350,8 +355,8 @@ class SumType(addends: List[TaggedProduct]) extends RhoType {
       new LLVMIntegerType(representationSize)
     }
     else {
-      val minrec = minimalRecord
-      val fields = new LLVMIntegerType(representationSize) :: new LLVMPointerType(minrec.compile,0) :: Nil
+      val maxRecord = sumCases.map(sumCase => sumCase.record).sortWith((x,y) => x.sizeOf >= y.sizeOf).head
+      val fields = new LLVMIntegerType(representationSize) :: maxRecord.compile :: Nil
       new LLVMStructType(fields.toArray,true)
     }
   }
