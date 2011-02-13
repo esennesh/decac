@@ -258,8 +258,8 @@ Productions
   function_call_expression =
     {variable} [function]:qualified_identifier lparen [arguments]:expression_list? rparen |
     {parens} [function]:parenthetical_expression lparen [arguments]:expression_list? rparen |
-    {constructor} new [type]:qualified_identifier lparen [arguments]:expression_list? rparen |
-    {destructor} delete [type]:qualified_identifier lparen [arguments]:expression_list? rparen |
+    {region_alloc} new [region]:parenthetical_expression [argument]:parenthetical_expression |
+    {region_free} delete [argument]:parenthetical_expression |
     {deleteregion} delete region [which]:parenthetical_expression;
     
   except_case_clause =
