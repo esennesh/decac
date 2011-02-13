@@ -29,6 +29,7 @@
 extern "C" {
 #endif
 
+typedef int LLVMBool;
 typedef LLVMOpaqueModule* LLVMModuleRef;
 typedef LLVMOpaqueContext* LLVMContextRef;
 typedef LLVMOpaqueMemoryBuffer* LLVMMemoryBuffer;

@@ -19,15 +19,9 @@ class ReferenceRho(tau: TauType,st: ScopeType) extends RhoType {
     case _ => throw new Exception("Cannot compile a reference to non-gamma type " + target.toString)
   }
   
-  override def replace(from: TauVariable,to: TauType): ReferenceRho = {
-    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else target case _ => tau })
-  }
-  
   override def map(f: (TauType) => TauType): ReferenceRho = {
     new ReferenceRho(f(target),scope)
   }
-  
-  override def scopeMap(f: (ScopeType) => ScopeType): ReferenceRho = new ReferenceRho(target,f(scope))
   
   override def filter(p: (TauType) => Boolean): List[TauType] = target match {
     case rho: RhoType => rho.filter(p)

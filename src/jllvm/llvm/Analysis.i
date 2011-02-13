@@ -29,6 +29,7 @@
 extern "C" {
 #endif
 
+typedef int LLVMBool;
 typedef struct LLVMOpaqueModule *LLVMModuleRef;
 typedef struct LLVMOpaqueValue *LLVMValueRef;
 

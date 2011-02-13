@@ -221,7 +221,7 @@ Productions
     {primitive_boolean} boolean_constant |
     {primitive_string} string_constant |
     {tuple} lsbracket expression_list rsbracket |
-    {lambda} function function_arguments [region]:parenthetical_expression? block_expression |
+    {lambda} function function_arguments block_expression |
     {call} function_call_expression |
     {parenthetical} parenthetical_expression |
     {identifier} qualified_identifier;

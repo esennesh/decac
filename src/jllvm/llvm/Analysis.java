@@ -9,12 +9,12 @@
 package jllvm.llvm;
 
 public class Analysis {
-  public static SWIGTYPE_p_LLVMBool LLVMVerifyModule(SWIGTYPE_p_LLVMOpaqueModule M, LLVMVerifierFailureAction Action, SWIGTYPE_p_p_char OutMessage) {
-    return new SWIGTYPE_p_LLVMBool(AnalysisJNI.LLVMVerifyModule(SWIGTYPE_p_LLVMOpaqueModule.getCPtr(M), Action.swigValue(), SWIGTYPE_p_p_char.getCPtr(OutMessage)), true);
+  public static int LLVMVerifyModule(SWIGTYPE_p_LLVMOpaqueModule M, LLVMVerifierFailureAction Action, SWIGTYPE_p_p_char OutMessage) {
+    return AnalysisJNI.LLVMVerifyModule(SWIGTYPE_p_LLVMOpaqueModule.getCPtr(M), Action.swigValue(), SWIGTYPE_p_p_char.getCPtr(OutMessage));
   }
 
-  public static SWIGTYPE_p_LLVMBool LLVMVerifyFunction(SWIGTYPE_p_LLVMOpaqueValue Fn, LLVMVerifierFailureAction Action) {
-    return new SWIGTYPE_p_LLVMBool(AnalysisJNI.LLVMVerifyFunction(SWIGTYPE_p_LLVMOpaqueValue.getCPtr(Fn), Action.swigValue()), true);
+  public static int LLVMVerifyFunction(SWIGTYPE_p_LLVMOpaqueValue Fn, LLVMVerifierFailureAction Action) {
+    return AnalysisJNI.LLVMVerifyFunction(SWIGTYPE_p_LLVMOpaqueValue.getCPtr(Fn), Action.swigValue());
   }
 
   public static void LLVMViewFunctionCFG(SWIGTYPE_p_LLVMOpaqueValue Fn) {

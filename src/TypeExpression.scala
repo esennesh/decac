@@ -93,11 +93,19 @@ object OpaqueGamma extends PrimitiveGamma {
 }
 
 abstract class RhoType extends GammaType {
-  def replace(from: TauVariable,to: TauType): RhoType = {
-    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
+  def replace(from: TauType,to: TauType): RhoType = {
+    map(tau => if(tau == from) to else tau)
   }
   def map(f: (TauType) => TauType): RhoType
-  def scopeMap(f: (ScopeType) => ScopeType): RhoType
+  def scopeMap(f: (ScopeType) => ScopeType): RhoType = {
+    val originals = filter(tau => tau.isInstanceOf[ReferenceRho])
+    val newrefs = originals.map(tau => {
+      val ref = tau.asInstanceOf[ReferenceRho]
+      new ReferenceRho(ref.target,f(ref.scope))
+    })
+    originals.zip(newrefs).foldLeft(this)((rho: RhoType,pair: Tuple2[TauType,ReferenceRho]) => rho.replace(pair._1,pair._2))
+  }
+  //def scopeMap(f: (ScopeType) => ScopeType): RhoType
   def filter(p: (TauType) => Boolean): List[TauType]
   def generalize(substitution: TauSubstitution): SigmaType = {
     val tvars = filter(tau => tau.isInstanceOf[TauVariable] && tau.equals(substitution.solve(tau)))
@@ -141,16 +149,10 @@ class RecursiveMu(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
     unfolded.filter(tau => tau.isInstanceOf[RecursiveMu]).head.asInstanceOf[RecursiveMu]
   }
   
-  override def replace(from: TauVariable,to: TauType): RecursiveMu = {
-    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
-  }
-  
   override def map(f: (TauType) => TauType): RecursiveMu = {
-    new RecursiveMu(contents.map(tau => if(tau == this) tau else f(tau)),MuBinding(this))
-  }
-  
-  override def scopeMap(f: (ScopeType) => ScopeType): RecursiveMu = {
-    new RecursiveMu(contents.scopeMap(f),MuBinding(this))
+    val result = new RecursiveMu(contents.map(tau => if(tau == this) tau else f(tau)),MuBinding(this))
+    result.definition = definition
+    result
   }
   
   override def filter(f: (TauType) => Boolean): List[TauType] = {
@@ -180,16 +182,10 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
   val fields: List[RecordMember] = f
   val length: Int = fields.length
   
-  override def replace(from: TauVariable,to: TauType): RecordProduct = {
-    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
-  }
-  
   override def map(f: (TauType) => TauType): RecordProduct = {
-    new RecordProduct(fields.map(field => new RecordMember(field.name,field.tau match { case mu: RecursiveMu => f(mu) case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
-  }
-  
-  override def scopeMap(f: (ScopeType) => ScopeType): RecordProduct = {
-    new RecordProduct(fields.map(field => new RecordMember(field.name,field.tau match { case rho: RhoType => rho.scopeMap(f) case _ => field.tau })))
+    val result = new RecordProduct(fields.map(field => new RecordMember(field.name,field.tau match { case mu: RecursiveMu => f(mu) case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
+    result.definition = definition
+    result
   }
   
   override def filter(p: (TauType) => Boolean): List[TauType] = {
@@ -225,20 +221,12 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   val domain = d
   val range = r
   
-  override def replace(from: TauVariable,to: TauType): FunctionArrow = {
-    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
-  }
-  
   override def map(f: (TauType) => TauType): FunctionArrow = {
     val mappedDomain = domain.map(tau => tau match { case mu: RecursiveMu => f(mu) case rho: RhoType => rho.map(f) case _ => f(tau) })
     val mappedRange = range match { case rho: RhoType => rho.map(f) case _ => f(range) }
-    new FunctionArrow(mappedDomain,mappedRange)
-  }
-  
-  override def scopeMap(f: (ScopeType) => ScopeType): FunctionArrow = {
-    val mappedDomain = domain.map(tau => tau match { case rho: RhoType => rho.scopeMap(f) case _ => tau })
-    val mappedRange = range match { case rho: RhoType => rho.scopeMap(f) case _ => range }
-    new FunctionArrow(mappedDomain,mappedRange)
+    val result = new FunctionArrow(mappedDomain,mappedRange)
+    result.definition = definition
+    result
   }
   
   override def filter(p: (TauType) => Boolean): List[TauType] = {
@@ -301,15 +289,11 @@ case class TaggedProduct(name: DataConstructor,record: RecordProduct) {
 
 class SumType(addends: List[TaggedProduct]) extends RhoType {
   val sumCases = addends
-    
-  override def replace(from: TauVariable,to: TauType): SumType = {
-    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
-  }
-    
-  override def map(f: (TauType) => TauType): SumType = new SumType(sumCases.map(sumCase => sumCase.map(f)))
-  override def scopeMap(f: (ScopeType) => ScopeType): SumType = {
-    val scopedCases = sumCases.map(c => TaggedProduct(c.name,c.record.scopeMap(f)))
-    new SumType(scopedCases)
+
+  override def map(f: (TauType) => TauType): SumType = {
+    val result = new SumType(sumCases.map(sumCase => sumCase.map(f)))
+    result.definition = definition
+    result
   }
   override def filter(p: (TauType) => Boolean): List[TauType] = {
     var result: List[TauType] = Nil
@@ -346,17 +330,20 @@ class SumType(addends: List[TaggedProduct]) extends RhoType {
   
   def enumeration: Boolean = sumCases.forall(gp => gp.record.length == 0)
   
-  //TODO: I'm no longer using boxed representation of tagged-union types, I'm using C-style union representation!  I need to figure out how to represent the C-style unions in LLVM correctly!
-  override def compile: LLVMType = {
+  def tagRepresentation: LLVMIntegerType = {
     val largestConstructor = sumCases.sortWith((x: TaggedProduct,y: TaggedProduct) => x.constructor > y.constructor).head.constructor
     val representationSize = math.floor(math.log(largestConstructor) / math.log(2)).toInt + 1
     assert(representationSize > 0)
-    if(enumeration) {
-      new LLVMIntegerType(representationSize)
-    }
+    new LLVMIntegerType(representationSize)
+  }
+  
+  //TODO: I'm no longer using boxed representation of tagged-union types, I'm using C-style union representation!  I need to figure out how to represent the C-style unions in LLVM correctly!
+  override def compile: LLVMType = {
+    if(enumeration)
+      tagRepresentation
     else {
       val maxRecord = sumCases.map(sumCase => sumCase.record).sortWith((x,y) => x.sizeOf >= y.sizeOf).head
-      val fields = new LLVMIntegerType(representationSize) :: maxRecord.compile :: Nil
+      val fields = tagRepresentation :: maxRecord.compile :: Nil
       new LLVMStructType(fields.toArray,true)
     }
   }
@@ -367,24 +354,17 @@ class OpenSum(base: TaggedProduct) extends SumType(base :: Nil) {
   override val sumCases = openCases
   val recursiveThis = new RecursiveMu(this,FutureRecursion())
   
-  override def replace(from: TauVariable,to: TauType): OpenSum = {
-    map(tau => tau match { case tvar: TauVariable => if(tvar == from) to else tvar case _ => tau })
-  }
-  
   override def map(f: (TauType) => TauType): OpenSum = {
     val newCases = sumCases.map(sumCase => sumCase.map(f))
     val result = new OpenSum(newCases.last)
     result.openCases = newCases.map(gp => gp.map(tau => if(tau == recursiveThis) result.recursiveThis else tau))
+    result.definition = definition
     result
   }
   
   def expand(addend: TaggedProduct,selfReference: TauVariable,addBase: Boolean): TaggedProduct = {
-    val record = if(addBase) minimalRecord ++ addend.record.replace(selfReference,recursiveThis) else addend.record.replace(selfReference,recursiveThis)
-    val name = addend.name match {
-      case NoConstructor() => NamelessConstructor(addend.constructor)
-      case _ => addend.name
-    }
-    val newCase = new TaggedProduct(name,record)
+    val record = if(addBase) minimalRecord ++ addend.record.replace(selfReference,recursiveThis).asInstanceOf[RecordProduct] else addend.record.replace(selfReference,recursiveThis).asInstanceOf[RecordProduct]
+    val newCase = new TaggedProduct(addend.name,record)
     openCases = newCase :: openCases
     newCase
   }

@@ -194,8 +194,8 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
 extern "C" {
 #endif
 
-SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMParseBitcode(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMParseBitcode(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+  jint jresult = 0 ;
   LLVMMemoryBufferRef arg1 ;
   LLVMModuleRef *arg2 = (LLVMModuleRef *) 0 ;
   char **arg3 = (char **) 0 ;
@@ -212,18 +212,14 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMParseBitcode(JNIEnv *j
   arg1 = *argp1; 
   arg2 = *(LLVMModuleRef **)&jarg2; 
   arg3 = *(char ***)&jarg3; 
-  result = LLVMParseBitcode(arg1,arg2,arg3);
-  {
-    LLVMBool * resultptr = (LLVMBool *) malloc(sizeof(LLVMBool));
-    memmove(resultptr, &result, sizeof(LLVMBool));
-    *(LLVMBool **)&jresult = resultptr;
-  }
+  result = (LLVMBool)LLVMParseBitcode(arg1,arg2,arg3);
+  jresult = (jint)result; 
   return jresult;
 }
 
 
-SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMParseBitcodeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMParseBitcodeInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
+  jint jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMMemoryBufferRef arg2 ;
   LLVMModuleRef *arg3 = (LLVMModuleRef *) 0 ;
@@ -242,18 +238,14 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMParseBitcodeInContext(
   arg2 = *argp2; 
   arg3 = *(LLVMModuleRef **)&jarg3; 
   arg4 = *(char ***)&jarg4; 
-  result = LLVMParseBitcodeInContext(arg1,arg2,arg3,arg4);
-  {
-    LLVMBool * resultptr = (LLVMBool *) malloc(sizeof(LLVMBool));
-    memmove(resultptr, &result, sizeof(LLVMBool));
-    *(LLVMBool **)&jresult = resultptr;
-  }
+  result = (LLVMBool)LLVMParseBitcodeInContext(arg1,arg2,arg3,arg4);
+  jresult = (jint)result; 
   return jresult;
 }
 
 
-SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModuleInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModuleInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
+  jint jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMMemoryBufferRef arg2 ;
   LLVMModuleRef *arg3 = (LLVMModuleRef *) 0 ;
@@ -272,18 +264,14 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModuleInCont
   arg2 = *argp2; 
   arg3 = *(LLVMModuleRef **)&jarg3; 
   arg4 = *(char ***)&jarg4; 
-  result = LLVMGetBitcodeModuleInContext(arg1,arg2,arg3,arg4);
-  {
-    LLVMBool * resultptr = (LLVMBool *) malloc(sizeof(LLVMBool));
-    memmove(resultptr, &result, sizeof(LLVMBool));
-    *(LLVMBool **)&jresult = resultptr;
-  }
+  result = (LLVMBool)LLVMGetBitcodeModuleInContext(arg1,arg2,arg3,arg4);
+  jresult = (jint)result; 
   return jresult;
 }
 
 
-SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModule(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModule(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+  jint jresult = 0 ;
   LLVMMemoryBufferRef arg1 ;
   LLVMModuleRef *arg2 = (LLVMModuleRef *) 0 ;
   char **arg3 = (char **) 0 ;
@@ -300,18 +288,14 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModule(JNIEn
   arg1 = *argp1; 
   arg2 = *(LLVMModuleRef **)&jarg2; 
   arg3 = *(char ***)&jarg3; 
-  result = LLVMGetBitcodeModule(arg1,arg2,arg3);
-  {
-    LLVMBool * resultptr = (LLVMBool *) malloc(sizeof(LLVMBool));
-    memmove(resultptr, &result, sizeof(LLVMBool));
-    *(LLVMBool **)&jresult = resultptr;
-  }
+  result = (LLVMBool)LLVMGetBitcodeModule(arg1,arg2,arg3);
+  jresult = (jint)result; 
   return jresult;
 }
 
 
-SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModuleProviderInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModuleProviderInContext(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3, jlong jarg4) {
+  jint jresult = 0 ;
   LLVMContextRef arg1 = (LLVMContextRef) 0 ;
   LLVMMemoryBufferRef arg2 ;
   LLVMModuleProviderRef *arg3 = (LLVMModuleProviderRef *) 0 ;
@@ -330,18 +314,14 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModuleProvid
   arg2 = *argp2; 
   arg3 = *(LLVMModuleProviderRef **)&jarg3; 
   arg4 = *(char ***)&jarg4; 
-  result = LLVMGetBitcodeModuleProviderInContext(arg1,arg2,arg3,arg4);
-  {
-    LLVMBool * resultptr = (LLVMBool *) malloc(sizeof(LLVMBool));
-    memmove(resultptr, &result, sizeof(LLVMBool));
-    *(LLVMBool **)&jresult = resultptr;
-  }
+  result = (LLVMBool)LLVMGetBitcodeModuleProviderInContext(arg1,arg2,arg3,arg4);
+  jresult = (jint)result; 
   return jresult;
 }
 
 
-SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModuleProvider(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModuleProvider(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2, jlong jarg3) {
+  jint jresult = 0 ;
   LLVMMemoryBufferRef arg1 ;
   LLVMModuleProviderRef *arg2 = (LLVMModuleProviderRef *) 0 ;
   char **arg3 = (char **) 0 ;
@@ -358,12 +338,8 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_BitReaderJNI_LLVMGetBitcodeModuleProvid
   arg1 = *argp1; 
   arg2 = *(LLVMModuleProviderRef **)&jarg2; 
   arg3 = *(char ***)&jarg3; 
-  result = LLVMGetBitcodeModuleProvider(arg1,arg2,arg3);
-  {
-    LLVMBool * resultptr = (LLVMBool *) malloc(sizeof(LLVMBool));
-    memmove(resultptr, &result, sizeof(LLVMBool));
-    *(LLVMBool **)&jresult = resultptr;
-  }
+  result = (LLVMBool)LLVMGetBitcodeModuleProvider(arg1,arg2,arg3);
+  jresult = (jint)result; 
   return jresult;
 }
 

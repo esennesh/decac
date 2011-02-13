@@ -160,14 +160,14 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
       if(!ScopeTypeOrdering.lt(alpha.scope,beta.scope))
         throw new Exception("Type inference error: reference type " + alpha.toString + " has smaller scope than " + beta.toString)
     }
-    case (alpha: RecursiveRho,beta: RecursiveRho) => {
+    case (alpha: RecursiveMu,beta: RecursiveMu) => {
       val unfoldx = alpha.derecurse
       val unfoldy = beta.derecurse
       rui.assumptions.push(Subtype(unfoldx._1,unfoldy._1))
       (new LesserEq(unfoldx._2,unfoldy._2)).infer(rui)
       rui.assumptions.pop
     }
-    case (rx: RhoType,ry: RecursiveRho) => rui.constrain(new LesserEq(rx,ry.unfold))
+    case (rx: RhoType,ry: RecursiveMu) => rui.constrain(new LesserEq(rx,ry.unfold))
     case (alpha: SumType,beta: SumType) => {
       val shared = alpha.sumCases.zip(beta.sumCases)
       shared.foreach(pair => rui.constrain(new Equal(pair._1.record,pair._2.record)))

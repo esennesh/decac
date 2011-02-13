@@ -194,8 +194,8 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
 extern "C" {
 #endif
 
-SWIGEXPORT jlong JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMVerifyModule(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMVerifyModule(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jlong jarg3) {
+  jint jresult = 0 ;
   LLVMModuleRef arg1 = (LLVMModuleRef) 0 ;
   LLVMVerifierFailureAction arg2 ;
   char **arg3 = (char **) 0 ;
@@ -206,18 +206,14 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMVerifyModule(JNIEnv *je
   arg1 = *(LLVMModuleRef *)&jarg1; 
   arg2 = (LLVMVerifierFailureAction)jarg2; 
   arg3 = *(char ***)&jarg3; 
-  result = LLVMVerifyModule(arg1,arg2,arg3);
-  {
-    LLVMBool * resultptr = (LLVMBool *) malloc(sizeof(LLVMBool));
-    memmove(resultptr, &result, sizeof(LLVMBool));
-    *(LLVMBool **)&jresult = resultptr;
-  }
+  result = (LLVMBool)LLVMVerifyModule(arg1,arg2,arg3);
+  jresult = (jint)result; 
   return jresult;
 }
 
 
-SWIGEXPORT jlong JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMVerifyFunction(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
-  jlong jresult = 0 ;
+SWIGEXPORT jint JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMVerifyFunction(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2) {
+  jint jresult = 0 ;
   LLVMValueRef arg1 = (LLVMValueRef) 0 ;
   LLVMVerifierFailureAction arg2 ;
   LLVMBool result;
@@ -226,12 +222,8 @@ SWIGEXPORT jlong JNICALL Java_jllvm_llvm_AnalysisJNI_LLVMVerifyFunction(JNIEnv *
   (void)jcls;
   arg1 = *(LLVMValueRef *)&jarg1; 
   arg2 = (LLVMVerifierFailureAction)jarg2; 
-  result = LLVMVerifyFunction(arg1,arg2);
-  {
-    LLVMBool * resultptr = (LLVMBool *) malloc(sizeof(LLVMBool));
-    memmove(resultptr, &result, sizeof(LLVMBool));
-    *(LLVMBool **)&jresult = resultptr;
-  }
+  result = (LLVMBool)LLVMVerifyFunction(arg1,arg2);
+  jresult = (jint)result; 
   return jresult;
 }
 
