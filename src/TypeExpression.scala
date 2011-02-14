@@ -220,6 +220,13 @@ object EmptyRecord extends RecordProduct(Nil)
 class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
   val domain = d
   val range = r
+  val closure = {
+    val alpha = new TauVariable
+    val signature = new FunctionArrow(alpha :: domain,range)
+    val baseRecord = new RecordProduct(new RecordMember(None,signature) :: Nil)
+    val baseCase = new TaggedProduct(DataConstructor(None,None),baseRecord)
+    new OpenSum(baseCase,Some(alpha))
+  }
   
   override def map(f: (TauType) => TauType): FunctionArrow = {
     val mappedDomain = domain.map(tau => tau match { case mu: RecursiveMu => f(mu) case rho: RhoType => rho.map(f) case _ => f(tau) })
@@ -349,14 +356,17 @@ class SumType(addends: List[TaggedProduct]) extends RhoType {
   }
 }
 
-class OpenSum(base: TaggedProduct) extends SumType(base :: Nil) {
-  protected var openCases = base :: Nil
-  override val sumCases = openCases
+class OpenSum(base: TaggedProduct,selfReference: Option[TauVariable]) extends SumType(base :: Nil) {
   val recursiveThis = new RecursiveMu(this,FutureRecursion())
+  protected var openCases = (selfReference match {
+    case Some(tvar) => base.replace(tvar,this)
+    case None => base
+  }) :: Nil
+  override val sumCases = openCases
   
   override def map(f: (TauType) => TauType): OpenSum = {
     val newCases = sumCases.map(sumCase => sumCase.map(f))
-    val result = new OpenSum(newCases.last)
+    val result = new OpenSum(newCases.last,None)
     result.openCases = newCases.map(gp => gp.map(tau => if(tau == recursiveThis) result.recursiveThis else tau))
     result.definition = definition
     result
