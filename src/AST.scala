@@ -53,12 +53,12 @@ object ASTProcessor {
         node.setLowerTypeForm(one.getArgument)
         val argument = processTypeAnnotation(node,scope)
         val range = processTypeAnnotation(one.getResult,scope)
-        new FunctionArrow(argument :: Nil,range)
+        new ClosureArrow(argument :: Nil,range,None)
       }
     }
-    case alias: AAliasTypeForm => {
-      val form = processLowerTypeForm(alias.getLowerTypeForm,scope)
-      new ReferenceRho(form,new GlobalScopeType(Some(scope)))
+    case scopedPointer: AScopedPointerTypeForm => {
+      val form = processLowerTypeForm(scopedPointer.getLowerTypeForm,scope)
+      new ScopedPointer(form,new GlobalScopeType(Some(scope)))
     }
     /*case aclass: AClassTypeForm
     case subrange: ASubrangeTypeForm
@@ -85,6 +85,7 @@ object ASTProcessor {
     case variable: AIdentifierExp1 => new UninferredVariable(processQualifiedIdentifier(variable.getQualifiedIdentifier),scope)
     case integer: APrimitiveIntegerExp1 => new UninferredInteger(integer.getIntegerConstant.getText.toInt)
     case parens: AParentheticalExp1 => processExpression(parens.getParentheticalExpression.asInstanceOf[AParentheticalExpression].getExpression,scope)
+    case call: ACallExp1 => processCallExpression(call.getFunctionCallExpression,scope)
   }
   def processExp2(exp: PExp2,scope: UninferredLexicalScope): UninferredExpression = exp match {
     case minus: AMinusExp2 => new UninferredOperator(new UninferredInteger(0),processExp2(minus.getExp2,scope),Subtract)
@@ -102,6 +103,21 @@ object ASTProcessor {
   }
   def processExp5(exp: PExp5,scope: UninferredLexicalScope): UninferredExpression = exp match {
     case others: AOthersExp5 => processExp4(others.getExp4,scope)
+  }
+  def processCallExpression(call: PFunctionCallExpression,scope: UninferredLexicalScope): UninferredCall = call match {
+    case named: AVariableFunctionCallExpression => {
+      val name = processQualifiedIdentifier(named.getFunction)
+      val arguments = if(named.getArguments != null) processExpressionList(named.getArguments,scope) else Nil
+      scope.lookup(name) match {
+        case func: FunctionDefinition => new UninferredDefinitionCall(func,arguments)
+        case binding: UninferredLexicalBinding => new UninferredExpressionCall(new UninferredVariable(name,scope),arguments)
+      }
+    }
+    case expr: AParensFunctionCallExpression => {
+      val arguments = processExpressionList(expr.getArguments,scope)
+      val func = processExpression(expr.getFunction.asInstanceOf[AParentheticalExpression].getExpression,scope)
+      new UninferredExpressionCall(func,arguments)
+    }
   }
   def processIf(ifexpr: PIfExpression,scope: UninferredLexicalScope): UninferredIf = ifexpr match {
     case one: AOneIfExpression => {
@@ -121,6 +137,11 @@ object ASTProcessor {
     case blockexp: ABlockexpExpression => processBlock(blockexp.getBlockExpression,scope)
     case exp5: AOthersExpression => processExp5(exp5.getExp5,scope)
     case condexp: ACondexpExpression => processIf(condexp.getIfExpression,scope)
+  }
+  
+  def processExpressionList(exprs: PExpressionList,scope: UninferredLexicalScope): List[UninferredExpression] = exprs match {
+    case one: AOneExpressionList => processExpression(one.getExpression,scope) :: Nil
+    case many: AManyExpressionList => processExpressionList(many.getExpressionList,scope) ++ (processExpression(many.getExpression,scope) :: Nil)
   }
   
   def processBlockContents(contents: PBlockContents): List[PExpression] = contents match {

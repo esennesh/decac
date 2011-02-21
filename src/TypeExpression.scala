@@ -14,6 +14,7 @@ trait SigmaType {
 
 abstract class TauType {
   def toString: String
+  def tagged: Boolean
 }
 
 abstract class GammaType extends TauType with SigmaType {
@@ -74,6 +75,8 @@ abstract class PrimitiveGamma extends GammaType {
     case Some(defined) => defined.name
     case None => toString
   }
+  
+  override def tagged: Boolean = false
 }
 
 object TopGamma extends PrimitiveGamma {
@@ -98,14 +101,13 @@ abstract class RhoType extends GammaType {
   }
   def map(f: (TauType) => TauType): RhoType
   def scopeMap(f: (ScopeType) => ScopeType): RhoType = {
-    val originals = filter(tau => tau.isInstanceOf[ReferenceRho])
+    val originals = filter(tau => tau.isInstanceOf[PointerType])
     val newrefs = originals.map(tau => {
-      val ref = tau.asInstanceOf[ReferenceRho]
-      new ReferenceRho(ref.target,f(ref.scope))
+      val ref = tau.asInstanceOf[ScopedPointer]
+      new ScopedPointer(ref.target,f(ref.scope))
     })
-    originals.zip(newrefs).foldLeft(this)((rho: RhoType,pair: Tuple2[TauType,ReferenceRho]) => rho.replace(pair._1,pair._2))
+    originals.zip(newrefs).foldLeft(this)((rho: RhoType,pair: Tuple2[TauType,ScopedPointer]) => rho.replace(pair._1,pair._2))
   }
-  //def scopeMap(f: (ScopeType) => ScopeType): RhoType
   def filter(p: (TauType) => Boolean): List[TauType]
   def generalize(substitution: TauSubstitution): SigmaType = {
     val tvars = filter(tau => tau.isInstanceOf[TauVariable] && tau.equals(substitution.solve(tau)))
@@ -138,6 +140,8 @@ class RecursiveMu(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
     case MuBinding(mu) => rho.map(tau => if(tau == mu) this else tau)
     case FutureRecursion() => rho
   }
+  
+  override def tagged: Boolean = contents.tagged
   
   def unfold: RhoType = contents.map(tau => tau)
   def derecurse: Tuple2[TauVariable,RhoType] = {
@@ -182,6 +186,8 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
   val fields: List[RecordMember] = f
   val length: Int = fields.length
   
+  override def tagged: Boolean = false
+  
   override def map(f: (TauType) => TauType): RecordProduct = {
     val result = new RecordProduct(fields.map(field => new RecordMember(field.name,field.tau match { case mu: RecursiveMu => f(mu) case rho: RhoType => rho.map(f) case _ => f(field.tau) })))
     result.definition = definition
@@ -217,16 +223,16 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
 
 object EmptyRecord extends RecordProduct(Nil)
 
-class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
-  val domain = d
-  val range = r
-  val closure = {
-    val alpha = new TauVariable
-    val signature = new FunctionArrow(alpha :: domain,range)
-    val baseRecord = new RecordProduct(new RecordMember(None,signature) :: Nil)
-    val baseCase = new TaggedProduct(DataConstructor(None,None),baseRecord)
-    new OpenSum(baseCase,Some(alpha))
-  }
+trait ArrowType {
+  val domain: List[TauType]
+  val range: TauType
+}
+
+class FunctionArrow(d: List[TauType],r: TauType) extends RhoType with ArrowType {
+  override val domain = d
+  override val range = r
+  
+  override def tagged: Boolean = false
   
   override def map(f: (TauType) => TauType): FunctionArrow = {
     val mappedDomain = domain.map(tau => tau match { case mu: RecursiveMu => f(mu) case rho: RhoType => rho.map(f) case _ => f(tau) })
@@ -265,7 +271,7 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType {
     new LLVMFunctionType(compiledRange,compiledDomain.toArray,false)
   }
   
-  override def mangle: String = "(" + (domain match { case head :: tail => head.toString + tail.foldLeft("")((x: String,y: TauType) => x + "," + y.toString) case Nil => "" }) + ")->" + range.toString
+  override def mangle: String = "((" + (domain match { case head :: tail => head.toString + tail.foldLeft("")((x: String,y: TauType) => x + "," + y.toString) case Nil => "" }) + ")->" + range.toString + ")*"
 }
 
 case class DataConstructor(name: Option[String],representation: Option[Int])
@@ -295,7 +301,9 @@ case class TaggedProduct(name: DataConstructor,record: RecordProduct) {
 }
 
 class SumType(addends: List[TaggedProduct]) extends RhoType {
-  val sumCases = addends
+  val sumCases: List[TaggedProduct] = addends
+
+  override def tagged: Boolean = true
 
   override def map(f: (TauType) => TauType): SumType = {
     val result = new SumType(sumCases.map(sumCase => sumCase.map(f)))
@@ -304,7 +312,11 @@ class SumType(addends: List[TaggedProduct]) extends RhoType {
   }
   override def filter(p: (TauType) => Boolean): List[TauType] = {
     var result: List[TauType] = Nil
-    sumCases.foreach(c => result = result ++ c.record.filter(p))
+    for(sumCase <- sumCases) {
+      result = result ++ sumCase.record.filter(p)
+      if(p(sumCase.record))
+        result = sumCase.record :: result
+    }
     result
   }
   override def mangle: String = {
@@ -344,7 +356,6 @@ class SumType(addends: List[TaggedProduct]) extends RhoType {
     new LLVMIntegerType(representationSize)
   }
   
-  //TODO: I'm no longer using boxed representation of tagged-union types, I'm using C-style union representation!  I need to figure out how to represent the C-style unions in LLVM correctly!
   override def compile: LLVMType = {
     if(enumeration)
       tagRepresentation
@@ -356,27 +367,39 @@ class SumType(addends: List[TaggedProduct]) extends RhoType {
   }
 }
 
-class OpenSum(base: TaggedProduct,selfReference: Option[TauVariable]) extends SumType(base :: Nil) {
+class OpenSum(base: Option[TaggedProduct],selfReference: Option[TauVariable]) extends SumType(Nil) {
   val recursiveThis = new RecursiveMu(this,FutureRecursion())
-  protected var openCases = (selfReference match {
-    case Some(tvar) => base.replace(tvar,this)
-    case None => base
-  }) :: Nil
+  protected var openCases = (selfReference,base) match {
+    case (Some(tvar),Some(b)) => b.replace(tvar,this) :: Nil
+    case (None,Some(b)) => b :: Nil
+    case _ => Nil
+  }
   override val sumCases = openCases
   
   override def map(f: (TauType) => TauType): OpenSum = {
     val newCases = sumCases.map(sumCase => sumCase.map(f))
-    val result = new OpenSum(newCases.last,None)
+    val result = new OpenSum(Some(newCases.last),None)
     result.openCases = newCases.map(gp => gp.map(tau => if(tau == recursiveThis) result.recursiveThis else tau))
     result.definition = definition
     result
   }
   
-  def expand(addend: TaggedProduct,selfReference: TauVariable,addBase: Boolean): TaggedProduct = {
-    val record = if(addBase) minimalRecord ++ addend.record.replace(selfReference,recursiveThis).asInstanceOf[RecordProduct] else addend.record.replace(selfReference,recursiveThis).asInstanceOf[RecordProduct]
+  def expand(addend: TaggedProduct,selfReference: Option[TauVariable],addBase: Boolean): TaggedProduct = {
+    val recursivized = selfReference match {
+      case Some(mu) => addend.record.replace(mu,recursiveThis).asInstanceOf[RecordProduct]
+      case None => addend.record
+    }
+    val record = if(addBase) minimalRecord ++ recursivized else recursivized
     val newCase = new TaggedProduct(addend.name,record)
     openCases = newCase :: openCases
     newCase
+  }
+  
+  override def compile: LLVMType = {
+    if(filter(tau => tau == recursiveThis) != Nil)
+      recursiveThis.compile
+    else
+      super.compile
   }
 }
 
@@ -405,6 +428,7 @@ object CaseTagger {
 
 class TauVariable extends TauType { 
   override def toString: String = toString
+  override def tagged: Boolean = false
   
   def refine(low: Option[GammaType],high: Option[GammaType]): GammaRange = {
     val lower = low match {
@@ -422,6 +446,8 @@ class TauVariable extends TauType {
 class GammaRange(l: GammaType,h: GammaType) extends TauVariable {
   val lowerBound: GammaType = l
   val upperBound: GammaType = h
+  
+  override def tagged: Boolean = if(lowerBound != BottomGamma) lowerBound.tagged else upperBound.tagged
  
   override def toString: String = super.toString + "(" + lowerBound.toString + "," + upperBound.toString + ")"
   

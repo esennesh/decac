@@ -150,15 +150,16 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
     case (alpha: GammaType,beta: TauVariable) => rui.substitute(beta,beta.refine(Some(alpha),None))
     case (alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(beta)))
     //Cases for type constructors.
-    case (alpha: ReferenceRho,beta: ReferenceRho) => {
-      (alpha.target,beta.target) match {
-        case (varx: SumType,vary: SumType) => {
-          varx.sumCases.zip(vary.sumCases).foreach(pair => rui.constrain(new Equal(pair._1.record,pair._2.record)))
-        }
-        case _ => rui.constrain(new Equal(alpha.target,beta.target))
-      }
+    case (alpha: ScopedPointer,beta: ScopedPointer) => {
+      rui.constrain(new Equal(alpha.target,beta.target))
       if(!ScopeTypeOrdering.lt(alpha.scope,beta.scope))
         throw new Exception("Type inference error: reference type " + alpha.toString + " has smaller scope than " + beta.toString)
+    }
+    case (alpha: PointerType,beta: PointerType) => {
+      if(alpha.target.tagged || beta.target.tagged)
+        rui.constrain(new LesserEq(alpha.target,beta.target))
+      else
+        rui.constrain(new Equal(alpha.target,beta.target))
     }
     case (alpha: RecursiveMu,beta: RecursiveMu) => {
       val unfoldx = alpha.derecurse

@@ -35,7 +35,7 @@ Tokens
   var = 'var';
   protected = 'protected';
   boolean_constant = 'true' | 'false';
-  multiplication_operator = '*';
+  asterisk = '*';
   division_operator = '/';
   addition_operator = '+';
   subtraction_operator = '-';
@@ -127,7 +127,8 @@ Productions
     
   type_form =
     {function} function_type_form |
-    {alias} at_operator lower_type_form |
+    {scoped_pointer} at_operator lower_type_form |
+    {pointer} lower_type_form asterisk |
     {variant} variant_keyword lbracket variant_component+ rbracket |
     {class} class_keyword function_arguments? extension_clause? lbracket [member]:member_declaration+ destructor_definition? rbracket |
     {exception} exception lparen identifier_list rparen [extension]:extension_clause? |
@@ -236,7 +237,7 @@ Productions
     {and}  [exp1]:exp3 and_operator [exp2]:exp2 |
     {or}  [exp1]:exp3 or_operator [exp2]:exp2 |
     {xor}  [exp1]:exp3 xor_operator [exp2]:exp2 |
-    {multiply} [exp1]:exp3 multiplication_operator [exp2]:exp2 |
+    {multiply} [exp1]:exp3 asterisk [exp2]:exp2 |
     {division} [exp1]:exp3 division_operator [exp2]:exp2 |
     {others} exp2;
     
