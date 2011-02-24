@@ -1,9 +1,8 @@
 package decac
 
 import scala.collection.mutable.HashMap
-import jllvm.LLVMValue
-import jllvm.LLVMCallInstruction
-import jllvm.LLVMInstructionBuilder
+import jllvm._
+import jllvm.llvm.LLVMIntPredicate
 
 abstract class UninferredCall(arrow: ArrowType,arguments: List[UninferredExpression]) extends UninferredExpression(arrow.range) {
   assert(arrow.domain.length == arguments.length)
@@ -47,10 +46,9 @@ class UninferredExpressionCall(func: UninferredExpression,arguments: List[Uninfe
 }
 
 abstract class CallExpression(arrow: FunctionArrow,args: List[Expression]) extends Expression(arrow.range) {
-  assert(arrow.filter(tau => tau.isInstanceOf[BetaVariable]) == arrow.filter(tau => tau.isInstanceOf[TauVariable]))
+  assert(arrow.filter(tau => if(tau.isInstanceOf[TauVariable]) !tau.isInstanceOf[BetaVariable] else false) == Nil)
   val signature = arrow
   val arguments = args
-  val specializations: HashMap[BetaSpecialization,SpecializedCall]
   
   override def children: List[Expression] = arguments
   override def specialize(specialization: BetaSpecialization): SpecializedCall
@@ -58,7 +56,7 @@ abstract class CallExpression(arrow: FunctionArrow,args: List[Expression]) exten
 
 class DefinitionCall(func: FunctionDefinition,sig: FunctionArrow,arguments: List[Expression]) extends CallExpression(sig,arguments) {
   val definition = func
-  override val specializations = new HashMap[BetaSpecialization,SpecializedDefinitionCall]
+  val specializations = new HashMap[BetaSpecialization,SpecializedDefinitionCall]
   
   override def specialize(specialization: BetaSpecialization): SpecializedDefinitionCall = specializations.get(specialization) match {
     case Some(spec) => spec
@@ -72,10 +70,10 @@ class DefinitionCall(func: FunctionDefinition,sig: FunctionArrow,arguments: List
   }
 }
 
-class ExpressionCall(func: Expression,args: List[Expression]) extends CallExpression(new FunctionArrow(func.expressionType.asInstanceOf[ArrowType].domain,func.expressionType.asInstanceOf[ArrowType].range),args) {
+class ExpressionCall(func: Expression,args: List[Expression]) extends CallExpression(func.expressionType.asInstanceOf[ClosureArrow].signature,args) {
   val function = func
   override def children: List[Expression] = function :: arguments
-  override val specializations = new HashMap[BetaSpecialization,SpecializedExpressionCall]
+  val specializations = new HashMap[BetaSpecialization,SpecializedExpressionCall]
   
   override def specialize(specialization: BetaSpecialization): SpecializedExpressionCall = specializations.get(specialization) match {
     case Some(spec) => spec
@@ -102,9 +100,60 @@ class SpecializedDefinitionCall(func: SpecializedFunction,args: List[Specialized
     val block = builder.getInsertBlock
     val func = function.compile(builder)
     builder.positionBuilderAtEnd(block)
-    val result = new LLVMCallInstruction(builder,func,args,"call")
+    val call = new LLVMCallInstruction(builder,func,args,"call")
     //Use the LLVM compiling infrastructure to check for tail-calls.  Free tail-call optimization!
-    result.setTailCall(block.getParent.getInstance == func.getInstance)
-    result
+    call.setTailCall(block.getParent.getInstance == func.getInstance)
+    call
+  }
+}
+
+class SpecializedExpressionCall(func: SpecializedExpression,args: List[SpecializedExpression]) extends SpecializedCall(func.expressionType.asInstanceOf[ClosureArrow].signature,args) {
+  val function = func
+  override def children: List[SpecializedExpression] = function :: arguments
+  
+  override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
+    val func = function.compile(builder,scope)
+    val args = arguments.map(arg => arg.compile(builder,scope))
+    val closureType = function.expressionType.asInstanceOf[ClosureArrow].representation.get
+    closureType.sumCases match {
+      case plain :: environment :: Nil => {
+        val mergeBlock = builder.getInsertBlock.getParent.appendBasicBlock("tag_merge")
+        val mergeType = signature.range.asInstanceOf[GammaType].compile
+        val plainBlock = mergeBlock.insertBasicBlockBefore("tag_plain")
+        val varyingBlock = mergeBlock.insertBasicBlockBefore("tag_varying")
+        //This needs to be rearranged into a switch instruction.
+        val comparator = new LLVMExtractValueInstruction(builder,func,0,"variant_tag")
+        val variant = new LLVMExtractValueInstruction(builder,func,1,"variant_body")
+        val condition = new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,comparator,LLVMConstantInteger.constantInteger(closureType.tagRepresentation,plain.constructor,false),"tag_check")
+        new LLVMBranchInstruction(builder,condition,plainBlock,varyingBlock)
+        
+        //Emit code for the plain branch, the one without a closure environment.
+        builder.positionBuilderAtEnd(plainBlock)
+        //Cast the variant to the type we now know it has, and take its first element to get the function pointer.
+        val casted = new LLVMBitCast(builder,variant,closureType.caseRepresentation(plain).asInstanceOf[LLVMStructType],"plain_cast")
+        val funcPointer = new LLVMExtractValueInstruction(builder,casted,0,"plain_function_pointer")
+        val plainCall = new LLVMCallInstruction(builder,funcPointer,args.toArray,"plain_call")
+        new LLVMBranchInstruction(builder,mergeBlock)
+        
+        //Emit code for the varying branch, the one with a closure environment.
+        builder.positionBuilderAtEnd(varyingBlock)
+        //Cast the variant to the type we now know it has, and take its first element to get the function pointer, then its second element's address for the environment.
+        val varyingCasted = new LLVMBitCast(builder,variant,closureType.caseRepresentation(environment).asInstanceOf[LLVMStructType],"varying_cast")
+        val closurePointer = new LLVMExtractValueInstruction(builder,varyingCasted,0,"varying_function_pointer")
+        val closureEnv = new LLVMExtractValueInstruction(builder,varyingCasted,1,"varying_environment")
+        val envPointer = new LLVMStackAllocation(builder,closureEnv.typeOf,LLVMConstantInteger.constantInteger(new LLVMIntegerType(1),1,false),"environment_pointer")
+        new LLVMStoreInstruction(builder,closureEnv,envPointer)
+        val varyingCall = new LLVMCallInstruction(builder,closurePointer,(envPointer :: args).toArray,"varying_call")
+        new LLVMInsertValueInstruction(builder,varyingCasted,new LLVMLoadInstruction(builder,envPointer,"varying_load"),1,"varying_insert")
+        new LLVMBranchInstruction(builder,mergeBlock)
+        
+        //Emit code to merge the two cases back together.
+        builder.positionBuilderAtEnd(mergeBlock)
+        val phi = new LLVMPhiNode(builder,mergeType,"closure_phi")
+        phi.addIncoming((plainCall :: varyingCall :: Nil).toArray,(plainBlock :: varyingBlock :: Nil).toArray)
+        phi
+      }
+      case _ => throw new Exception("Ill-formed closure type " + closureType)
+    }
   }
 }

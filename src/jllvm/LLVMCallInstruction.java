@@ -38,8 +38,9 @@ public class LLVMCallInstruction extends LLVMInstruction {
 		Core.LLVMSetTailCall(instance,tailCall ? 1 : 0);
 	}
 	
-	public LLVMCallInstruction(LLVMInstructionBuilder builder,LLVMFunction func,LLVMValue[] arguments,String name) {
-		assert(arguments.length == func.countParameters());
+	public LLVMCallInstruction(LLVMInstructionBuilder builder,LLVMValue func,LLVMValue[] arguments,String name) {
+		assert(func.typeOf() instanceof LLVMFunctionType);
+		assert(arguments.length == ((LLVMFunctionType)func.typeOf()).countParamTypes());
 		SWIGTYPE_p_p_LLVMOpaqueValue args = Core.new_LLVMValueRefArray(arguments.length);
 		for(int i=0;i<arguments.length;i++)
 			Core.LLVMValueRefArray_setitem(args,i,arguments[i].getInstance());

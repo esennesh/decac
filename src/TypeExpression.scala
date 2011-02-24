@@ -226,11 +226,13 @@ object EmptyRecord extends RecordProduct(Nil)
 trait ArrowType {
   val domain: List[TauType]
   val range: TauType
+  val signature: FunctionArrow
 }
 
 class FunctionArrow(d: List[TauType],r: TauType) extends RhoType with ArrowType {
   override val domain = d
   override val range = r
+  override val signature = this
   
   override def tagged: Boolean = false
   
@@ -354,6 +356,15 @@ class SumType(addends: List[TaggedProduct]) extends RhoType {
     val representationSize = math.floor(math.log(largestConstructor) / math.log(2)).toInt + 1
     assert(representationSize > 0)
     new LLVMIntegerType(representationSize)
+  }
+  
+  def caseRepresentation(which: TaggedProduct): LLVMType = {
+    if(enumeration)
+      tagRepresentation
+    else {
+      assert(sumCases.contains(which))
+      new LLVMStructType((tagRepresentation :: which.record.compile :: Nil).toArray,true)
+    }
   }
   
   override def compile: LLVMType = {

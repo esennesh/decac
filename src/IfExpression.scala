@@ -59,10 +59,10 @@ class SpecializedIf(possibilities: List[Tuple2[SpecializedExpression,Specialized
       val condition = new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,comparator,LLVMConstantInteger.constantInteger(new LLVMIntegerType(1),1,false),"condition")
       val thenBlock = mergeBlock.insertBasicBlockBefore("then")
       val elseBlock = mergeBlock.insertBasicBlockBefore("else")
-      val ifBranch = new LLVMBranchInstruction(builder,condition,thenBlock,elseBlock)
+      new LLVMBranchInstruction(builder,condition,thenBlock,elseBlock)
       builder.positionBuilderAtEnd(thenBlock)
       val caseValue = ifcase._2.compile(builder,scope)
-      val mergeBranch = new LLVMBranchInstruction(builder,mergeBlock)
+      new LLVMBranchInstruction(builder,mergeBlock)
       val finalThenBlock = builder.getInsertBlock
       builder.positionBuilderAtEnd(elseBlock)
       compileCases(builder,rest,compiled ++ List((caseValue,finalThenBlock)),mergeBlock,mergeType,scope)

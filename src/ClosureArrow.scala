@@ -38,6 +38,7 @@ object ClosureEnvironments {
 class ClosureArrow(d: List[TauType],r: TauType,rep: Option[SumType]) extends RhoType with ArrowType {
   override val domain = d
   override val range = r
+  
   val representation: Option[SumType] = rep match {
     case Some(repr) => Some(repr)
     case None => {
@@ -47,7 +48,7 @@ class ClosureArrow(d: List[TauType],r: TauType,rep: Option[SumType]) extends Rho
         None
     }
   }
-  val signature = new FunctionArrow(domain,range)
+  override val signature = new FunctionArrow(domain,range)
   
   override def tagged: Boolean = false
   

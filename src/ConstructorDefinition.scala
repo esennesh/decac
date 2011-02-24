@@ -11,14 +11,14 @@ import jllvm.LLVMStackAllocation
 import jllvm.LLVMConstantInteger
 import jllvm.LLVMValue
 
-abstract class ConstructorDefinition(m: Module,tp: TaggedProduct) extends Definition {
+abstract class ConstructorDefinition(m: Module,tp: TaggedProduct) extends FunctionDefinition {
   override val name = tp.name.name match {
     case None => throw new Exception("Cannot define constructor function for unnamed tagged product.")
     case Some(str) => str
   }
   override val scope: Module = {m.define(this); m}
   val arguments: List[Tuple2[String,TauType]]
-  val functionType: SigmaType = {
+  override val functionType: SigmaType = {
     val argTypes = arguments.map(arg => arg._2)
     val resultType = new SumType(tp :: Nil)
     (new FunctionArrow(argTypes,resultType)).generalize(new TauSubstitution)
@@ -37,9 +37,9 @@ abstract class ConstructorDefinition(m: Module,tp: TaggedProduct) extends Defini
   }
   assert(bodies.size == tp.record.length)
   
-  def specialized = specializations.values
+  override def specialized = specializations.values.map(func => func.asInstanceOf[SpecializedFunction])
   
-  def specializeScope(caller: Scope[_]): SigmaType = functionType match {
+  override def specializeScope(caller: Scope[_]): SigmaType = functionType match {
     case beta: BetaType => beta.scopeMap(fScope => fScope match {
       case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller match {
         case mod: Module => new GlobalScopeType(Some(mod))
@@ -57,7 +57,7 @@ abstract class ConstructorDefinition(m: Module,tp: TaggedProduct) extends Defini
     case _ => throw new Exception("Why does a function have something other than an arrow type or generalized arrow type?")
   }
   
-  def specialize(specialization: List[GammaType]): SpecializedConstructor = specializations.get(specialization) match {
+  override def specialize(specialization: List[GammaType]): SpecializedConstructor = specializations.get(specialization) match {
     case Some(sf) => sf
     case None => {
       val specializer = functionType.specialize(specialization)
@@ -94,7 +94,7 @@ class ExplicitConstructor(m: Module,tp: TaggedProduct,args: List[Tuple2[String,T
   }
 }
 
-class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecialization) {
+class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecialization) extends SpecializedFunction {
   val original = org
   val name: String = org.name
   

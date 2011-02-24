@@ -16,31 +16,39 @@ class UninferredFunction(m: Module,n: String,args: List[Tuple2[String,Uninferred
   val body = b(fScope)
   val functionType = new FunctionArrow(arguments.map(arg => arg.variableType),r match { case Some(tau) => tau case None => new TauVariable })
   
-  def infer: FunctionDefinition = {
+  def infer: ExpressionFunctionDefinition = {
     val rui = new RangeUnificationInstance(Some(scope))
     rui.constrain(new LesserEq(body.expressionType,functionType.range))
     body.constrain(rui)
-    new FunctionDefinition(this,rui.solve)
+    new ExpressionFunctionDefinition(this,rui.solve)
   }
 }
 
-class FunctionDefinition(original: UninferredFunction,substitution: TauSubstitution) extends Definition {
+trait FunctionDefinition extends Definition {
+  val functionType: SigmaType
+  
+  def specializeScope(caller: Scope[_]): SigmaType
+  def specialize(specialization: List[GammaType]): SpecializedFunction
+  def specialized: Iterable[SpecializedFunction]
+}
+
+class ExpressionFunctionDefinition(original: UninferredFunction,substitution: TauSubstitution) extends FunctionDefinition {
   override val name: String = original.name
   override val scope: Module = {original.scope.define(this) ; original.scope}
-  val functionType: SigmaType = original.functionType.generalize(substitution)
+  override val functionType: SigmaType = original.functionType.generalize(substitution)
   val fScope = original.fScope.infer(substitution)
   val body = original.body.substitute(substitution)
   
-  protected val specializations: Map[List[GammaType],SpecializedFunction] = new HashMap[List[GammaType],SpecializedFunction]()
+  protected val specializations: Map[List[GammaType],SpecializedExpressionFunction] = new HashMap[List[GammaType],SpecializedExpressionFunction]()
   
   functionType match {
     case arrow: FunctionArrow => specialize(Nil)
     case _ => {}
   }
   
-  def specialized = specializations.values
+  override def specialized = specializations.values.map(func => func.asInstanceOf[SpecializedFunction])
   
-  def specializeScope(caller: Scope[_]): SigmaType = functionType match {
+  override def specializeScope(caller: Scope[_]): SigmaType = functionType match {
     case beta: BetaType => beta.scopeMap(fScope => fScope match {
       case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller match {
         case mod: Module => new GlobalScopeType(Some(mod))
@@ -58,18 +66,24 @@ class FunctionDefinition(original: UninferredFunction,substitution: TauSubstitut
     case _ => throw new Exception("Why does a function have something other than an arrow type or generalized arrow type?")
   }
   
-  def specialize(specialization: List[GammaType]): SpecializedFunction = specializations.get(specialization) match {
+  override def specialize(specialization: List[GammaType]): SpecializedExpressionFunction = specializations.get(specialization) match {
     case Some(sf) => sf
     case None => {
       val specializer = functionType.specialize(specialization)
-      val result = new SpecializedFunction(this,specializer)
+      val result = new SpecializedExpressionFunction(this,specializer)
       specializations.put(specialization,result)
       result
     }
   }
 }
 
-class SpecializedFunction(org: FunctionDefinition,specializer: BetaSpecialization) {
+trait SpecializedFunction {
+  val functionType: FunctionArrow
+  
+  def compile(builder: LLVMInstructionBuilder): LLVMFunction
+}
+
+class SpecializedExpressionFunction(org: ExpressionFunctionDefinition,specializer: BetaSpecialization) extends SpecializedFunction {
   val original = org
   val name: String = org.name
   val functionType: FunctionArrow = specializer.solve(original.functionType.body) match {
