@@ -27,8 +27,9 @@ class GlobalScopeType(m: Option[Module]) extends ScopeType {
 
 object RegionalScopeType extends GlobalScopeType(None)
 
-class LexicalScopeType(s: UninferredLexicalScope) extends ScopeType {
-  val scope: UninferredLexicalScope = s
+/* Why do I even have different scope-types for lexical scopes and module scopes?  They should both just be considered the scope-type of a known Scope object.*/
+class LexicalScopeType(s: AnyLexicalScope[_]) extends ScopeType {
+  val scope: AnyLexicalScope[_] = s
   
   override def subtypes(scope: ScopeType): Boolean = scope match {
     case mod: GlobalScopeType => true
@@ -36,9 +37,9 @@ class LexicalScopeType(s: UninferredLexicalScope) extends ScopeType {
   }
 }
 
-class ArgumentScopeType(func: UninferredFunction,caller: Option[ScopeType]) extends LexicalScopeType(func.fScope) {
+class ArgumentScopeType(func: ExpressionFunction,caller: Option[ScopeType]) extends LexicalScopeType(func.uninferred.scope) {
   val callerScope: Option[ScopeType] = caller
-  val function: UninferredFunction = func
+  val function: ExpressionFunction = func
   
   override def subtypes(scope: ScopeType): Boolean = scope match {
     case mod: GlobalScopeType => true

@@ -49,6 +49,8 @@ class Module(m: Module,n: String) extends Scope[Definition](m) with Definition {
     }
     compiledModule
   }
+  
+  override def scopeType: ScopeType = new GlobalScopeType(Some(this))
 }
 
 object GlobalScope extends Module(null,"")

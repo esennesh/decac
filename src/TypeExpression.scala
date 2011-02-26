@@ -3,6 +3,7 @@ package decac;
 import scala.collection.mutable.Set;
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap;
+import java.lang.Integer
 import jllvm._
 
 trait SigmaType {
@@ -16,6 +17,8 @@ abstract class TauType {
   def toString: String
   def tagged: Boolean
 }
+
+case class TypeException(error: String) extends Exception("Type error: " + error)
 
 abstract class GammaType extends TauType with SigmaType {
   protected var definition: Option[TypeDefinition] = None
@@ -32,7 +35,7 @@ abstract class GammaType extends TauType with SigmaType {
   
   override def instantiate(args: List[TauType]): GammaType = {
     if(args.length > 0)
-      throw new Exception("Cannot specialize gamma type on non-empty arguments.")
+      throw new TypeException("Cannot specialize gamma type on non-empty arguments.")
     this
   }
   
@@ -40,7 +43,7 @@ abstract class GammaType extends TauType with SigmaType {
   
   override def specialize(args: List[GammaType]): BetaSpecialization = {
     if(args.length > 0)
-      throw new Exception("Cannot specialize gamma type on non-empty arguments.")
+      throw new TypeException("Cannot specialize gamma type on non-empty arguments.")
     new BetaSpecialization
   }
   
@@ -70,12 +73,7 @@ class TypeDefinition(t: SigmaType,n: String,context: Module) extends Definition 
   def getSpecializations: Iterable[GammaType] = specializations.values
 }
 
-abstract class PrimitiveGamma extends GammaType {
-  override def toString: String = definition match {
-    case Some(defined) => defined.name
-    case None => toString
-  }
-  
+abstract class PrimitiveGamma extends GammaType {  
   override def tagged: Boolean = false
 }
 
@@ -114,7 +112,7 @@ abstract class RhoType extends GammaType {
     if(tvars == Nil)
       substitution.solve(this).asInstanceOf[RhoType]
     else {
-      val head = tvars.head match { case tvar: TauVariable => tvar case _ => throw new Exception("Given something other than a tau variable in what should be a list of tau variables.") }
+      val head = tvars.head match { case tvar: TauVariable => tvar case _ => throw new TypeException("Given something other than a tau variable in what should be a list of tau variables.") }
       val betaHead = new BetaRho(this,head)
       substitution.substitute(head,betaHead.alpha)
       tvars.tail.foldLeft[BetaType](betaHead)((beta: BetaType,tau: TauType) => tau match {
@@ -123,7 +121,7 @@ abstract class RhoType extends GammaType {
           substitution.substitute(tvar,newBeta.alpha)
           newBeta
         }
-        case _ => throw new Exception("Given something other than a tau variable in what should be a list of tau variables.")
+        case _ => throw new TypeException("Given something other than a tau variable in what should be a list of tau variables.")
       })
     }
   }
@@ -206,7 +204,7 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
   override def compile: LLVMStructType = {
     val compiledFields = fields.map(field => field.tau match {
       case gammaField: GammaType => gammaField.compile
-      case _ => throw new Exception("Cannot compile non-gamma field type " + field.tau.toString + " of record type " + toString + ".")
+      case _ => throw new TypeException("Cannot compile non-gamma field type " + field.tau.toString + " of record type " + toString + ".")
     })
     new LLVMStructType(compiledFields.toArray,true)
   }
@@ -264,11 +262,11 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType with ArrowType 
   override def compile: LLVMFunctionType = {
     val compiledRange: LLVMType = range match {
       case gammaRange: GammaType => gammaRange.compile
-      case _ => throw new Exception("Cannot compile non-gamma range type " + range.toString + " of arrow type " + toString + ".")
+      case _ => throw new TypeException("Cannot compile non-gamma range type " + range.toString + " of arrow type " + toString + ".")
     }
     val compiledDomain: List[LLVMType] = domain.map(tau => tau match {
       case gammaDomain: GammaType => gammaDomain.compile
-      case _ => throw new Exception("Cannot compile non-gamma domain type " + tau.toString + " of arrow type " + toString + ".")
+      case _ => throw new TypeException("Cannot compile non-gamma domain type " + tau.toString + " of arrow type " + toString + ".")
     })
     new LLVMFunctionType(compiledRange,compiledDomain.toArray,false)
   }
@@ -437,8 +435,8 @@ object CaseTagger {
   }
 }
 
-class TauVariable extends TauType { 
-  override def toString: String = toString
+class TauVariable extends TauType {
+  override def toString: String = getClass().getName() + '@' + Integer.toHexString(hashCode())
   override def tagged: Boolean = false
   
   def refine(low: Option[GammaType],high: Option[GammaType]): GammaRange = {
@@ -460,13 +458,13 @@ class GammaRange(l: GammaType,h: GammaType) extends TauVariable {
   
   override def tagged: Boolean = if(lowerBound != BottomGamma) lowerBound.tagged else upperBound.tagged
  
-  override def toString: String = super.toString + "(" + lowerBound.toString + "," + upperBound.toString + ")"
+  override def toString: String =  "(" + lowerBound.toString + "," + upperBound.toString + ")"
   
   override def refine(low: Option[GammaType],high: Option[GammaType]): GammaRange = {
     val lower = low match {
       case Some(gamma) => {
         if(!TauOrdering.lteq(lowerBound,gamma))
-          throw new Exception(lowerBound.toString + " </: " + gamma.toString)
+          throw new TypeException(lowerBound.toString + " </: " + gamma.toString)
         gamma
       }
       case None => lowerBound
@@ -474,13 +472,13 @@ class GammaRange(l: GammaType,h: GammaType) extends TauVariable {
     val upper = high match {
       case Some(gamma) => {
         if(!TauOrdering.lteq(gamma,upperBound))
-          throw new Exception(gamma.toString + " </: " + upperBound.toString)
+          throw new TypeException(gamma.toString + " </: " + upperBound.toString)
         gamma
       }
       case None => upperBound
     }
     if(!TauOrdering.lteq(lower,upper))
-      throw new Exception(lower.toString + " </: " + upper.toString)
+      throw new TypeException(lower.toString + " </: " + upper.toString)
     new GammaRange(lower,upper)
   }
 }
@@ -516,7 +514,7 @@ class BetaRho(r: RhoType,tvar: TauVariable) extends BetaType {
     if(args.length == 1)
       rho.replace(alpha,args.head)
     else
-      throw new Exception("Given wrong number of arguments to instantiate rho-containing beta type.")
+      throw new TypeException("Given wrong number of arguments to instantiate rho-containing beta type.")
   }
   
   override def freshlyInstantiate: RhoType = rho.replace(alpha,new TauVariable)
@@ -528,7 +526,7 @@ class BetaRho(r: RhoType,tvar: TauVariable) extends BetaType {
       result
     }
     else
-      throw new Exception("Given wrong number of arguments to specialize rho-containing beta type.")
+      throw new TypeException("Given wrong number of arguments to specialize rho-containing beta type.")
   }
   
   override def body: RhoType = rho

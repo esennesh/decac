@@ -10,13 +10,14 @@ abstract class UninferredCall(arrow: ArrowType,arguments: List[UninferredExpress
   override def children: List[UninferredExpression] = arguments
   override def substitute(substitution: TauSubstitution): CallExpression
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
+    children.map(child => child.constrain(rui))
     for(pair <- signature.domain.zip(arguments))
       rui.constrain(new LesserEq(pair._2.expressionType,pair._1))
     rui
   }
 }
 
-class UninferredDefinitionCall(func: FunctionDefinition,arguments: List[UninferredExpression]) extends UninferredCall(func.functionType.freshlyInstantiate.asInstanceOf[FunctionArrow],arguments) {
+class UninferredDefinitionCall(func: FunctionDefinition,arguments: List[UninferredExpression]) extends UninferredCall(func.signature.freshlyInstantiate.asInstanceOf[FunctionArrow],arguments) {
   val definition = func
   
   override def substitute(substitution: TauSubstitution): DefinitionCall = {
@@ -93,7 +94,7 @@ abstract class SpecializedCall(arrow: FunctionArrow,args: List[SpecializedExpres
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue
 }
 
-class SpecializedDefinitionCall(func: SpecializedFunction,args: List[SpecializedExpression]) extends SpecializedCall(func.functionType,args) {
+class SpecializedDefinitionCall(func: SpecializedFunction,args: List[SpecializedExpression]) extends SpecializedCall(func.signature,args) {
   val function = func
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMCallInstruction = {
     val args = arguments.map(arg => arg.compile(builder,scope)).toArray

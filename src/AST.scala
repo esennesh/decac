@@ -77,7 +77,7 @@ object ASTProcessor {
   }
   def processArguments(args: PArgumentList,scope: Module): List[Tuple2[String,TauType]] = args match {
     case one: AOneArgumentList => processArgument(one.getArgument match {case real: AArgument => real},scope) :: Nil
-    case many: AManyArgumentList => processArgument(many.getArgument match {case real: AArgument => real},scope) :: processArguments(many.getArgumentList,scope)
+    case many: AManyArgumentList => processArguments(many.getArgumentList,scope) ++ (processArgument(many.getArgument match {case real: AArgument => real},scope) :: Nil)
     case null => Nil
   }
   
@@ -167,8 +167,9 @@ object ASTProcessor {
           val name = normal.getName.getText
           val arguments = processArguments(normal.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},scope).map(arg => (arg._1,UninferredArgument(arg._2)))
           val resultType = if(normal.getType != null) Some(processTypeAnnotation(normal.getType.asInstanceOf[ATypeAnnotation].getType,scope)) else None
-          val uninferred = new UninferredFunction(scope,name,arguments,resultType,lexical => processBlock(normal.getBody,lexical))
-          uninferred.infer
+          val function = new ExpressionFunction(scope,name,arguments,resultType,lexical => processBlock(normal.getBody,lexical))
+          function.infer
+          function
         }
         case method: AMethodFunctionDefinition => null
         case over: AOverrideFunctionDefinition => null

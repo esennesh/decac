@@ -9,6 +9,8 @@ import jllvm.LLVMStoreInstruction
 import jllvm.LLVMValue
 import jllvm.LLVMArgument
 
+abstract class AnyLexicalScope[T <: VariableBinding](p: Scope[_]) extends Scope[T](p)
+
 abstract class UninferredLexicalKind(t: TauType) {
   val variableType: TauType = t
 }
@@ -27,7 +29,7 @@ class UninferredLexicalBinding(n: String,s: UninferredLexicalScope,k: Uninferred
   }
 }
 
-class UninferredLexicalScope(p: Scope[_],binds: List[Tuple2[String,UninferredLexicalKind]]) extends Scope[VariableBinding](p) {
+class UninferredLexicalScope(p: Scope[_],binds: List[Tuple2[String,UninferredLexicalKind]]) extends AnyLexicalScope[VariableBinding](p) {
   val bindings = binds.map(pair => new UninferredLexicalBinding(pair._1,this,pair._2))
   bindings.foreach(binding => declare(binding))
   
@@ -36,6 +38,8 @@ class UninferredLexicalScope(p: Scope[_],binds: List[Tuple2[String,UninferredLex
     val bound = bindings.map(binding => binding.infer(substitution))
     new LexicalScope(parent,bound)
   }
+  
+  override def scopeType: ScopeType = new LexicalScopeType(this)
 }
 
 abstract class LexicalKind(t: TauType) {
@@ -51,8 +55,6 @@ class LexicalBinding(n: String,s: LexicalScope,k: LexicalKind) extends VariableB
   override val variableType = kind.variableType match {
     case bvar: BetaVariable => bvar
     case gamma: GammaType => gamma
-    /* TODO: WHY IS THIS HERE? */
-    case range: GammaRange => range.lowerBound
     case tau: TauType => throw new Exception("Generalized lexical binding has " + tau.toString + " type rather than gamma type nor beta-variable type.")
   }
   def specialize(substitution: BetaSpecialization,arg: Option[LLVMArgument]) = kind match {
@@ -64,7 +66,7 @@ class LexicalBinding(n: String,s: LexicalScope,k: LexicalKind) extends VariableB
   }
 }
 
-class LexicalScope(p: Scope[_],bound: List[Tuple2[String,LexicalKind]]) extends Scope[LexicalBinding](p) {
+class LexicalScope(p: Scope[_],bound: List[Tuple2[String,LexicalKind]]) extends AnyLexicalScope[LexicalBinding](p) {
   protected val bindings: List[LexicalBinding] = bound.map(pair => new LexicalBinding(pair._1,this,pair._2))
   bindings.foreach(binding => declare(binding))
   protected val specializations = new HashMap[BetaSpecialization,SpecializedLexicalScope]()
@@ -80,6 +82,7 @@ class LexicalScope(p: Scope[_],bound: List[Tuple2[String,LexicalKind]]) extends 
     }
     case Some(result) => result
   }
+  override def scopeType: ScopeType = new LexicalScopeType(this)
 }
 
 abstract class SpecializedKind(g: GammaType) {
@@ -120,8 +123,9 @@ class SpecializedLexicalBinding(n: String,s: SpecializedLexicalScope,k: Speciali
   }
 }
 
-class SpecializedLexicalScope(p: Scope[_],bound: List[Tuple2[String,SpecializedKind]]) extends Scope[SpecializedLexicalBinding](p) {
+class SpecializedLexicalScope(p: Scope[_],bound: List[Tuple2[String,SpecializedKind]]) extends AnyLexicalScope[SpecializedLexicalBinding](p) {
   val bindings: List[SpecializedLexicalBinding] = bound.map(pair => new SpecializedLexicalBinding(pair._1,this,pair._2))
   bindings.foreach(binding => declare(binding))
   def compile(builder: LLVMInstructionBuilder): List[LLVMValue] = bindings.map(binding => binding.compile(builder))
+  override def scopeType: ScopeType = new LexicalScopeType(this)
 }

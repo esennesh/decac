@@ -49,31 +49,26 @@ class UninferredOperator(x: UninferredExpression,y: UninferredExpression,op: Ari
 class UninferredInteger(i: Int) extends UninferredArithmetic {
   val value: Int = i
   override def children: List[UninferredArithmetic] = Nil
-  override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
-    val constraint = if(value >= 0) {
+  override val expressionType = if(value >= 0) {
       if(value <= IntegerConstants.max_byte)
-        new LesserEq(Byte,expressionType)
+        Byte
       else if(value <= IntegerConstants.max_snat)
-        new LesserEq(SNat,expressionType)
+        SNat
       else if(value <= IntegerConstants.max_nat)
-        new LesserEq(Nat,expressionType)
+        Nat
       else
-        new LesserEq(LongNat,expressionType)
+        LongNat
     }
     else {
       if(value >= IntegerConstants.min_octet)
-        new LesserEq(Octet,expressionType)
+        Octet
       else if(value >= IntegerConstants.min_sInt)
-        new LesserEq(SInt,expressionType)
+        SInt
       else if(value >= IntegerConstants.min_Int)
-        new LesserEq(Int,expressionType)
+        Int
       else
-        new LesserEq(LongInt,expressionType)
+        LongInt
     }
-    assert(constraint != null)
-    rui.constrain(constraint)
-    rui
-  }
   override def substitute(substitution: TauSubstitution): IntegerConstant = {
     val substitutedType = substituteTypes(substitution)._1
     val resultType = substitutedType match {
@@ -128,7 +123,16 @@ class SpecializedOperator(x: SpecializedExpression,y: SpecializedExpression,op: 
       }
       new LLVMExtendCast(LLVMExtendCast.ExtendType.FLOAT,builder,doubled,real.compile,"cast")
     }
-    case integer: IntegerGamma => child.compile(builder,scope)
+    case integer: IntegerGamma => {
+      val childValue = child.compile(builder,scope)
+      if(TauOrdering.equiv(child.expressionType,expressionType))
+        childValue
+      else
+        child.expressionType match {
+          case unsigned: UnsignedIntegerGamma =>  new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,childValue,integer.compile,"cast")
+          case signed: IntegerGamma =>  new LLVMExtendCast(LLVMExtendCast.ExtendType.SIGN,builder,childValue,integer.compile,"cast")
+        }
+    }
   }
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val lhs = coerce(children.apply(0),builder,scope)

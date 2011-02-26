@@ -57,6 +57,7 @@ abstract class Scope[T <: Scopeable](p: Scope[_]) {
   val parent: Scope[_] = p
   
   def enclosed(s: Scope[_]): Boolean = parent == s || parent.enclosed(s)
+  def scopeType: ScopeType
 }
 
 class UndeclaredIdentifierException(name: String) extends Exception("Undeclared identifier exception: " + name)

@@ -18,7 +18,7 @@ abstract class ConstructorDefinition(m: Module,tp: TaggedProduct) extends Functi
   }
   override val scope: Module = {m.define(this); m}
   val arguments: List[Tuple2[String,TauType]]
-  override val functionType: SigmaType = {
+  override val signature: SigmaType = {
     val argTypes = arguments.map(arg => arg._2)
     val resultType = new SumType(tp :: Nil)
     (new FunctionArrow(argTypes,resultType)).generalize(new TauSubstitution)
@@ -31,7 +31,7 @@ abstract class ConstructorDefinition(m: Module,tp: TaggedProduct) extends Functi
   
   protected val specializations: Map[List[GammaType],SpecializedConstructor] = new HashMap[List[GammaType],SpecializedConstructor]()
   
-  functionType match {
+  signature match {
     case arrow: FunctionArrow => specialize(Nil)
     case _ => {}
   }
@@ -39,28 +39,18 @@ abstract class ConstructorDefinition(m: Module,tp: TaggedProduct) extends Functi
   
   override def specialized = specializations.values.map(func => func.asInstanceOf[SpecializedFunction])
   
-  override def specializeScope(caller: Scope[_]): SigmaType = functionType match {
-    case beta: BetaType => beta.scopeMap(fScope => fScope match {
-      case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller match {
-        case mod: Module => new GlobalScopeType(Some(mod))
-        case lexical: UninferredLexicalScope => new LexicalScopeType(lexical)
-      }))
+  override def specializeScope(caller: Scope[_]): FunctionArrow = {
+    assert(signature.body.isInstanceOf[FunctionArrow])
+    signature.body.asInstanceOf[FunctionArrow].scopeMap(fScope => fScope match {
+      case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller.scopeType))
       case _ => fScope
-    })
-    case arrow: FunctionArrow => arrow.scopeMap(fScope => fScope match {
-      case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller match {
-        case mod: Module => new GlobalScopeType(Some(mod))
-        case lexical: UninferredLexicalScope => new LexicalScopeType(lexical)
-      }))
-      case _ => fScope
-    })
-    case _ => throw new Exception("Why does a function have something other than an arrow type or generalized arrow type?")
+    }).asInstanceOf[FunctionArrow]
   }
   
   override def specialize(specialization: List[GammaType]): SpecializedConstructor = specializations.get(specialization) match {
     case Some(sf) => sf
     case None => {
-      val specializer = functionType.specialize(specialization)
+      val specializer = signature.specialize(specialization)
       val result = new SpecializedConstructor(this,specializer)
       specializations.put(specialization,result)
       result
@@ -98,13 +88,13 @@ class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecial
   val original = org
   val name: String = org.name
   
-  val functionType: FunctionArrow = specializer.solve(original.functionType.body) match {
+  override val signature: FunctionArrow = specializer.solve(original.signature.body) match {
     case frho: FunctionArrow => frho
     case _ => throw new Exception("Specializing a function's type should never yield anything but an arrow type.")
   }
-  protected val range = functionType.range.asInstanceOf[SumType].sumCases.head
+  protected val range = signature.range.asInstanceOf[SumType].sumCases.head
   
-  val function = new LLVMFunction(original.scope.compiledModule,name + "constructor" + functionType.toString,functionType.compile)
+  val function = new LLVMFunction(original.scope.compiledModule,name + "constructor" + signature.toString,signature.compile)
   protected var compiled: Boolean = false
   val bodyScope = org.bodyScope.specialize(specializer,Some(function.getParameters.toList))
   val bodies = org.bodies.mapValues(expr => expr.specialize(specializer))
@@ -114,10 +104,10 @@ class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecial
       val entry = function.appendBasicBlock("entry")
       builder.positionBuilderAtEnd(entry)
       bodyScope.compile(builder)
-      val result = new LLVMStackAllocation(builder,functionType.range.asInstanceOf[GammaType].compile,null,"result")
+      val result = new LLVMStackAllocation(builder,signature.range.asInstanceOf[GammaType].compile,null,"result")
       val tagIndices = (LLVMConstantInteger.constantInteger(Nat.compile,0,false).asInstanceOf[LLVMValue] :: LLVMConstantInteger.constantInteger(Nat.compile,0,false).asInstanceOf[LLVMValue] :: Nil).toArray
       val tagPointer = new LLVMGetElementPointerInstruction(builder,result,tagIndices,"gep")
-      new LLVMStoreInstruction(builder,LLVMConstantInteger.constantInteger(functionType.range.asInstanceOf[SumType].tagRepresentation,range.constructor,false),tagPointer)
+      new LLVMStoreInstruction(builder,LLVMConstantInteger.constantInteger(signature.range.asInstanceOf[SumType].tagRepresentation,range.constructor,false),tagPointer)
       for(body <- bodies) {
         val index = range.record.fields.zipWithIndex.find(pair => pair._1 == body._1).get._2 + 1
         val indices = (LLVMConstantInteger.constantInteger(Nat.compile,0,false).asInstanceOf[LLVMValue] :: LLVMConstantInteger.constantInteger(Nat.compile,index,false).asInstanceOf[LLVMValue] :: Nil).toArray

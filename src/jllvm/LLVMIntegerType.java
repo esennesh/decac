@@ -24,4 +24,8 @@ public class LLVMIntegerType extends LLVMType {
 	public LLVMIntegerType(long NumBits) {
 		super(Core.LLVMIntType(NumBits));
 	}
+
+	public String toString() {
+		return "i" + getWidth();
+	}
 }

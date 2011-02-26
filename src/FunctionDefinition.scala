@@ -8,102 +8,133 @@ import jllvm.LLVMReturnInstruction
 import jllvm.LLVMIntegerToFloatCast
 import jllvm.LLVMExtendCast
 
-class UninferredFunction(m: Module,n: String,args: List[Tuple2[String,UninferredArgument]],r: Option[TauType],b: (UninferredLexicalScope) => UninferredBlock) {
-  val name: String = n
-  val scope: Module = m
-  val fScope = new UninferredLexicalScope(scope,args)
-  val arguments = fScope.bindings
-  val body = b(fScope)
-  val functionType = new FunctionArrow(arguments.map(arg => arg.variableType),r match { case Some(tau) => tau case None => new TauVariable })
-  
-  def infer: ExpressionFunctionDefinition = {
-    val rui = new RangeUnificationInstance(Some(scope))
-    rui.constrain(new LesserEq(body.expressionType,functionType.range))
-    body.constrain(rui)
-    new ExpressionFunctionDefinition(this,rui.solve)
-  }
-}
-
 trait FunctionDefinition extends Definition {
-  val functionType: SigmaType
+  def signature: SigmaType
   
-  def specializeScope(caller: Scope[_]): SigmaType
+  def specializeScope(caller: Scope[_]): FunctionArrow
   def specialize(specialization: List[GammaType]): SpecializedFunction
   def specialized: Iterable[SpecializedFunction]
 }
 
-class ExpressionFunctionDefinition(original: UninferredFunction,substitution: TauSubstitution) extends FunctionDefinition {
-  override val name: String = original.name
-  override val scope: Module = {original.scope.define(this) ; original.scope}
-  override val functionType: SigmaType = original.functionType.generalize(substitution)
-  val fScope = original.fScope.infer(substitution)
-  val body = original.body.substitute(substitution)
-  
-  protected val specializations: Map[List[GammaType],SpecializedExpressionFunction] = new HashMap[List[GammaType],SpecializedExpressionFunction]()
-  
-  functionType match {
-    case arrow: FunctionArrow => specialize(Nil)
-    case _ => {}
-  }
-  
-  override def specialized = specializations.values.map(func => func.asInstanceOf[SpecializedFunction])
-  
-  override def specializeScope(caller: Scope[_]): SigmaType = functionType match {
-    case beta: BetaType => beta.scopeMap(fScope => fScope match {
-      case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller match {
-        case mod: Module => new GlobalScopeType(Some(mod))
-        case lexical: UninferredLexicalScope => new LexicalScopeType(lexical)
-      }))
-      case _ => fScope
-    })
-    case arrow: FunctionArrow => arrow.scopeMap(fScope => fScope match {
-      case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller match {
-        case mod: Module => new GlobalScopeType(Some(mod))
-        case lexical: UninferredLexicalScope => new LexicalScopeType(lexical)
-      }))
-      case _ => fScope
-    })
-    case _ => throw new Exception("Why does a function have something other than an arrow type or generalized arrow type?")
-  }
-  
-  override def specialize(specialization: List[GammaType]): SpecializedExpressionFunction = specializations.get(specialization) match {
-    case Some(sf) => sf
-    case None => {
-      val specializer = functionType.specialize(specialization)
-      val result = new SpecializedExpressionFunction(this,specializer)
-      specializations.put(specialization,result)
-      result
-    }
-  }
-}
-
 trait SpecializedFunction {
-  val functionType: FunctionArrow
+  val signature: FunctionArrow
   
   def compile(builder: LLVMInstructionBuilder): LLVMFunction
 }
 
-class SpecializedExpressionFunction(org: ExpressionFunctionDefinition,specializer: BetaSpecialization) extends SpecializedFunction {
-  val original = org
-  val name: String = org.name
-  val functionType: FunctionArrow = specializer.solve(original.functionType.body) match {
+class ExpressionFunction(m: Module,n: String,args: List[Tuple2[String,UninferredArgument]],r: Option[TauType],b: (UninferredLexicalScope) => UninferredBlock) extends FunctionDefinition {
+  override val name: String = n
+  override val scope: Module = { m.define(this) ; m }
+  protected var inferred: Option[GeneralizedExpressionFunction] = None
+  val uninferred = new UninferredExpressionFunction(new UninferredLexicalScope(scope,args),r match { case Some(tau) => tau case None => new TauVariable })
+  uninferred.generateBody(b)
+
+  def infer: GeneralizedExpressionFunction = {
+    val rui = new RangeUnificationInstance(Some(scope))
+    rui.constrain(new LesserEq(uninferred.body.expressionType,uninferred.signature.range))
+    uninferred.body.constrain(rui)
+    val result = new GeneralizedExpressionFunction(uninferred,rui.solve)
+    inferred = Some(result)
+    result.signature match {
+      case gammaArrow: FunctionArrow => result.specialize(this,Nil)
+      case _ => {}
+    }
+    result
+  }
+  
+  override def signature: SigmaType = inferred match {
+    case Some(func) => func.signature
+    case None => uninferred.signature
+  }
+  
+  override def specializeScope(caller: Scope[_]): FunctionArrow = inferred match {
+    case Some(general) => general.specializeScope(caller)
+    case None => {
+      val general = infer
+      general.specializeScope(caller)
+    }
+  }
+  
+  override def specialize(specialization: List[GammaType]): SpecializedFunction = inferred match {
+    case Some(general) => general.specialize(this,specialization)
+    case None => {
+      val general = infer
+      general.specialize(this,specialization)
+    }
+  }
+  
+  override def specialized: Iterable[SpecializedFunction] = inferred match {
+    case Some(general) => general.specialized
+    case None => {
+      val general = infer
+      general.specialized
+    }
+  }
+}
+
+class UninferredExpressionFunction(fScope: UninferredLexicalScope,range: TauType) {
+  val scope = fScope
+  val arguments = fScope.bindings
+  val signature = new FunctionArrow(arguments.map(arg => arg.variableType),range)
+  protected var bodyBlock: Option[UninferredBlock] = None
+  def generateBody(genBody: (UninferredLexicalScope) => UninferredBlock): Unit = {
+    bodyBlock = Some(genBody(fScope))
+  }
+  def body: UninferredBlock = bodyBlock.get
+}
+
+class GeneralizedExpressionFunction(uninferred: UninferredExpressionFunction,substitution: TauSubstitution) {
+  val scope = uninferred.scope.infer(substitution)
+  val body = uninferred.body.substitute(substitution)
+  val signature: SigmaType = uninferred.signature.generalize(substitution)
+  protected val specializations = new HashMap[List[GammaType],SpecializedExpressionFunction]()
+  
+  def specializeScope(caller: Scope[_]): FunctionArrow = {
+    assert(signature.body.isInstanceOf[FunctionArrow])
+    signature.body.asInstanceOf[FunctionArrow].scopeMap(fScope => fScope match {
+      case args: ArgumentScopeType => new ArgumentScopeType(args.function,Some(caller.scopeType))
+      case _ => fScope
+    }).asInstanceOf[FunctionArrow]
+  }
+  def specialize(definition: ExpressionFunction,specialization: List[GammaType]): SpecializedFunction = specializations.get(specialization) match {
+    case Some(sf) => sf
+    case None => {
+      val specializer = signature.specialize(specialization)
+      val result = new SpecializedExpressionFunction(definition,this,specializer)
+      specializations.put(specialization,result)
+      result.specializeBody
+      result
+    }
+  }
+  def specialized: Iterable[SpecializedFunction] = specializations.values.map(func => func.asInstanceOf[SpecializedFunction])
+}
+
+class SpecializedExpressionFunction(definition: ExpressionFunction,general: GeneralizedExpressionFunction,specializer: BetaSpecialization) extends SpecializedFunction {
+  override val signature: FunctionArrow = specializer.solve(general.signature.body) match {
     case frho: FunctionArrow => frho
     case _ => throw new Exception("Specializing a function's type should never yield anything but an arrow type.")
   }
-  val function = new LLVMFunction(original.scope.compiledModule,name + functionType.toString,functionType.compile)
+  val function = new LLVMFunction(definition.scope.compiledModule,definition.name + signature.toString,signature.compile)
   protected var compiled: Boolean = false
-  val fScope = org.fScope.specialize(specializer,Some(function.getParameters.toList))
-  val body = original.body.specialize(specializer)
+  val fScope = general.scope.specialize(specializer,Some(function.getParameters.toList))
+  protected var bodyBlock: Option[SpecializedBlock] = None
+  def specializeBody: Unit = {
+    bodyBlock = Some(general.body.specialize(specializer))
+  }
+  def body: SpecializedBlock = bodyBlock.get
   
-  def compile(builder: LLVMInstructionBuilder): LLVMFunction = {
+  override def compile(builder: LLVMInstructionBuilder): LLVMFunction = {
     if(compiled == false) {
+      //Make this assignment here at the top to prevent infinite recursion when compiling recursive functions.
+      compiled = true
       val entry = function.appendBasicBlock("entry")
       builder.positionBuilderAtEnd(entry)
       fScope.compile(builder)
       val result = body.compile(builder,fScope)
       //THIS KLUDGE IS BAD, AND I SHOULD FEEL BAD.
       //WHAT I REALLY NEED IS A "CAST" OPERATION IMPLEMENTED AS PART OF MY ORDERING ON TYPES.
-      val castedResult = functionType.range match {
+      //Actually, what I really need is an implicit-cast expression that upcasts subtypes to the expected supertypes.
+      val castedResult = signature.range match {
         case real: RealGamma => {
           val doubled = body.expressionType match {
             case unsigned: UnsignedIntegerGamma => new LLVMIntegerToFloatCast(builder,result,DoubleGamma.compile,"cast",LLVMIntegerToFloatCast.IntCastType.UNSIGNED)
@@ -115,7 +146,6 @@ class SpecializedExpressionFunction(org: ExpressionFunctionDefinition,specialize
         case _ => result
       }
       new LLVMReturnInstruction(builder,castedResult)
-      compiled = true
     }
     function
   }
