@@ -49,7 +49,10 @@ protected class LatticeNode[E](v: E,po: PartialOrdering[E]) {
     if(ordering.equiv(elem,value))
       Some(this)
     else
-      children.map(child => child.locate(elem)).foldLeft[Option[LatticeNode[E]]](None)((x: Option[LatticeNode[E]],y: Option[LatticeNode[E]]) => if(x != None) x else if(y != None) y else None)
+      children.map(child => child.locate(elem)).find(possibility => possibility != None) match {
+        case Some(Some(e)) => Some(e)
+        case _ => None
+      }
   }
   
   def greaterElements: Set[LatticeNode[E]] = parents ++ parents.flatMap(parent => parent.greaterElements)
@@ -79,6 +82,8 @@ class GraphLattice[E](t: E,b: E,po: PartialOrdering[E]) extends Lattice[E] {
   override val bottom: E = bottomNode.value
   override val ordering: PartialOrdering[E] = po
   assert(ordering.lt(bottom,top))
+  bottomNode.placeBelow(topNode)
+  topNode.placeBelow(bottomNode)
   
   override def contains(key: E): Boolean = topNode.locate(key) match {
     case Some(node) => true

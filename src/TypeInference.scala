@@ -3,11 +3,6 @@ package decac;
 import scala.collection.mutable.Queue
 import scala.collection.mutable.Stack
 
-class Generalization(x: RhoType,y: Option[BetaType]) {
-  var _1: RhoType = x
-  var _2: Option[BetaType] = y
-}
-
 abstract class Substitution[A <: TauVariable,B <: TauType] {
   val queue: Queue[Tuple2[A,B]] = new Queue[Tuple2[A,B]]()
 
@@ -28,12 +23,6 @@ class TauSubstitution extends Substitution[TauVariable,TauType] {
       case y: GammaRange => if(y.lowerBound.equals(y.upperBound)) substitute(y,y.lowerBound)
       case _ => {}
     }
-  }
-}
-
-class BetaInstantiation extends Substitution[BetaVariable,TauType] {
-  def substitute(x: BetaVariable,y: TauType): Unit = {
-    queue.enqueue((x,y match { case y: GammaRange => y.lowerBound case _ => y }))
   }
 }
 
@@ -102,12 +91,12 @@ class RangeUnificationInstance(scope: Option[Module]) {
   def solve: TauSubstitution = {
     while(constraints.isEmpty != true) {
       val constraint = constraints.pop
-      try
+      //try
         constraint.infer(this)
-      catch {
+      /*catch {
         case te: TypeException => throw new TypeException(constraint.toString + "; " + te.error)
         case e: Exception => throw e
-      }
+      }*/
     }
     return result
   }
@@ -118,14 +107,14 @@ abstract class Constraint(x: TauType,y: TauType) {
   var beta = y
   
   def substitute(from: TauVariable,to: TauType): Unit = {
-    alpha match {
-      case a: TauVariable => if(a.equals(from)) alpha = to
+    alpha = alpha match {
       case a: RhoType => a.replace(from,to)
+      case a: TauVariable => if(TauOrdering.equiv(a,from)) to else a
       case _ => alpha
     }
-    beta match {
-      case b: TauVariable => if(b.equals(from)) beta = to
+    beta = beta match {
       case b: RhoType => b.replace(from,to)
+      case b: TauVariable => if(TauOrdering.equiv(b,from)) to else b
       case _ => beta
     }
   }
@@ -139,8 +128,8 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
   override def infer(rui: RangeUnificationInstance): Unit = (alpha,beta) match {
     //Cases for handling ranges and variables.
     case (alpha: GammaRange,beta: GammaRange) => if(alpha != beta) {
-      rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta.lowerBound,rui))))
-      rui.substitute(beta,beta.refine(Some(SigmaLattice.join(alpha.upperBound,beta.lowerBound,rui)),None))
+      rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta.lowerBound,rui)),rui))
+      rui.substitute(beta,beta.refine(Some(SigmaLattice.join(alpha.upperBound,beta.lowerBound,rui)),None,rui))
     }
     case (alpha: GammaRange,beta: TauVariable) => rui.substitute(beta,alpha)
     case (alpha: TauVariable,beta: GammaRange) => rui.substitute(alpha,beta)
@@ -150,10 +139,10 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
       else if(!rui.assumptions.contains(Subtype(alpha,beta)))
         rui.substitute(alpha,beta)
     }
-    case (alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta,rui))))
-    case (alpha: GammaType,beta: GammaRange) => rui.substitute(beta,beta.refine(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),None))
-    case (alpha: GammaType,beta: TauVariable) => rui.substitute(beta,beta.refine(Some(alpha),None))
-    case (alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(beta)))
+    case (alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta,rui)),rui))
+    case (alpha: GammaType,beta: GammaRange) => rui.substitute(beta,beta.refine(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),None,rui))
+    case (alpha: GammaType,beta: TauVariable) => rui.substitute(beta,beta.refine(Some(alpha),None,rui))
+    case (alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(beta),rui))
     //Cases for type constructors.
     case (alpha: ScopedPointer,beta: ScopedPointer) => {
       rui.constrain(new Equal(alpha.target,beta.target))
@@ -176,13 +165,16 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
     case (rx: RhoType,ry: RecursiveMu) => rui.constrain(new LesserEq(rx,ry.unfold))
     case (alpha: SumType,beta: SumType) => {
       val shared = alpha.sumCases.zip(beta.sumCases)
+      assert(shared.forall(pair => pair._1.name.name == pair._2.name.name))
       shared.foreach(pair => rui.constrain(new Equal(pair._1.record,pair._2.record)))
     }
     case (alpha: FunctionArrow,beta: FunctionArrow) => {
       beta.domain.zip(alpha.domain).map(pair => rui.constrain(new LesserEq(pair._1,pair._2)))
       rui.constrain(new LesserEq(alpha.range,beta.range))
     }
-    case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(!TauOrdering.lt(alpha,beta)) throw new TypeException("Type inference error: Incorrect <: constraint on base types.")
+    case (alpha: TauType,TopGamma) => true
+    case (BottomGamma,beta: TauType) => true
+    case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(!TauOrdering.lteq(alpha,beta)) throw new TypeException("Type inference error: Incorrect <: constraint on base types.")
     case _ => throw new TypeException("Type inference error: " + alpha.toString + " </: " + beta.toString)
   }
   
@@ -196,9 +188,16 @@ class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
       rui.constrain(new Equal(alpha.upperBound,beta.upperBound))
     }
     
-    case (alpha,beta: GammaRange) => throw new TypeException("Type inference error: Rho ranges cannot equal any other type.")
-    case (alpha: GammaRange,beta) => throw new TypeException("Type inference error: Rho ranges cannot equal any other type.")
-    
+    case (alpha,beta: GammaRange) => {
+      rui.constrain(new LesserEq(beta.lowerBound,alpha))
+      rui.constrain(new LesserEq(alpha,beta.upperBound))
+      rui.substitute(beta,alpha)
+    }
+    case (alpha: GammaRange,beta) => {
+      rui.constrain(new LesserEq(alpha.lowerBound,beta))
+      rui.constrain(new LesserEq(beta,alpha.upperBound))
+      rui.substitute(alpha,beta)
+    }
     case (alpha: TauVariable,beta: TauVariable) => rui.substitute(alpha,beta)
     case (alpha: GammaType,beta: TauVariable) => alpha match {
       case rho: RhoType => {
@@ -220,17 +219,27 @@ class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
     }
     case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(alpha != beta) throw new TypeException("Type inference error: Two primitive types set equal to each other that are not equal.")
     case (alpha: RecordProduct,beta: RecordProduct) => {
-      if(alpha.length == beta.length)
-        alpha.fields.zip(beta.fields).map(pair => rui.constrain(new Equal(pair._1.tau,pair._2.tau)))
+      if(alpha.length == beta.length) {
+        val fields = alpha.fields.zip(beta.fields)
+        if(!fields.forall(pair => pair._1.name == pair._2.name))
+          throw new TypeException("Product fields in supposedly-equivalent types have different names.")
+        fields.foreach(pair => rui.constrain(new Equal(pair._1.tau,pair._2.tau)))
+      }
       else
-        throw new TypeException("Type inference error: Pi types set as equal have different numbers of fields.")
+        throw new TypeException("Type inference error: Product types set as equal have different numbers of fields.")
     }
     case (alpha: FunctionArrow,beta: FunctionArrow) => {
       alpha.domain.zip(beta.domain).map(pair => rui.constrain(new Equal(pair._1,pair._2)))
       rui.constrain(new Equal(alpha.range,beta.range))
     }
+    case (alpha: SumType,beta: SumType) => {
+      assert(alpha.sumCases.length == beta.sumCases.length)
+      val shared = alpha.sumCases.zip(beta.sumCases)
+      assert(shared.forall(pair => pair._1.name.name == pair._2.name.name))
+      shared.foreach(pair => rui.constrain(new Equal(pair._1.record,pair._2.record)))
+    }
     
-    case (_,_) => throw new TypeException("Type inference error: incompatible types equated to each other.")
+    case (_,_) => throw new TypeException("Type inference error: " + alpha.toString + " =/= " + beta.toString)
   }
   
   override def toString: String = alpha.toString + " = " + beta.toString

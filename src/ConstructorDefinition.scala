@@ -2,32 +2,26 @@ package decac
 
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
-import jllvm.LLVMFunction
-import jllvm.LLVMInstructionBuilder
-import jllvm.LLVMReturnInstruction
-import jllvm.LLVMGetElementPointerInstruction
-import jllvm.LLVMStoreInstruction
-import jllvm.LLVMStackAllocation
-import jllvm.LLVMConstantInteger
-import jllvm.LLVMValue
+import jllvm._
 
-abstract class ConstructorDefinition(m: Module,tp: TaggedProduct) extends FunctionDefinition {
+abstract class ConstructorDefinition(m: Module,tp: TaggedProduct,args: List[Tuple2[String,TauType]]) extends FunctionDefinition {
   override val name = tp.name.name match {
     case None => throw new Exception("Cannot define constructor function for unnamed tagged product.")
     case Some(str) => str
   }
   override val scope: Module = {m.define(this); m}
-  val arguments: List[Tuple2[String,TauType]]
+  val arguments: List[Tuple2[String,TauType]] = args
+  protected val generalization = new TauSubstitution
   override val signature: SigmaType = {
     val argTypes = arguments.map(arg => arg._2)
     val resultType = new SumType(tp :: Nil)
-    (new FunctionArrow(argTypes,resultType)).generalize(new TauSubstitution)
+    (new FunctionArrow(argTypes,resultType)).generalize(generalization)
   }
   val bodyScope: LexicalScope = {
-    val binds = arguments.map(arg => (arg._1,LexicalArgument(arg._2)))
+    val binds = arguments.map(arg => (arg._1,LexicalArgument(generalization.solve(arg._2))))
     new LexicalScope(scope,binds)
   }
-  val bodies: HashMap[RecordMember,Expression]
+  val bodies: HashMap[RecordMember,Expression] = new HashMap[RecordMember,Expression]()
   
   protected val specializations: Map[List[GammaType],SpecializedConstructor] = new HashMap[List[GammaType],SpecializedConstructor]()
   
@@ -35,7 +29,6 @@ abstract class ConstructorDefinition(m: Module,tp: TaggedProduct) extends Functi
     case arrow: FunctionArrow => specialize(Nil)
     case _ => {}
   }
-  assert(bodies.size == tp.record.length)
   
   override def specialized = specializations.values.map(func => func.asInstanceOf[SpecializedFunction])
   
@@ -58,40 +51,27 @@ abstract class ConstructorDefinition(m: Module,tp: TaggedProduct) extends Functi
   }
 }
 
-class DefaultConstructor(m: Module,tp: TaggedProduct) extends ConstructorDefinition(m,tp) {
-  override val arguments: List[Tuple2[String,TauType]] = {
-    tp.record.fields.zipWithIndex.map(field => (field._1.name match { case Some(str) => str case None => "_" + field._2.toString },field._1.tau))
+class DefaultConstructor(m: Module,tp: TaggedProduct) extends ConstructorDefinition(m,tp,tp.record.fields.zipWithIndex.map(field => (field._1.name match { case Some(str) => str case None => "_" + field._2.toString },field._1.tau))) {
+  for(arg <- arguments) {
+    val declaration = bodyScope.typedLookup(arg._1)
+    assert(TauOrdering.equiv(arg._2,declaration.variableType))
+    val member = tp.record.fields.find(mem => mem.name == Some(arg._1) || mem.name == None && mem.tau == arg._2).get
+    bodies.put(member,new VariableExpression(arg._1 :: Nil,declaration.variableType))
   }
-  override val bodies: HashMap[RecordMember,Expression] = {
-    val result = new HashMap[RecordMember,Expression]()
-    for(arg <- arguments) {
-      val declaration = bodyScope.typedLookup(arg._1)
-      assert(TauOrdering.equiv(arg._2,declaration.variableType))
-      val member = tp.record.fields.find(mem => mem.name == Some(arg._1) || mem.name == None && mem.tau == arg._2).get
-      result.put(member,new VariableExpression(arg._1 :: Nil,declaration.variableType))
-    }
-    result
-  }
+  assert(bodies.size == tp.record.length)
 }
 
-class ExplicitConstructor(m: Module,tp: TaggedProduct,args: List[Tuple2[String,TauType]],body: (LexicalScope,RecordMember) => Expression) extends ConstructorDefinition(m,tp) {
-  override val arguments: List[Tuple2[String,TauType]] = args
-  override val bodies: HashMap[RecordMember,Expression] = {
-    val result = new HashMap[RecordMember,Expression]()
-    for(field <- tp.record.fields)
-      result.put(field,body(bodyScope,field))
-    result
-  }
+class ExplicitConstructor(m: Module,tp: TaggedProduct,args: List[Tuple2[String,TauType]],body: (LexicalScope,RecordMember) => Expression) extends ConstructorDefinition(m,tp,args) {
+  for(field <- tp.record.fields)
+    bodies.put(field,body(bodyScope,field))
+  assert(bodies.size == tp.record.length)
 }
 
 class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecialization) extends SpecializedFunction {
   val original = org
   val name: String = org.name
   
-  override val signature: FunctionArrow = specializer.solve(original.signature.body) match {
-    case frho: FunctionArrow => frho
-    case _ => throw new Exception("Specializing a function's type should never yield anything but an arrow type.")
-  }
+  override val signature: FunctionArrow = specializer.solve(original.signature.body).asInstanceOf[FunctionArrow]
   protected val range = signature.range.asInstanceOf[SumType].sumCases.head
   
   val function = new LLVMFunction(original.scope.compiledModule,name + "constructor" + signature.toString,signature.compile)
@@ -101,21 +81,18 @@ class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecial
   
   def compile(builder: LLVMInstructionBuilder): LLVMFunction = {
     if(compiled == false) {
+      compiled = true
       val entry = function.appendBasicBlock("entry")
       builder.positionBuilderAtEnd(entry)
       bodyScope.compile(builder)
-      val result = new LLVMStackAllocation(builder,signature.range.asInstanceOf[GammaType].compile,null,"result")
-      val tagIndices = (LLVMConstantInteger.constantInteger(Nat.compile,0,false).asInstanceOf[LLVMValue] :: LLVMConstantInteger.constantInteger(Nat.compile,0,false).asInstanceOf[LLVMValue] :: Nil).toArray
-      val tagPointer = new LLVMGetElementPointerInstruction(builder,result,tagIndices,"gep")
-      new LLVMStoreInstruction(builder,LLVMConstantInteger.constantInteger(signature.range.asInstanceOf[SumType].tagRepresentation,range.constructor,false),tagPointer)
+      
+      val tag = LLVMConstantInteger.constantInteger(signature.range.asInstanceOf[SumType].tagRepresentation,range.constructor,false)
+      var result = new LLVMInsertValueInstruction(builder,new LLVMUndefinedValue(signature.range.asInstanceOf[GammaType].compile),tag,0,"variant")
       for(body <- bodies) {
-        val index = range.record.fields.zipWithIndex.find(pair => pair._1 == body._1).get._2 + 1
-        val indices = (LLVMConstantInteger.constantInteger(Nat.compile,0,false).asInstanceOf[LLVMValue] :: LLVMConstantInteger.constantInteger(Nat.compile,index,false).asInstanceOf[LLVMValue] :: Nil).toArray
-        val memberPointer = new LLVMGetElementPointerInstruction(builder,result,indices,"gep")
-        new LLVMStoreInstruction(builder,body._2.compile(builder,bodyScope),memberPointer)
+        val index = range.record.fields.zipWithIndex.find(pair => pair._1.name == body._1.name).get._2 + 1
+        result = new LLVMInsertValueInstruction(builder,result,body._2.compile(builder,bodyScope),index,"variant_field")
       }
       new LLVMReturnInstruction(builder,result)
-      compiled = true
     }
     function
   }

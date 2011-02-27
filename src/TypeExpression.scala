@@ -7,10 +7,20 @@ import java.lang.Integer
 import jllvm._
 
 trait SigmaType {
+  protected var definition: Option[TypeDefinition] = None
+  
+  def define(d: TypeDefinition): Option[TypeDefinition] = definition match {
+    case Some(defined) => Some(defined)
+    case None => {
+      definition = Some(d)
+      return definition
+    }
+  }
   def instantiate(args: List[TauType]): GammaType
   def freshlyInstantiate: GammaType
   def specialize(args: List[GammaType]): BetaSpecialization
   def body: GammaType
+  def toString: String
 }
 
 abstract class TauType {
@@ -21,16 +31,6 @@ abstract class TauType {
 case class TypeException(error: String) extends Exception("Type error: " + error)
 
 abstract class GammaType extends TauType with SigmaType {
-  protected var definition: Option[TypeDefinition] = None
-  
-  def define(d: TypeDefinition): Option[TypeDefinition] = definition match {
-    case Some(defined) => Some(defined)
-    case None => {
-      definition = Some(d)
-      return definition
-    }
-  }
-  
   def compile: LLVMType
   
   override def instantiate(args: List[TauType]): GammaType = {
@@ -78,12 +78,12 @@ abstract class PrimitiveGamma extends GammaType {
 }
 
 object TopGamma extends PrimitiveGamma {
-  override def compile: LLVMType = new LLVMVoidType
+  override def compile: LLVMType = throw new TypeException("Top type indicates a type-inference error.")
   override def mangle: String = "top"
 }
 
 object BottomGamma extends PrimitiveGamma {
-  override def compile: LLVMType = new LLVMVoidType
+  override def compile: LLVMType = throw new TypeException("Top type indicates a type-inference error.")
   override def mangle: String = "bottom"
 }
 
@@ -106,24 +106,30 @@ abstract class RhoType extends GammaType {
     })
     originals.zip(newrefs).foldLeft(this)((rho: RhoType,pair: Tuple2[TauType,ScopedPointer]) => rho.replace(pair._1,pair._2))
   }
-  def filter(p: (TauType) => Boolean): List[TauType]
-  def generalize(substitution: TauSubstitution): SigmaType = {
-    val tvars = filter(tau => tau.isInstanceOf[TauVariable] && tau.equals(substitution.solve(tau)))
+  def contents: List[TauType]
+  def toList: List[TauType] = contents.distinct
+  def filter(p: (TauType) => Boolean): List[TauType] = toList.filter(p)
+  protected def generalizeSolvedRho(substitution: TauSubstitution): SigmaType = {
+    val tvars = filter(tau => tau.isInstanceOf[TauVariable] && TauOrdering.equiv(tau,substitution.solve(tau))).asInstanceOf[List[TauVariable]]
     if(tvars == Nil)
       substitution.solve(this).asInstanceOf[RhoType]
     else {
-      val head = tvars.head match { case tvar: TauVariable => tvar case _ => throw new TypeException("Given something other than a tau variable in what should be a list of tau variables.") }
-      val betaHead = new BetaRho(this,head)
-      substitution.substitute(head,betaHead.alpha)
-      tvars.tail.foldLeft[BetaType](betaHead)((beta: BetaType,tau: TauType) => tau match {
-        case tvar: TauVariable => {
-          val newBeta = new BetaBeta(beta,tvar)
-          substitution.substitute(tvar,newBeta.alpha)
-          newBeta
+      tvars.foldLeft[SigmaType](this)((sigma: SigmaType,tau: TauVariable) => sigma match {
+        case rho: RhoType => {
+          val result = new BetaRho(rho,tau)
+          substitution.substitute(tau,result.alpha)
+          result
         }
-        case _ => throw new TypeException("Given something other than a tau variable in what should be a list of tau variables.")
+        case beta: BetaType => {
+          val result = new BetaBeta(beta,tau)
+          substitution.substitute(tau,result.alpha)
+          result
+        }
       })
     }
+  }
+  def generalize(substitution: TauSubstitution): SigmaType = {
+    substitution.solve(this).asInstanceOf[RhoType].generalizeSolvedRho(substitution)
   }
 }
 
@@ -133,18 +139,18 @@ case class MuBinding(mu: RecursiveMu) extends RecursiveVariable
 case class FutureRecursion() extends RecursiveVariable
 
 class RecursiveMu(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
-  val contents: RhoType = alpha match {
+  val innards: RhoType = alpha match {
     case UnrecursiveAlpha(alpha) => rho.replace(alpha,this)
     case MuBinding(mu) => rho.map(tau => if(tau == mu) this else tau)
     case FutureRecursion() => rho
   }
   
-  override def tagged: Boolean = contents.tagged
+  override def tagged: Boolean = innards.tagged
   
-  def unfold: RhoType = contents.map(tau => tau)
+  def unfold: RhoType = innards.map(tau => tau)
   def derecurse: Tuple2[TauVariable,RhoType] = {
     val alpha = new TauVariable
-    (alpha,contents.map(tau => if(tau == this) alpha else tau))
+    (alpha,innards.map(tau => if(tau == this) alpha else tau))
   }
   def substitute(from: TauVariable,to: TauType): RecursiveMu = {
     val unfolded = unfold.replace(from,to)
@@ -152,18 +158,18 @@ class RecursiveMu(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
   }
   
   override def map(f: (TauType) => TauType): RecursiveMu = {
-    val result = new RecursiveMu(contents.map(tau => if(tau == this) tau else f(tau)),MuBinding(this))
+    val result = new RecursiveMu(innards.map(tau => if(tau == this) tau else f(tau)),MuBinding(this))
     result.definition = definition
     result
   }
   
-  override def filter(f: (TauType) => Boolean): List[TauType] = {
-    contents.filter(tau => if(tau == this) false else f(tau))
+  override def contents: List[TauType] = {
+    innards.filter(tau => tau != this)
   }
   
   override def compile: LLVMType = {
     val opaque = OpaqueGamma
-    val bodyType = contents.map(tau => if(tau == this) opaque else tau).compile
+    val bodyType = innards.map(tau => if(tau == this) opaque else tau).compile
     val bodyHandle = new LLVMTypeHandle(bodyType)
     LLVMTypeHandle.refineType(opaque.compile,bodyType)
     bodyHandle.resolve
@@ -171,7 +177,7 @@ class RecursiveMu(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
   
   override def mangle: String = {
     val alpha = new TauVariable
-    "mu " + alpha.toString + "." + contents.map(tau => if(tau == this) alpha else tau).toString
+    "mu " + alpha.toString + "." + innards.map(tau => if(tau == this) alpha else tau).toString
   }
 }
 
@@ -192,11 +198,11 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
     result
   }
   
-  override def filter(p: (TauType) => Boolean): List[TauType] = {
+  override def contents: List[TauType] = {
     var result: List[TauType] = Nil
     fields.foreach(field => field.tau match {
-      case rho: RhoType => result = result ++ rho.filter(p)
-      case _ => if(p(field.tau)) result = field.tau :: result
+      case rho: RhoType => result = result ++ rho.contents
+      case _ => result = field.tau :: result
     })
     result
   }
@@ -242,19 +248,15 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType with ArrowType 
     result
   }
   
-  override def filter(p: (TauType) => Boolean): List[TauType] = {
+  override def contents: List[TauType] = {
     var result: List[TauType] = Nil
     domain.foreach(tau => tau match {
-      case rho: RhoType => result = result ++ rho.filter(p)
-      case _ =>
-        if(p(tau))
-          result = tau :: result
+      case rho: RhoType => result = result ++ rho.contents
+      case _ => result = tau :: result
     })
     range match {
-      case rho: RhoType => result = result ++ rho.filter(p)
-      case _ =>
-        if(p(range))
-          result = range :: result
+      case rho: RhoType => result = result ++ rho.contents
+      case _ => result = range :: result
     }
     result
   }
@@ -310,12 +312,11 @@ class SumType(addends: List[TaggedProduct]) extends RhoType {
     result.definition = definition
     result
   }
-  override def filter(p: (TauType) => Boolean): List[TauType] = {
+  override def contents: List[TauType] = {
     var result: List[TauType] = Nil
     for(sumCase <- sumCases) {
-      result = result ++ sumCase.record.filter(p)
-      if(p(sumCase.record))
-        result = sumCase.record :: result
+      result = result ++ sumCase.record.contents
+      result = sumCase.record :: result
     }
     result
   }
@@ -439,7 +440,7 @@ class TauVariable extends TauType {
   override def toString: String = getClass().getName() + '@' + Integer.toHexString(hashCode())
   override def tagged: Boolean = false
   
-  def refine(low: Option[GammaType],high: Option[GammaType]): GammaRange = {
+  def refine(low: Option[GammaType],high: Option[GammaType],rui: RangeUnificationInstance): GammaRange = {
     val lower = low match {
       case Some(gamma) => gamma
       case None => BottomGamma
@@ -448,6 +449,7 @@ class TauVariable extends TauType {
       case Some(gamma) => gamma
       case None => TopGamma
     }
+    rui.constrain(new LesserEq(lower,upper))
     new GammaRange(lower,upper)
   }
 }
@@ -460,25 +462,24 @@ class GammaRange(l: GammaType,h: GammaType) extends TauVariable {
  
   override def toString: String =  "(" + lowerBound.toString + "," + upperBound.toString + ")"
   
-  override def refine(low: Option[GammaType],high: Option[GammaType]): GammaRange = {
+  override def refine(low: Option[GammaType],high: Option[GammaType],rui: RangeUnificationInstance): GammaRange = {
     val lower = low match {
       case Some(gamma) => {
-        if(!TauOrdering.lteq(lowerBound,gamma))
-          throw new TypeException(lowerBound.toString + " </: " + gamma.toString)
+        rui.constrain(new LesserEq(lowerBound,gamma))
         gamma
       }
       case None => lowerBound
     }
     val upper = high match {
       case Some(gamma) => {
-        if(!TauOrdering.lteq(gamma,upperBound))
-          throw new TypeException(gamma.toString + " </: " + upperBound.toString)
+        rui.constrain(new LesserEq(gamma,upperBound))
         gamma
       }
       case None => upperBound
     }
-    if(!TauOrdering.lteq(lower,upper))
-      throw new TypeException(lower.toString + " </: " + upper.toString)
+    rui.constrain(new LesserEq(lower,upper))
+    if(upper == BottomGamma || lower == TopGamma)
+      throw new TypeException("Overconstrained type: (" + lower.toString + "," + upper.toString + ")")
     new GammaRange(lower,upper)
   }
 }
@@ -489,7 +490,8 @@ abstract class BetaType extends SigmaType {
   def replace(from: TauVariable,to: TauType): BetaType
   def map(f: (TauType) => TauType): BetaType
   def scopeMap(f: (ScopeType) => ScopeType): BetaType
-  def filter(p: (TauType) => Boolean): List[TauType]
+  def toList: List[TauType]
+  def filter(p: (TauType) => Boolean): List[TauType] = toList.filter(p)
   
   override def instantiate(args: List[TauType]): RhoType
   override def freshlyInstantiate: RhoType
@@ -508,13 +510,13 @@ class BetaRho(r: RhoType,tvar: TauVariable) extends BetaType {
   override def replace(from: TauVariable,to: TauType): BetaRho = new BetaRho(rho.replace(from,to),alpha)
   override def map(f: (TauType) => TauType): BetaRho = new BetaRho(rho.map(f),alpha)
   override def scopeMap(f: (ScopeType) => ScopeType): BetaRho = new BetaRho(rho.scopeMap(f),alpha)
-  override def filter(p: (TauType) => Boolean): List[TauType] = rho.filter(p)
+  override def toList: List[TauType] = rho.toList
   
   override def instantiate(args: List[TauType]): RhoType = {
     if(args.length == 1)
       rho.replace(alpha,args.head)
     else
-      throw new TypeException("Given wrong number of arguments to instantiate rho-containing beta type.")
+      throw new TypeException("Given wrong number of arguments to instantiate rho-containing beta type: " + args.length)
   }
   
   override def freshlyInstantiate: RhoType = rho.replace(alpha,new TauVariable)
@@ -526,10 +528,11 @@ class BetaRho(r: RhoType,tvar: TauVariable) extends BetaType {
       result
     }
     else
-      throw new TypeException("Given wrong number of arguments to specialize rho-containing beta type.")
+      throw new TypeException("Given wrong number of arguments to specialize rho-containing beta type: " + args.length)
   }
   
   override def body: RhoType = rho
+  override def toString: String = "forall " + alpha.toString + "." + rho.toString
 }
 
 object BuiltInSums {
@@ -539,7 +542,15 @@ object BuiltInSums {
     result.define(new TypeDefinition(result,"boolean",GlobalScope))
     result
   }
-  val option: SigmaType = (new SumType(TaggedProduct(DataConstructor(Some("Some"),None),new RecordProduct(new RecordMember(None,new TauVariable) :: Nil)) :: TaggedProduct(DataConstructor(Some("None"),None),EmptyRecord) :: Nil)).generalize(new TauSubstitution)
+  val option: SigmaType = {
+    val some = TaggedProduct(DataConstructor(Some("Some"),None),new RecordProduct(new RecordMember(None,new TauVariable) :: Nil))
+    val none = TaggedProduct(DataConstructor(Some("None"),None),EmptyRecord)
+    val result = (new SumType(some :: none :: Nil)).generalize(new TauSubstitution)
+    result.define(new TypeDefinition(result,"Option",GlobalScope))
+    new DefaultConstructor(GlobalScope,result.body.asInstanceOf[SumType].sumCases.apply(0))
+    new DefaultConstructor(GlobalScope,result.body.asInstanceOf[SumType].sumCases.apply(1))
+    result
+  }
 }
 
 class BetaBeta(b: BetaType,tvar: TauVariable) extends BetaType {
@@ -549,7 +560,7 @@ class BetaBeta(b: BetaType,tvar: TauVariable) extends BetaType {
   override def replace(from: TauVariable,to: TauType): BetaBeta = new BetaBeta(beta.replace(from,to),alpha)
   override def map(f: (TauType) => TauType): BetaBeta = new BetaBeta(beta.map(f),alpha)
   override def scopeMap(f: (ScopeType) => ScopeType): BetaBeta = new BetaBeta(beta.scopeMap(f),alpha)
-  override def filter(p: (TauType) => Boolean): List[TauType] = beta.filter(p)
+  override def toList: List[TauType] = beta.toList
   
   override def instantiate(args: List[TauType]): RhoType = beta.instantiate(args.tail).replace(alpha,args.head)
   
@@ -562,4 +573,5 @@ class BetaBeta(b: BetaType,tvar: TauVariable) extends BetaType {
   }
   
   override def body: RhoType = beta.body
+  override def toString: String = "forall " + alpha.toString + "." + beta.toString
 }

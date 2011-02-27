@@ -64,19 +64,15 @@ class ClosureArrow(d: List[TauType],r: TauType,rep: Option[SumType]) extends Rho
     result
   }
   
-  override def filter(p: (TauType) => Boolean): List[TauType] = {
+  override def contents: List[TauType] = {
     var result: List[TauType] = Nil
     domain.foreach(tau => tau match {
-      case rho: RhoType => result = result ++ rho.filter(p)
-      case _ =>
-        if(p(tau))
-          result = tau :: result
+      case rho: RhoType => result = result ++ rho.contents
+      case _ => result = tau :: result
     })
     range match {
-      case rho: RhoType => result = result ++ rho.filter(p)
-      case _ =>
-        if(p(range))
-          result = range :: result
+      case rho: RhoType => result = result ++ rho.contents
+      case _ => result = range :: result
     }
     result
   }

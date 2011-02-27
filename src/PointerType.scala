@@ -8,6 +8,7 @@ class PointerType(tau: TauType) extends RhoType {
   val target: TauType = tau
   
   override def tagged: Boolean = false
+  override def contents: List[TauType] = target :: Nil
   
   override def compile: LLVMType = target match {
     case gamma: GammaType => new LLVMPointerType(gamma.compile,0)

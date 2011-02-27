@@ -55,7 +55,7 @@ class LexicalBinding(n: String,s: LexicalScope,k: LexicalKind) extends VariableB
   override val variableType = kind.variableType match {
     case bvar: BetaVariable => bvar
     case gamma: GammaType => gamma
-    case tau: TauType => throw new Exception("Generalized lexical binding has " + tau.toString + " type rather than gamma type nor beta-variable type.")
+    case _ => throw new Exception("Generalized lexical binding has " + kind.variableType.toString + " type rather than gamma type or beta-variable type.")
   }
   def specialize(substitution: BetaSpecialization,arg: Option[LLVMArgument]) = kind match {
     case LexicalLet(initializer) => {

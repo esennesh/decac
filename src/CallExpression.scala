@@ -62,9 +62,10 @@ class DefinitionCall(func: FunctionDefinition,sig: FunctionArrow,arguments: List
   override def specialize(specialization: BetaSpecialization): SpecializedDefinitionCall = specializations.get(specialization) match {
     case Some(spec) => spec
     case None => {
-      val typeParams = sig.filter(tau => tau.isInstanceOf[BetaVariable]).map(beta => specialization.solve(beta))
-      val specFunc = definition.specialize(typeParams)
-      val result = new SpecializedDefinitionCall(specFunc,arguments.map(expr => expr.specialize(specialization)))
+      val args = arguments.map(expr => expr.specialize(specialization))
+      val typeArgs = args.map(arg => arg.expressionType).zip(definition.signature.body.asInstanceOf[FunctionArrow].domain).filter(pair => pair._2.isInstanceOf[BetaVariable]).map(pair => pair._1)
+      val specFunc = definition.specialize(typeArgs)
+      val result = new SpecializedDefinitionCall(specFunc,args)
       specializations.put(specialization,result)
       result
     }

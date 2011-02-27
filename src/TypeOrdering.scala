@@ -29,7 +29,7 @@ object TauOrdering extends PartialOrdering[TauType] {
       result
     }
     case (rx: RhoType,ry: RecursiveMu) => lt(rx,ry.unfold)
-    case (sx: SumType,sy: SumType) => sx.sumCases.forall(gpx => sy.sumCases.exists(gpy => TaggedProductEquivalence.equiv(gpx,gpy)))
+    case (sx: SumType,sy: SumType) => sy.sumCases.length > sx.sumCases.length && sx.sumCases.forall(gpx => sy.sumCases.exists(gpy => TaggedProductEquivalence.equiv(gpx,gpy)))
     case (ry: GammaRange,y: TauType) => lt(if(ry.upperBound != TopGamma) ry.upperBound else ry.lowerBound,y)
     case (x: TauType,ry: GammaRange) => lt(x,if(ry.lowerBound != BottomGamma) ry.lowerBound else ry.upperBound)
     case (fx: FunctionArrow,fy: FunctionArrow) => fx.domain.zip(fy.domain).forall(pair => gt(pair._1,pair._2)) && lt(fx.range,fy.range)
@@ -44,7 +44,7 @@ object TauOrdering extends PartialOrdering[TauType] {
   }
   override def gt(x: TauType,y: TauType): Boolean = lt(y,x)
   override def equiv(x: TauType,y: TauType): Boolean = (x,y) match {
-    case (sx: SumType,sy: SumType) => lt(sx,sy) && lt(sy,sx)
+    case (sx: SumType,sy: SumType) => sx.sumCases.forall(gpx => sy.sumCases.exists(gpy => TaggedProductEquivalence.equiv(gpx,gpy))) && sy.sumCases.forall(gpy => sx.sumCases.exists(gpx => TaggedProductEquivalence.equiv(gpy,gpx)))
     case (fx: FunctionArrow,fy: FunctionArrow) => fx.domain.zip(fy.domain).forall(pair => equiv(pair._1,pair._2)) && equiv(fx.range,fy.range)
     case (recx: RecordProduct,recy: RecordProduct) => (recx.length == recy.length) && recx.fields.zip(recy.fields).forall(pair => equiv(pair._1.tau,pair._2.tau))
     case (recx: RecursiveMu,recy: RecursiveMu) => {
@@ -55,8 +55,8 @@ object TauOrdering extends PartialOrdering[TauType] {
     }
     case (recx: RecursiveMu,rhoy: RhoType) => equiv(recx.unfold,rhoy)
     case (rhox: RhoType,recy: RecursiveMu) => equiv(rhox,recy.unfold)
-    case (gx: GammaType,ry: GammaRange) => gt(gx,ry.lowerBound) && lt(gx,ry.upperBound)
-    case (rx: GammaRange,gy: GammaType) => gt(gy,rx.lowerBound) && lt(gy,rx.upperBound)
+    case (gx: GammaType,ry: GammaRange) => gteq(gx,ry.lowerBound) && lteq(gx,ry.upperBound)
+    case (rx: GammaRange,gy: GammaType) => gteq(gy,rx.lowerBound) && lteq(gy,rx.upperBound)
     case (x: TauType,py: BetaVariable) => true
     case (px: BetaVariable,y: TauType) => true
     case (x: TauType,y: TauType) => x == y
@@ -79,6 +79,7 @@ object SigmaOrdering extends PartialOrdering[SigmaType] {
   override def lt(x: SigmaType,y: SigmaType): Boolean = (x,y) match {
     case (gx: GammaType,gy: GammaType) => TauOrdering.lt(gx,gy)
     case (gx: GammaType,by: BetaType) => TauOrdering.lt(gx,by.body)
+    case (bx: BetaType,gy: GammaType) => TauOrdering.lt(bx.body,gy)
     case (bx: BetaType,by: BetaType) => TauOrdering.lt(bx.body,by.body)
     case _ => false
   }
@@ -86,9 +87,10 @@ object SigmaOrdering extends PartialOrdering[SigmaType] {
   override def equiv(x: SigmaType,y: SigmaType): Boolean = (x,y) match {
     case (gx: GammaType,gy: GammaType) => TauOrdering.equiv(gx,gy)
     case (bx: BetaType,by: BetaType) => TauOrdering.equiv(bx.body,by.body)
+    case _ => false
   }
-  override def gteq(x: SigmaType,y: SigmaType): Boolean = gt(x,y) || equiv(x,y)
-  override def lteq(x: SigmaType,y: SigmaType): Boolean = lt(x,y) || equiv(x,y) 
+  override def gteq(x: SigmaType,y: SigmaType): Boolean = equiv(x,y) || gt(x,y)
+  override def lteq(x: SigmaType,y: SigmaType): Boolean = equiv(x,y) || lt(x,y)
   override def tryCompare(x: SigmaType,y: SigmaType): Option[Int] = {
     if(gt(x,y))
       Some(1)
@@ -152,23 +154,28 @@ object SigmaLattice {
     }
   }
   
-  def join(x: GammaType,y: GammaType,rui: RangeUnificationInstance): GammaType = lattice.join(x,y) match {
-    case beta: BetaType => {
-      val result = beta.freshlyInstantiate
-      rui.constrain(new LesserEq(x,result))
-      rui.constrain(new LesserEq(y,result))
-      result
-    }
-    case gamma: GammaType => gamma
+  protected def latticeGeneralize(gamma: GammaType) = gamma match {
+    case rho: RhoType => rho.generalize(new TauSubstitution)
+    case _ => gamma
   }
   
-  def meet(x: GammaType,y: GammaType,rui: RangeUnificationInstance): GammaType = lattice.meet(x,y) match {
-    case beta: BetaType => {
-      val result = beta.freshlyInstantiate
-      rui.constrain(new LesserEq(result,x))
-      rui.constrain(new LesserEq(result,y))
-      result
+  def join(x: GammaType,y: GammaType,rui: RangeUnificationInstance): GammaType = {
+    val result = lattice.join(latticeGeneralize(x),latticeGeneralize(y)) match {
+      case beta: BetaType => beta.freshlyInstantiate
+      case gamma: GammaType => gamma
     }
-    case gamma: GammaType => gamma
+    (new LesserEq(x,result)).infer(rui)
+    (new LesserEq(y,result)).infer(rui)
+    result
+  }
+
+  def meet(x: GammaType,y: GammaType,rui: RangeUnificationInstance): GammaType = {
+    val result = lattice.meet(latticeGeneralize(x),latticeGeneralize(y)) match {
+      case beta: BetaType => beta.freshlyInstantiate
+      case gamma: GammaType => gamma
+    }
+    (new LesserEq(result,x)).infer(rui)
+    (new LesserEq(result,y)).infer(rui)
+    result
   }
 }

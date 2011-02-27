@@ -84,9 +84,9 @@ class UninferredExpressionFunction(fScope: UninferredLexicalScope,range: TauType
 }
 
 class GeneralizedExpressionFunction(uninferred: UninferredExpressionFunction,substitution: TauSubstitution) {
+  val signature: SigmaType = uninferred.signature.generalize(substitution)
   val scope = uninferred.scope.infer(substitution)
   val body = uninferred.body.substitute(substitution)
-  val signature: SigmaType = uninferred.signature.generalize(substitution)
   protected val specializations = new HashMap[List[GammaType],SpecializedExpressionFunction]()
   
   def specializeScope(caller: Scope[_]): FunctionArrow = {
