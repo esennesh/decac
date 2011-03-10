@@ -78,7 +78,7 @@ class UninferredExpressionFunction(fScope: UninferredLexicalScope,range: TauType
   val signature = new FunctionArrow(arguments.map(arg => arg.variableType),range)
   protected var bodyBlock: Option[UninferredBlock] = None
   def generateBody(genBody: (UninferredLexicalScope) => UninferredBlock): Unit = {
-    bodyBlock = Some(genBody(fScope))
+    bodyBlock = Some(genBody(scope))
   }
   def body: UninferredBlock = bodyBlock.get
 }
@@ -96,16 +96,18 @@ class GeneralizedExpressionFunction(uninferred: UninferredExpressionFunction,sub
       case _ => fScope
     }).asInstanceOf[FunctionArrow]
   }
-  def specialize(definition: ExpressionFunction,specialization: List[GammaType]): SpecializedFunction = specializations.get(specialization) match {
-    case Some(sf) => sf
-    case None => {
-      val specializer = signature.specialize(specialization)
-      val result = new SpecializedExpressionFunction(definition,this,specializer)
-      specializations.put(specialization,result)
-      result.specializeBody
-      result
-    }
+  
+  def specialize(definition: ExpressionFunction,specialization: List[GammaType]): SpecializedFunction = {
+    for((key,value) <- specializations)
+      if(specialization.zip(key).forall(pair => TauOrdering.equiv(pair._1,pair._2)))
+        return value
+    val specializer = signature.specialize(specialization)
+    val result = new SpecializedExpressionFunction(definition,this,specializer)
+    specializations.put(specialization,result)
+    result.specializeBody
+    result
   }
+
   def specialized: Iterable[SpecializedFunction] = specializations.values.map(func => func.asInstanceOf[SpecializedFunction])
 }
 
@@ -130,22 +132,8 @@ class SpecializedExpressionFunction(definition: ExpressionFunction,general: Gene
       val entry = function.appendBasicBlock("entry")
       builder.positionBuilderAtEnd(entry)
       fScope.compile(builder)
-      val result = body.compile(builder,fScope)
-      //THIS KLUDGE IS BAD, AND I SHOULD FEEL BAD.
-      //WHAT I REALLY NEED IS A "CAST" OPERATION IMPLEMENTED AS PART OF MY ORDERING ON TYPES.
-      //Actually, what I really need is an implicit-cast expression that upcasts subtypes to the expected supertypes.
-      val castedResult = signature.range match {
-        case real: RealGamma => {
-          val doubled = body.expressionType match {
-            case unsigned: UnsignedIntegerGamma => new LLVMIntegerToFloatCast(builder,result,DoubleGamma.compile,"cast",LLVMIntegerToFloatCast.IntCastType.UNSIGNED)
-            case signed: IntegerGamma => new LLVMIntegerToFloatCast(builder,result,DoubleGamma.compile,"cast",LLVMIntegerToFloatCast.IntCastType.SIGNED)
-            case floating: RealGamma => result
-          }
-          new LLVMExtendCast(LLVMExtendCast.ExtendType.FLOAT,builder,doubled,real.compile,"cast")
-        }
-        case _ => result
-      }
-      new LLVMReturnInstruction(builder,castedResult)
+      val result = (new ImplicitUpcast(body,signature.range.asInstanceOf[GammaType])).compile(builder,fScope)
+      new LLVMReturnInstruction(builder,result)
     }
     function
   }

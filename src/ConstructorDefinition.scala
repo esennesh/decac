@@ -40,14 +40,15 @@ abstract class ConstructorDefinition(m: Module,tp: TaggedProduct,args: List[Tupl
     }).asInstanceOf[FunctionArrow]
   }
   
-  override def specialize(specialization: List[GammaType]): SpecializedConstructor = specializations.get(specialization) match {
-    case Some(sf) => sf
-    case None => {
-      val specializer = signature.specialize(specialization)
-      val result = new SpecializedConstructor(this,specializer)
-      specializations.put(specialization,result)
-      result
-    }
+  override def specialize(specialization: List[GammaType]): SpecializedConstructor = {
+    for((key,value) <- specializations)
+      if(specialization.zip(key).forall(pair => TauOrdering.equiv(pair._1,pair._2)))
+        return value
+    //So we didn't find a specialization already in the map.
+    val specializer = signature.specialize(specialization)
+    val result = new SpecializedConstructor(this,specializer)
+    specializations.put(specialization,result)
+    result
   }
 }
 
@@ -87,10 +88,17 @@ class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecial
       bodyScope.compile(builder)
       
       val tag = LLVMConstantInteger.constantInteger(signature.range.asInstanceOf[SumType].tagRepresentation,range.constructor,false)
-      var result = new LLVMInsertValueInstruction(builder,new LLVMUndefinedValue(signature.range.asInstanceOf[GammaType].compile),tag,0,"variant")
-      for(body <- bodies) {
-        val index = range.record.fields.zipWithIndex.find(pair => pair._1.name == body._1.name).get._2 + 1
-        result = new LLVMInsertValueInstruction(builder,result,body._2.compile(builder,bodyScope),index,"variant_field")
+      val rangeType = signature.range.asInstanceOf[SumType]
+      val result = if(rangeType.enumeration)
+        tag
+      else {
+        val variant = new LLVMInsertValueInstruction(builder,new LLVMUndefinedValue(rangeType.compile),tag,0,"variant")
+        var contents: LLVMValue = new LLVMUndefinedValue(rangeType.sumCases.apply(0).record.compile)
+        for(body <- bodies) {
+          val index = range.record.fields.zipWithIndex.find(pair => pair._1.name == body._1.name).get._2
+          contents = new LLVMInsertValueInstruction(builder,contents,body._2.compile(builder,bodyScope),index,"variant_field")
+        }
+        new LLVMInsertValueInstruction(builder,variant,contents,1,"filled_variant")
       }
       new LLVMReturnInstruction(builder,result)
     }

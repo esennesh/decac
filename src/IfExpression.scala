@@ -14,7 +14,12 @@ class UninferredIf(possibilities: List[Tuple2[UninferredExpression,UninferredExp
     new IfExpression(conditions.zip(results),substituteTypes(substitution)._1)
   }
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
-    cases.map(ifcase => { rui.constrain(new LesserEq(ifcase._1.expressionType,BuiltInSums.BooleanGamma)); rui.constrain(new LesserEq(ifcase._2.expressionType,expressionType)); ifcase._1.constrain(rui); ifcase._2.constrain(rui) })
+    for(ifcase <- cases) {
+      rui.constrain(new LesserEq(ifcase._1.expressionType,BuiltInSums.BooleanGamma))
+      rui.constrain(new LesserEq(ifcase._2.expressionType,expressionType))
+      ifcase._1.constrain(rui)
+      ifcase._2.constrain(rui)
+    }
     return rui
   }
 }
@@ -61,7 +66,7 @@ class SpecializedIf(possibilities: List[Tuple2[SpecializedExpression,Specialized
       val elseBlock = mergeBlock.insertBasicBlockBefore("else")
       new LLVMBranchInstruction(builder,condition,thenBlock,elseBlock)
       builder.positionBuilderAtEnd(thenBlock)
-      val caseValue = ifcase._2.compile(builder,scope)
+      val caseValue = (new ImplicitUpcast(ifcase._2,expressionType)).compile(builder,scope)
       new LLVMBranchInstruction(builder,mergeBlock)
       val finalThenBlock = builder.getInsertBlock
       builder.positionBuilderAtEnd(elseBlock)

@@ -94,7 +94,7 @@ Tokens
   sizeof = 'sizeof';
   match = 'match';
   return = 'return';
-  option_marker = '?';
+  cast = 'cast';
   
   blank = eol | tab | ' ';
   tabspace = [tab + ' '];
@@ -122,8 +122,10 @@ Productions
   import_declaration = 
     import [name]:qualified_identifier;
     
+  variant_case_contents = lparen tuple_component_list rparen;
+    
   variant_component = 
-    unqualified_identifier tuple_form?;
+    unqualified_identifier variant_case_contents?;
     
   type_form =
     {function} function_type_form |
@@ -132,14 +134,15 @@ Productions
     {variant} variant_keyword lbracket variant_component+ rbracket |
     {class} class_keyword function_arguments? extension_clause? lbracket [member]:member_declaration+ destructor_definition? rbracket |
     {exception} exception lparen identifier_list rparen [extension]:extension_clause? |
-    {option} lower_type_form option_marker |
     {others} lower_type_form;
   
   destructor_definition = delete [destructor]:block_expression;
+  
+  function_arguments_type_form = type_form comma type_form_list;
     
   function_type_form = 
     {one} [argument]:lower_type_form arrow_operator [result]:type_form |
-    {many} lparen type_form comma [arguments]:type_form_list rparen arrow_operator [result]:type_form;
+    {many} lparen function_arguments_type_form? rparen arrow_operator [result]:type_form;
     
   recursive_type_naming =
     [name]:unqualified_identifier equals;
@@ -154,9 +157,11 @@ Productions
     
   tuple_form = 
     lsbracket tuple_component_list rsbracket;
+    
+  type_parameterization = labracket [arguments]:type_form_list rabracket;
   
   lower_type_form =
-    {named} [typename]:qualified_identifier [arguments]:type_form_arguments? |
+    {named} [typename]:qualified_identifier type_parameterization? |
     {parenthetical} recursive_type_naming? lparen type_form rparen |
     {tuple} tuple_form |
     {array} lower_type_form lsbracket integer_constant? rsbracket |
@@ -202,6 +207,7 @@ Productions
   expression =
     {assignmentexp} qualified_identifier assignment_operator expression |
     {letexp} let lparen let_assignment_list rparen expression |
+    {castexp} cast labracket type_form rabracket lparen expression rparen |
     {matchexp} match_expression |
     {tryexp} try_expression |
     {finalexp} finally [finalizer]:expression |

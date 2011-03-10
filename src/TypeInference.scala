@@ -91,12 +91,12 @@ class RangeUnificationInstance(scope: Option[Module]) {
   def solve: TauSubstitution = {
     while(constraints.isEmpty != true) {
       val constraint = constraints.pop
-      //try
+      try 
         constraint.infer(this)
-      /*catch {
+      catch {
         case te: TypeException => throw new TypeException(constraint.toString + "; " + te.error)
         case e: Exception => throw e
-      }*/
+      }
     }
     return result
   }
@@ -164,7 +164,7 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
     }
     case (rx: RhoType,ry: RecursiveMu) => rui.constrain(new LesserEq(rx,ry.unfold))
     case (alpha: SumType,beta: SumType) => {
-      val shared = alpha.sumCases.zip(beta.sumCases)
+      val shared = alpha.sumCases.map(cx => (cx,beta.sumCases.find(cy => cx.name.name == cy.name.name).get))
       assert(shared.forall(pair => pair._1.name.name == pair._2.name.name))
       shared.foreach(pair => rui.constrain(new Equal(pair._1.record,pair._2.record)))
     }

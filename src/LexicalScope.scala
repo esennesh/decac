@@ -33,7 +33,6 @@ class UninferredLexicalScope(p: Scope[_],binds: List[Tuple2[String,UninferredLex
   val bindings = binds.map(pair => new UninferredLexicalBinding(pair._1,this,pair._2))
   bindings.foreach(binding => declare(binding))
   
-  
   def infer(substitution: TauSubstitution): LexicalScope = {
     val bound = bindings.map(binding => binding.infer(substitution))
     new LexicalScope(parent,bound)

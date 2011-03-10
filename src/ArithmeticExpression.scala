@@ -8,7 +8,10 @@ import scala.collection.mutable.HashMap
 abstract class UninferredArithmetic extends UninferredExpression(new TauVariable) {
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     rui.constrain(new LesserEq(expressionType,FP128Gamma))
-    children.foreach(child => {child.constrain(rui) ; rui.constrain(new LesserEq(child.expressionType,expressionType)) })
+    for(child <- children) {
+      child.constrain(rui)
+      rui.constrain(new LesserEq(child.expressionType,expressionType))
+    }
     rui
   }
   override def substitute(substitution: TauSubstitution): ArithmeticExpression
@@ -38,7 +41,7 @@ case object Divide extends ArithmeticOperator {
 
 class UninferredOperator(x: UninferredExpression,y: UninferredExpression,op: ArithmeticOperator) extends UninferredArithmetic {
   val operator = op
-  override def children: List[UninferredExpression] = x :: y :: Nil
+  override def children: List[UninferredExpression] = List(x,y)
   override def substitute(substitution: TauSubstitution): OperatorExpression = {
     val substitutionResult = substituteTypes(substitution)
     val subexprs = substitutionResult._2
@@ -114,29 +117,9 @@ abstract class SpecializedArithmetic(gamma: NumericalGamma) extends SpecializedE
 class SpecializedOperator(x: SpecializedExpression,y: SpecializedExpression,op: ArithmeticOperator,exprType: NumericalGamma) extends SpecializedArithmetic(exprType) {
   val operator = op
   override def children: List[SpecializedExpression] = x :: y :: Nil
-  protected def coerce(child: SpecializedExpression,builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = expressionType match {
-    case real: RealGamma => {
-      val doubled = child.expressionType match {
-        case unsigned: UnsignedIntegerGamma => new LLVMIntegerToFloatCast(builder,child.compile(builder,scope),DoubleGamma.compile,"cast",LLVMIntegerToFloatCast.IntCastType.UNSIGNED)
-        case signed: IntegerGamma => new LLVMIntegerToFloatCast(builder,child.compile(builder,scope),DoubleGamma.compile,"cast",LLVMIntegerToFloatCast.IntCastType.SIGNED)
-        case floating: RealGamma => child.compile(builder,scope)
-      }
-      new LLVMExtendCast(LLVMExtendCast.ExtendType.FLOAT,builder,doubled,real.compile,"cast")
-    }
-    case integer: IntegerGamma => {
-      val childValue = child.compile(builder,scope)
-      if(TauOrdering.equiv(child.expressionType,expressionType))
-        childValue
-      else
-        child.expressionType match {
-          case unsigned: UnsignedIntegerGamma =>  new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,childValue,integer.compile,"cast")
-          case signed: IntegerGamma =>  new LLVMExtendCast(LLVMExtendCast.ExtendType.SIGN,builder,childValue,integer.compile,"cast")
-        }
-    }
-  }
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
-    val lhs = coerce(children.apply(0),builder,scope)
-    val rhs = coerce(children.apply(1),builder,scope)
+    val lhs = (new ImplicitUpcast(children.apply(0),expressionType)).compile(builder,scope)
+    val rhs = (new ImplicitUpcast(children.apply(1),expressionType)).compile(builder,scope)
     operator match {
       case Add => new LLVMAddInstruction(builder,lhs,rhs,!expressionType.isInstanceOf[IntegerGamma],"add")
       case Subtract => new LLVMSubtractInstruction(builder,lhs,rhs,!expressionType.isInstanceOf[IntegerGamma],"subtract")

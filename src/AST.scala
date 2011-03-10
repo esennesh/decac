@@ -36,29 +36,75 @@ object ASTProcessor {
       result
     }
   }
-  def processLowerTypeForm(form: PLowerTypeForm,scope: Module): TauType = form match {
+  def processTupleComponent(component: PTupleComponent,scope: TypeBindingScope): RecordMember = component match {
+    case form: ATypeTupleComponent => RecordMember(None,processTypeForm(form.getTypeForm,scope))
+    case binding: ABindingTupleComponent => {
+      val annotation = binding.getTypeAnnotation.asInstanceOf[ATypeAnnotation].getType
+      RecordMember(Some(binding.getName.getText()),processTypeForm(annotation,scope))
+    }
+  }
+  def processTupleComponents(components: PTupleComponentList,scope: TypeBindingScope): List[RecordMember] = components match {
+    case one: AOneTupleComponentList => processTupleComponent(one.getTupleComponent,scope) :: Nil
+    case many: AManyTupleComponentList => processTupleComponents(many.getTupleComponentList,scope) ++ (processTupleComponent(many.getTupleComponent,scope) :: Nil)
+  }
+  def processTupleForm(form: ATupleForm,scope: TypeBindingScope): RecordProduct = {
+    new RecordProduct(processTupleComponents(form.getTupleComponentList,scope))
+  }
+  def processVariantComponents(components: List[PVariantComponent],scope: TypeBindingScope): List[TaggedProduct] = {
+    components.map(_.asInstanceOf[AVariantComponent]).map(component => {
+      val constructor = DataConstructor(Some(component.getUnqualifiedIdentifier.getText),None)
+      val record = if(component.getVariantCaseContents != null) {
+        val members = processTupleComponents(component.getVariantCaseContents.asInstanceOf[AVariantCaseContents].getTupleComponentList,scope)
+        new RecordProduct(members)
+      }
+      else
+        EmptyRecord
+      TaggedProduct(constructor,record)
+    })
+  }
+  def processLowerTypeForm(form: PLowerTypeForm,scope: TypeBindingScope): TauType = form match {
     case named: ANamedLowerTypeForm => {
       val name = processQualifiedIdentifier(named.getTypename)
       scope.lookup(name) match {
         //TODO: Add support for using type arguments
         case defin: TypeDefinition => defin.sigma.freshlyInstantiate
+        case binding: TypeBinding => binding.tau
         case _ => throw new Exception("Used an identifier in a type annotation that referred to a non-type definition.")
       }
     }
+    case tuple: ATupleLowerTypeForm => processTupleForm(tuple.getTupleForm.asInstanceOf[ATupleForm],scope)
   }
-  def processTypeAnnotation(annotation: PTypeForm,scope: Module): TauType = annotation match {
+  def processTypeForms(forms: PTypeFormList,scope: TypeBindingScope): List[TauType] = forms match {
+    case one: AOneTypeFormList => processTypeForm(one.getTypeForm,scope) :: Nil
+    case many: AManyTypeFormList => processTypeForms(many.getTypeFormList,scope) ++ (processTypeForm(many.getTypeForm,scope) :: Nil)
+  }
+  def processTypeForm(annotation: PTypeForm,scope: TypeBindingScope): TauType = annotation match {
     case function: AFunctionTypeForm => function.getFunctionTypeForm match {
       case one: AOneFunctionTypeForm => {
         val node = new AOthersTypeForm
         node.setLowerTypeForm(one.getArgument)
-        val argument = processTypeAnnotation(node,scope)
-        val range = processTypeAnnotation(one.getResult,scope)
+        val argument = processTypeForm(node,scope)
+        val range = processTypeForm(one.getResult,scope)
         new ClosureArrow(argument :: Nil,range,None)
+      }
+      case many: AManyFunctionTypeForm => {
+        val formals: List[TauType] = if(many.getFunctionArgumentsTypeForm != null) {
+          val args = many.getFunctionArgumentsTypeForm.asInstanceOf[AFunctionArgumentsTypeForm]
+          processTypeForm(args.getTypeForm,scope) :: processTypeForms(args.getTypeFormList,scope)
+        }
+        else
+          Nil
+        val result = processTypeForm(many.getResult,scope)
+        new ClosureArrow(formals,result,None)
       }
     }
     case scopedPointer: AScopedPointerTypeForm => {
       val form = processLowerTypeForm(scopedPointer.getLowerTypeForm,scope)
-      new ScopedPointer(form,new GlobalScopeType(Some(scope)))
+      new ScopedPointer(form,new GlobalScopeType(Some(scope.parent)))
+    }
+    case variant: AVariantTypeForm => {
+      val componentForms = convertList(variant.getVariantComponent)
+      new SumType(processVariantComponents(componentForms,scope))
     }
     /*case aclass: AClassTypeForm
     case subrange: ASubrangeTypeForm
@@ -71,7 +117,7 @@ object ASTProcessor {
     val name = arg.getName.getText
     val argType = arg.getType match {
       case null => new TauVariable
-      case annotation: ATypeAnnotation => processTypeAnnotation(annotation.getType,scope)
+      case annotation: ATypeAnnotation => processTypeForm(annotation.getType,new TypeBindingScope(scope))
     }
     (name,argType)
   }
@@ -137,6 +183,14 @@ object ASTProcessor {
     case blockexp: ABlockexpExpression => processBlock(blockexp.getBlockExpression,scope)
     case exp5: AOthersExpression => processExp5(exp5.getExp5,scope)
     case condexp: ACondexpExpression => processIf(condexp.getIfExpression,scope)
+    case cast: ACastexpExpression => {
+      var tscope: Scope[_] = scope
+      while(!tscope.isInstanceOf[Module] && tscope.parent != null)
+        tscope = tscope.parent
+      val tau = processTypeForm(cast.getTypeForm,new TypeBindingScope(tscope.asInstanceOf[Module]))
+      val expr = processExpression(cast.getExpression,scope)
+      new UninferredBitcast(expr,tau)
+    }
   }
   
   def processExpressionList(exprs: PExpressionList,scope: UninferredLexicalScope): List[UninferredExpression] = exprs match {
@@ -166,7 +220,7 @@ object ASTProcessor {
         case normal: AFunctionFunctionDefinition => {
           val name = normal.getName.getText
           val arguments = processArguments(normal.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},scope).map(arg => (arg._1,UninferredArgument(arg._2)))
-          val resultType = if(normal.getType != null) Some(processTypeAnnotation(normal.getType.asInstanceOf[ATypeAnnotation].getType,scope)) else None
+          val resultType = if(normal.getType != null) Some(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,new TypeBindingScope(scope))) else None
           val function = new ExpressionFunction(scope,name,arguments,resultType,lexical => processBlock(normal.getBody,lexical))
           function.infer
           function
@@ -176,7 +230,30 @@ object ASTProcessor {
       }
     }
     case atypedef: ATypedefDefinition => {
-      null
+      val name = atypedef.getUnqualifiedIdentifier.getText
+      val tscope = new TypeBindingScope(scope)
+      if(atypedef.getParameters != null) {
+        val params = processTypeParameters(atypedef.getParameters.asInstanceOf[ATypeFormArguments].getArguments)
+        for((argName,tau) <- params)
+          new TypeBinding(tau,argName,tscope)
+      }
+      val alpha = new TauVariable
+      new TypeBinding(alpha,name,tscope)
+      val sigma = processTypeForm(atypedef.getTypeForm,tscope) match {
+        case rho: RhoType => {
+          val rhomu = if(rho.filter(tau => tau == alpha) != Nil) new RecursiveMu(rho,UnrecursiveAlpha(alpha)) else rho
+          rhomu.generalize(new TauSubstitution)
+        }
+        case gamma: GammaType => gamma
+        case _ => throw new Exception("Type definition has not resulted in a sigma type.")
+      }
+      val result = new TypeDefinition(sigma,name,scope)
+      sigma.define(result)
+      //Remember to create constructors for variants.
+      sigma.body match {
+        case sum: SumType => sum.sumCases.foreach(addend => new DefaultConstructor(scope,addend))
+      }
+      result
     }
     case avardef: AGlobaldefDefinition => {
       null

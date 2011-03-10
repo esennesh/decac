@@ -181,10 +181,7 @@ class RecursiveMu(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
   }
 }
 
-class RecordMember(str: Option[String],t: TauType) {
-  val name = str
-  val tau = t
-}
+case class RecordMember(name: Option[String],tau: TauType)
 
 class RecordProduct(f: List[RecordMember]) extends RhoType {
   val fields: List[RecordMember] = f
@@ -305,7 +302,7 @@ case class TaggedProduct(name: DataConstructor,record: RecordProduct) {
 class SumType(addends: List[TaggedProduct]) extends RhoType {
   val sumCases: List[TaggedProduct] = addends
 
-  override def tagged: Boolean = true
+  override def tagged: Boolean = !enumeration
 
   override def map(f: (TauType) => TauType): SumType = {
     val result = new SumType(sumCases.map(sumCase => sumCase.map(f)))
@@ -351,11 +348,16 @@ class SumType(addends: List[TaggedProduct]) extends RhoType {
   def enumeration: Boolean = sumCases.forall(gp => gp.record.length == 0)
   
   def tagRepresentation: LLVMIntegerType = {
-    val largestConstructor = sumCases.sortWith((x: TaggedProduct,y: TaggedProduct) => x.constructor > y.constructor).head.constructor
-    val representationSize = math.floor(math.log(largestConstructor) / math.log(2)).toInt + 1
-    assert(representationSize > 0)
-    new LLVMIntegerType(representationSize)
+    if(enumeration) {
+      val largestConstructor = sumCases.sortWith((x: TaggedProduct,y: TaggedProduct) => x.constructor > y.constructor).head.constructor
+      val representationSize = math.floor(math.log(largestConstructor) / math.log(2)).toInt + 1
+      assert(representationSize > 0)
+      new LLVMIntegerType(representationSize)
+    }
+    else
+      new LLVMIntegerType(32)
   }
+
   
   def caseRepresentation(which: TaggedProduct): LLVMType = {
     if(enumeration)
@@ -540,15 +542,6 @@ object BuiltInSums {
     val cases = TaggedProduct(DataConstructor(Some("false"),None),EmptyRecord) :: TaggedProduct(DataConstructor(Some("true"),None),EmptyRecord) :: Nil
     val result = new SumType(cases)
     result.define(new TypeDefinition(result,"boolean",GlobalScope))
-    result
-  }
-  val option: SigmaType = {
-    val some = TaggedProduct(DataConstructor(Some("Some"),None),new RecordProduct(new RecordMember(None,new TauVariable) :: Nil))
-    val none = TaggedProduct(DataConstructor(Some("None"),None),EmptyRecord)
-    val result = (new SumType(some :: none :: Nil)).generalize(new TauSubstitution)
-    result.define(new TypeDefinition(result,"Option",GlobalScope))
-    new DefaultConstructor(GlobalScope,result.body.asInstanceOf[SumType].sumCases.apply(0))
-    new DefaultConstructor(GlobalScope,result.body.asInstanceOf[SumType].sumCases.apply(1))
     result
   }
 }
