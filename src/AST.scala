@@ -127,9 +127,13 @@ object ASTProcessor {
     case null => Nil
   }
   
+  def processLiteral(exp: PLiteralExpression,scope: UninferredLexicalScope): UninferredExpression = exp match {
+    case integer: AIntegerLiteralExpression => new UninferredInteger(integer.getIntegerConstant.getText.toInt)
+  }
+  
   def processExp1(exp: PExp1,scope: UninferredLexicalScope): UninferredExpression = exp match {
     case variable: AIdentifierExp1 => new UninferredVariable(processQualifiedIdentifier(variable.getQualifiedIdentifier),scope)
-    case integer: APrimitiveIntegerExp1 => new UninferredInteger(integer.getIntegerConstant.getText.toInt)
+    case literal: ALiteralExp1 => processLiteral(literal.getLiteralExpression,scope)
     case parens: AParentheticalExp1 => processExpression(parens.getParentheticalExpression.asInstanceOf[AParentheticalExpression].getExpression,scope)
     case call: ACallExp1 => processCallExpression(call.getFunctionCallExpression,scope)
   }
@@ -165,24 +169,47 @@ object ASTProcessor {
       new UninferredExpressionCall(func,arguments)
     }
   }
-  def processIf(ifexpr: PIfExpression,scope: UninferredLexicalScope): UninferredIf = ifexpr match {
-    case one: AOneIfExpression => {
-      val condition = processExpression(one.getCondition,scope)
-      val body = processExpression(one.getBody,scope)
-      new UninferredIf((condition,body) :: Nil)
-    }
-    case many: AManyIfExpression => {
-      val possibilities = convertList(many.getCases).map(clause => clause match {
-        case acase: ACaseIfCaseClause => (processExpression(acase.getCondition,scope),processExpression(acase.getBody,scope))
-        case anelse: AElseIfCaseClause => (UninferredTrue,processExpression(anelse.getElseCaseClause.asInstanceOf[AElseCaseClause].getBody,scope))
-      })
-      new UninferredIf(possibilities)
+  def processIfThen(ifthen: AIfwithoutelseexpExpression,scope: UninferredLexicalScope): UninferredIf = {
+    val condition = processExpression(ifthen.getCondition,scope)
+    val body = processExpression(ifthen.getThenbody,scope)
+    new UninferredIf(condition,body,None)
+  }
+  def processIfElse(ifelse: AIfwithelseexpExpression,scope: UninferredLexicalScope): UninferredIf = {
+    val condition = processExpression(ifelse.getCondition,scope)
+    val body = processExpressionWithElse(ifelse.getThenbody,scope)
+    val otherwise = processExpression(ifelse.getElseClause.asInstanceOf[AElseClause].getElseBody,scope)
+    new UninferredIf(condition,body,Some(otherwise))
+  }
+  def processIfElseWithElse(ifelse: AIfwithelseexpExpression,scope: UninferredLexicalScope): UninferredIf = {
+    val condition = processExpression(ifelse.getCondition,scope)
+    val body = processExpressionWithElse(ifelse.getThenbody,scope)
+    val otherwise = processExpression(ifelse.getElseClause.asInstanceOf[AElseClause].getElseBody,scope)
+    new UninferredIf(condition,body,Some(otherwise))
+  }
+  def processIfElseWithElseWithElse(ifelse: AIfwithelseexpExpressionWithElse,scope: UninferredLexicalScope): UninferredIf = {
+    val condition = processExpression(ifelse.getCondition,scope)
+    val body = processExpressionWithElse(ifelse.getThenbody,scope)
+    val otherwise = processExpressionWithElse(ifelse.getElsebody,scope)
+    new UninferredIf(condition,body,Some(otherwise))
+  }
+  def processExpressionWithElse(expression: PExpressionWithElse,scope: UninferredLexicalScope): UninferredExpression = expression match {
+    case blockexp: ABlockexpExpressionWithElse => processBlock(blockexp.getBlockExpression,scope)
+    case exp5: AOthersExpressionWithElse => processExp5(exp5.getExp5,scope)
+    case ifelse: AIfwithelseexpExpressionWithElse => processIfElseWithElseWithElse(ifelse,scope)
+    case cast: ACastexpExpressionWithElse => {
+      var tscope: Scope[_] = scope
+      while(!tscope.isInstanceOf[Module] && tscope.parent != null)
+        tscope = tscope.parent
+      val tau = processTypeForm(cast.getTypeForm,new TypeBindingScope(tscope.asInstanceOf[Module]))
+      val expr = processExpression(cast.getExpression,scope)
+      new UninferredBitcast(expr,tau)
     }
   }
   def processExpression(expression: PExpression,scope: UninferredLexicalScope): UninferredExpression = expression match {
     case blockexp: ABlockexpExpression => processBlock(blockexp.getBlockExpression,scope)
     case exp5: AOthersExpression => processExp5(exp5.getExp5,scope)
-    case condexp: ACondexpExpression => processIf(condexp.getIfExpression,scope)
+    case ifthen: AIfwithoutelseexpExpression => processIfThen(ifthen,scope)
+    case ifelse: AIfwithelseexpExpression => processIfElse(ifelse,scope)
     case cast: ACastexpExpression => {
       var tscope: Scope[_] = scope
       while(!tscope.isInstanceOf[Module] && tscope.parent != null)
@@ -251,7 +278,13 @@ object ASTProcessor {
       sigma.define(result)
       //Remember to create constructors for variants.
       sigma.body match {
-        case sum: SumType => sum.sumCases.foreach(addend => new DefaultConstructor(scope,addend))
+        case sum: SumType => {
+          for(addend <- sum.sumCases)
+            if(TauOrdering.equiv(addend.record,EmptyRecord))
+              new ModuleVariableDefinition(scope,addend.name.name.get,new SpecializedEnumerationValue(addend))
+            else
+              new DefaultConstructor(scope,addend)
+        }
       }
       result
     }

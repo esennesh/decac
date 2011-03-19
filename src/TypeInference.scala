@@ -7,7 +7,7 @@ abstract class Substitution[A <: TauVariable,B <: TauType] {
   val queue: Queue[Tuple2[A,B]] = new Queue[Tuple2[A,B]]()
 
   def solve(tau: TauType): TauType = tau match {
-    case alpha: TauVariable => queue.foldLeft[TauType](alpha)((result: TauType,sub: Tuple2[TauVariable,TauType]) => if(sub._1.equals(result)) sub._2 else result) match {
+    case alpha: TauVariable => queue.foldLeft[TauType](alpha)((result: TauType,sub: Tuple2[TauVariable,TauType]) => if(TauOrdering.equiv(sub._1,result)) sub._2 else result) match {
       case range: GammaRange => solve(if(range.lowerBound == BottomGamma) range.upperBound else range.lowerBound)
       case tau: TauType => tau
     }
@@ -20,7 +20,7 @@ class TauSubstitution extends Substitution[TauVariable,TauType] {
   def substitute(x: TauVariable,y: TauType): Unit = {
     queue.enqueue((x,y))
     y match {
-      case y: GammaRange => if(y.lowerBound.equals(y.upperBound)) substitute(y,y.lowerBound)
+      case y: GammaRange => if(TauOrdering.equiv(y.lowerBound,y.upperBound)) substitute(y,y.lowerBound)
       case _ => {}
     }
   }
@@ -44,18 +44,24 @@ class BetaSpecialization extends Substitution[BetaVariable,GammaType] {
 }
 
 class ConstraintSet {
-  val stack: Stack[Constraint] = new Stack[Constraint]()
+  val queue = new Queue[Constraint]()
   
   def substitute(x: TauVariable,y: TauType): Unit = {
-    for(constraint <- stack)
+    for(constraint <- queue)
       constraint.substitute(x,y)
   }
   
-  def push(c: Constraint): Unit = stack.push(c)
+  def push(c: Constraint): Unit = queue.enqueue(c)
   
-  def pop: Constraint = stack.pop
+  def pop: Constraint = queue.dequeue
   
-  def isEmpty = stack.isEmpty
+  def fixedPoint: Boolean = queue.forall(c => (c.alpha,c.beta) match {
+    case (gx: GammaRange,gy: GammaRange) => false
+    case (tx: TauVariable,ty: TauVariable) => true
+    case _ => false
+  })
+  
+  def isEmpty = queue.isEmpty
 }
 
 abstract class Assumption(x: TauVariable,y: TauVariable)
@@ -100,6 +106,8 @@ class RangeUnificationInstance(scope: Option[Module]) {
     }
     return result
   }
+  
+  def fixedPoint: Boolean = constraints.isEmpty || constraints.fixedPoint
 }
 
 abstract class Constraint(x: TauType,y: TauType) {
@@ -136,8 +144,11 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
     case (alpha: TauVariable,beta: TauVariable) => if(alpha != beta) {
       if(rui.assumptions.contains(Subtype(beta,alpha)))
         throw new TypeException("Assumption " + beta.toString + " <: " + alpha.toString + " contradicts constraint.")
-      else if(!rui.assumptions.contains(Subtype(alpha,beta)))
-        rui.substitute(alpha,beta)
+      else (rui.assumptions.contains(Subtype(alpha,beta)),rui.fixedPoint) match {
+        case (true,_) => Unit
+        case (false,false) => rui.constrain(this)
+        case (false,true) => rui.substitute(alpha,beta)
+      }
     }
     case (alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta,rui)),rui))
     case (alpha: GammaType,beta: GammaRange) => rui.substitute(beta,beta.refine(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),None,rui))

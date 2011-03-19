@@ -31,7 +31,8 @@ class ExpressionFunction(m: Module,n: String,args: List[Tuple2[String,Uninferred
 
   def infer: GeneralizedExpressionFunction = {
     val rui = new RangeUnificationInstance(Some(scope))
-    rui.constrain(new LesserEq(uninferred.body.expressionType,uninferred.signature.range))
+    if(uninferred.signature.range != UnitGamma)
+      rui.constrain(new LesserEq(uninferred.body.expressionType,uninferred.signature.range))
     uninferred.body.constrain(rui)
     val result = new GeneralizedExpressionFunction(uninferred,rui.solve)
     inferred = Some(result)

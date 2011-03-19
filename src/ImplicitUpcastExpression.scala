@@ -49,6 +49,8 @@ class ImplicitUpcast(expr: SpecializedExpression,gamma: GammaType) extends Speci
       case (ux: UnsignedIntegerGamma,uy: UnsignedIntegerGamma) => new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,child,uy.compile,"cast")
       case (ix: IntegerGamma,iy: IntegerGamma) => new LLVMExtendCast(LLVMExtendCast.ExtendType.SIGN,builder,child,iy.compile,"cast")
       
+      case (_,UnitGamma) => child
+      
       case _ => throw new Exception("Unknown implicit upcast from " + children.apply(0).expressionType.toString + " to " + expressionType.toString)
     }
   }

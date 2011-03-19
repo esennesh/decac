@@ -83,8 +83,13 @@ object TopGamma extends PrimitiveGamma {
 }
 
 object BottomGamma extends PrimitiveGamma {
-  override def compile: LLVMType = throw new TypeException("Top type indicates a type-inference error.")
+  override def compile: LLVMType = throw new TypeException("Bottom type indicates a type-inference error.")
   override def mangle: String = "bottom"
+}
+
+object UnitGamma extends PrimitiveGamma {
+  override def compile: LLVMType = new LLVMVoidType
+  override def mangle: String = "unit"
 }
 
 object OpaqueGamma extends PrimitiveGamma {

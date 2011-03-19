@@ -12,7 +12,6 @@
 	<target name="build_parser">
 		<exec executable="sablecc">
 			<arg value="-d src/"/>
-			<arg value="--no-inline"/>
 			<arg value="deca.scc"/>
 		</exec>
 		<mkdir dir="build/"/>
@@ -38,6 +37,9 @@
 	<target name="clean">
 		<exec dir="src/jllvm" executable="ant">
 			<arg value="clean"/>
+		</exec>
+		<exec dir="src/" executable="fsc">
+			<arg value="-reset"/>
 		</exec>
 		<delete dir="build/"/>
 		<delete dir="src/decasyntax/"/>
