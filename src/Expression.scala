@@ -24,6 +24,7 @@ abstract class Expression(exprType: TauType) {
 abstract class SpecializedExpression(gamma: GammaType) {
   gamma match {
     case rho: RhoType => assert(rho.filter(tau => tau.isInstanceOf[TauVariable]) == Nil)
+    case _ => Unit
   }
   val expressionType: GammaType = gamma
   def children: List[SpecializedExpression]

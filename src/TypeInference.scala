@@ -44,24 +44,18 @@ class BetaSpecialization extends Substitution[BetaVariable,GammaType] {
 }
 
 class ConstraintSet {
-  val queue = new Queue[Constraint]()
+  val stack = new Stack[Constraint]()
   
   def substitute(x: TauVariable,y: TauType): Unit = {
-    for(constraint <- queue)
+    for(constraint <- stack)
       constraint.substitute(x,y)
   }
   
-  def push(c: Constraint): Unit = queue.enqueue(c)
+  def push(c: Constraint): Unit = stack.push(c)
   
-  def pop: Constraint = queue.dequeue
+  def pop: Constraint = stack.pop
   
-  def fixedPoint: Boolean = queue.forall(c => (c.alpha,c.beta) match {
-    case (gx: GammaRange,gy: GammaRange) => false
-    case (tx: TauVariable,ty: TauVariable) => true
-    case _ => false
-  })
-  
-  def isEmpty = queue.isEmpty
+  def isEmpty = stack.isEmpty
 }
 
 abstract class Assumption(x: TauVariable,y: TauVariable)
@@ -97,6 +91,7 @@ class RangeUnificationInstance(scope: Option[Module]) {
   def solve: TauSubstitution = {
     while(constraints.isEmpty != true) {
       val constraint = constraints.pop
+      System.err.println(constraint.toString)
       try 
         constraint.infer(this)
       catch {
@@ -106,8 +101,6 @@ class RangeUnificationInstance(scope: Option[Module]) {
     }
     return result
   }
-  
-  def fixedPoint: Boolean = constraints.isEmpty || constraints.fixedPoint
 }
 
 abstract class Constraint(x: TauType,y: TauType) {
@@ -135,20 +128,23 @@ abstract class Constraint(x: TauType,y: TauType) {
 class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
   override def infer(rui: RangeUnificationInstance): Unit = (alpha,beta) match {
     //Cases for handling ranges and variables.
-    case (alpha: GammaRange,beta: GammaRange) => if(alpha != beta) {
-      rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta.lowerBound,rui)),rui))
-      rui.substitute(beta,beta.refine(Some(SigmaLattice.join(alpha.upperBound,beta.lowerBound,rui)),None,rui))
+    case (alpha: GammaRange,beta: GammaRange) => if(alpha != beta) (alpha.lowerBound,alpha.upperBound,beta.lowerBound,beta.upperBound) match {
+      case (gx: GammaType,TopGamma,BottomGamma,gy: GammaType) => rui.constrain(new LesserEq(gx,gy))
+      case (_,TopGamma,gx: GammaType,_) => rui.substitute(alpha,alpha.refine(None,Some(gx),rui))
+      case (_,gx: GammaType,BottomGamma,_) => rui.substitute(beta,beta.refine(Some(gx),None,rui))
+      case (_,gx: GammaType,gy: GammaType,_) => {
+        rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(gx,gy,rui)),rui))
+        rui.substitute(beta,beta.refine(Some(SigmaLattice.join(gx,gy,rui)),None,rui))
+      }
     }
     case (alpha: GammaRange,beta: TauVariable) => rui.substitute(beta,alpha)
     case (alpha: TauVariable,beta: GammaRange) => rui.substitute(alpha,beta)
     case (alpha: TauVariable,beta: TauVariable) => if(alpha != beta) {
       if(rui.assumptions.contains(Subtype(beta,alpha)))
         throw new TypeException("Assumption " + beta.toString + " <: " + alpha.toString + " contradicts constraint.")
-      else (rui.assumptions.contains(Subtype(alpha,beta)),rui.fixedPoint) match {
-        case (true,_) => Unit
-        case (false,false) => rui.constrain(this)
-        case (false,true) => rui.substitute(alpha,beta)
-      }
+      else
+        if(!rui.assumptions.contains(Subtype(alpha,beta)))
+          rui.substitute(beta,alpha)
     }
     case (alpha: GammaRange,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(SigmaLattice.meet(alpha.upperBound,beta,rui)),rui))
     case (alpha: GammaType,beta: GammaRange) => rui.substitute(beta,beta.refine(Some(SigmaLattice.join(beta.lowerBound,alpha,rui)),None,rui))
