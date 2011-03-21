@@ -8,7 +8,8 @@ import jllvm.LLVMStoreInstruction
 import jllvm.LLVMConstantInteger
 import jllvm.LLVMBitCast
 
-class UninferredBitcast(expr: UninferredExpression,tau: TauType) extends UninferredExpression(tau) {
+class UninferredBitcast(expr: UninferredExpression,tau: TauType) extends UninferredExpression {
+  override val expressionType: TauType = tau
   override def children: List[UninferredExpression] = (expr :: Nil)
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = rui
   override def substitute(substitution: TauSubstitution): Expression = {
@@ -17,7 +18,8 @@ class UninferredBitcast(expr: UninferredExpression,tau: TauType) extends Uninfer
   }
 }
 
-class BitcastExpression(expr: Expression,sigma: TauType) extends Expression(sigma) {
+class BitcastExpression(expr: Expression,sigma: TauType) extends Expression {
+  override val expressionType: TauType = sigma
   override def children: List[Expression] = (expr :: Nil)
   override def specialize(specialization: BetaSpecialization): SpecializedExpression = {
     val child = children.apply(0).specialize(specialization)
@@ -26,7 +28,8 @@ class BitcastExpression(expr: Expression,sigma: TauType) extends Expression(sigm
   }
 }
 
-class SpecializedBitcast(expr: SpecializedExpression,gamma: GammaType) extends SpecializedExpression(gamma) {
+class SpecializedBitcast(expr: SpecializedExpression,gamma: GammaType) extends SpecializedExpression {
+  override val expressionType: GammaType = gamma
   override def children: List[SpecializedExpression] = (expr :: Nil)
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val child = children.apply(0).compile(builder,scope)

@@ -106,24 +106,10 @@ class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecial
   }
 }
 
-class UninferredEnumerationValue(tp: TaggedProduct) extends UninferredExpression(new SumType(tp :: Nil)) {
-  assert(TauOrdering.equiv(tp.record,EmptyRecord))
+class EnumerationValue(tp: TaggedProduct) extends ConstantExpression {
   val value = tp
-  override def children: List[UninferredExpression] = Nil
-  override def substitute(substitution: TauSubstitution): Expression = new EnumerationValue(value)
-  override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = rui
-}
-
-class EnumerationValue(tp: TaggedProduct) extends Expression(new SumType(tp :: Nil)) {
-  assert(TauOrdering.equiv(tp.record,EmptyRecord))
-  val value = tp
-  override def children: List[Expression] = Nil
-  override def specialize(specialization: BetaSpecialization): SpecializedExpression = new SpecializedEnumerationValue(value)
-}
-
-class SpecializedEnumerationValue(tp: TaggedProduct) extends SpecializedExpression(new SumType(tp :: Nil)) {
-  val value = tp
-  override def children: List[SpecializedExpression] = Nil
+  override val expressionType: SumType = new SumType(tp :: Nil)
+  override def children: List[ConstantExpression] = Nil
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMConstantInteger = {
     val representation = expressionType.asInstanceOf[SumType].tagRepresentation
     LLVMConstantInteger.constantInteger(representation,value.constructor,false)

@@ -129,6 +129,7 @@ object ASTProcessor {
   
   def processLiteral(exp: PLiteralExpression,scope: UninferredLexicalScope): UninferredExpression = exp match {
     case integer: AIntegerLiteralExpression => new UninferredInteger(integer.getIntegerConstant.getText.toInt)
+    case bool: ABooleanLiteralExpression => new BooleanLiteralExpression(bool.getBooleanConstant.getText == "true")
   }
   
   def processExp1(exp: PExp1,scope: UninferredLexicalScope): UninferredExpression = exp match {
@@ -281,7 +282,7 @@ object ASTProcessor {
         case sum: SumType => {
           for(addend <- sum.sumCases)
             if(TauOrdering.equiv(addend.record,EmptyRecord))
-              new ModuleVariableDefinition(scope,addend.name.name.get,new SpecializedEnumerationValue(addend))
+              new ModuleVariableDefinition(scope,addend.name.name.get,new EnumerationValue(addend))
             else
               new DefaultConstructor(scope,addend)
         }

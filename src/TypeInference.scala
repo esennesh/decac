@@ -91,7 +91,6 @@ class RangeUnificationInstance(scope: Option[Module]) {
   def solve: TauSubstitution = {
     while(constraints.isEmpty != true) {
       val constraint = constraints.pop
-      System.err.println(constraint.toString)
       try 
         constraint.infer(this)
       catch {

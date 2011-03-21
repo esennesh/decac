@@ -5,10 +5,11 @@ import jllvm.llvm._
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 
-class UninferredIf(c: UninferredExpression,t: UninferredExpression,e: Option[UninferredExpression]) extends UninferredExpression(new TauVariable) {
+class UninferredIf(c: UninferredExpression,t: UninferredExpression,e: Option[UninferredExpression]) extends UninferredExpression {
   val condition = c
   val then = t
   val otherwise = e
+  override val expressionType: TauType = new TauVariable
   override def children = List(condition,then) ++ (otherwise match {
     case Some(exp) => (exp :: Nil)
     case None => Nil
@@ -39,10 +40,11 @@ class UninferredIf(c: UninferredExpression,t: UninferredExpression,e: Option[Uni
   }
 }
 
-class IfExpression(c: Expression,t: Expression,e: Option[Expression],ty: TauType) extends Expression(ty) {
+class IfExpression(c: Expression,t: Expression,e: Option[Expression],ty: TauType) extends Expression {
   val condition = c
   val then = t
   val otherwise = e
+  override val expressionType: TauType = ty
   override def children = List(condition,then) ++ (otherwise match {
     case Some(exp) => (exp :: Nil)
     case None => Nil
@@ -64,10 +66,11 @@ class IfExpression(c: Expression,t: Expression,e: Option[Expression],ty: TauType
   }
 }
 
-class SpecializedIf(c: SpecializedExpression,t: SpecializedExpression,e: Option[SpecializedExpression],typ: GammaType) extends SpecializedExpression(typ) {
+class SpecializedIf(c: SpecializedExpression,t: SpecializedExpression,e: Option[SpecializedExpression],typ: GammaType) extends SpecializedExpression {
   val condition = c
   val then = t
   val otherwise = e
+  override val expressionType: GammaType = typ
   override def children = List(condition,then) ++ (otherwise match {
     case Some(exp) => (exp :: Nil)
     case None => Nil

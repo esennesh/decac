@@ -5,7 +5,8 @@ import scala.Math
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 
-abstract class UninferredArithmetic extends UninferredExpression(new TauVariable) {
+abstract class UninferredArithmetic extends UninferredExpression {
+  override val expressionType: TauType = new TauVariable
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     rui.constrain(new LesserEq(expressionType,FP128Gamma))
     for(child <- children) {
@@ -82,7 +83,7 @@ class UninferredInteger(i: Int) extends UninferredArithmetic {
   }
 }
 
-abstract class ArithmeticExpression(exprType: NumericalGamma) extends Expression(exprType) {
+abstract class ArithmeticExpression(exprType: NumericalGamma) extends Expression {
   override val expressionType: NumericalGamma = exprType
   override def specialize(specialization: BetaSpecialization): SpecializedArithmetic
 }
@@ -112,7 +113,9 @@ class IntegerConstant(i: Int,exprType: IntegerGamma) extends ArithmeticExpressio
   }
 }
 
-abstract class SpecializedArithmetic(gamma: NumericalGamma) extends SpecializedExpression(gamma)
+abstract class SpecializedArithmetic(gamma: NumericalGamma) extends SpecializedExpression {
+  override val expressionType: NumericalGamma = gamma
+}
 
 class SpecializedOperator(x: SpecializedExpression,y: SpecializedExpression,op: ArithmeticOperator,exprType: NumericalGamma) extends SpecializedArithmetic(exprType) {
   val operator = op

@@ -6,7 +6,8 @@ import jllvm.LLVMFunction
 import jllvm.LLVMInstructionBuilder
 import jllvm.LLVMLoadInstruction
 
-class UninferredVariable(n: List[String],scope: Scope[VariableBinding]) extends UninferredExpression(scope.typedLookup(n).variableType) {
+class UninferredVariable(n: List[String],scope: Scope[VariableBinding]) extends UninferredExpression {
+  override val expressionType: TauType = scope.typedLookup(n).variableType
   override def children: List[UninferredExpression] = Nil
   val name = n
   override def substitute(substitution: TauSubstitution): Expression = {
@@ -15,7 +16,8 @@ class UninferredVariable(n: List[String],scope: Scope[VariableBinding]) extends 
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = rui
 }
 
-class VariableExpression(n: List[String],t: TauType) extends Expression(t) {
+class VariableExpression(n: List[String],t: TauType) extends Expression {
+  override val expressionType: TauType = t
   override def children: List[Expression] = Nil
   val name = n
   override def specialize(specialization: BetaSpecialization): SpecializedExpression = {
@@ -23,8 +25,9 @@ class VariableExpression(n: List[String],t: TauType) extends Expression(t) {
   }
 }
 
-class SpecializedVariable(n: List[String],g: GammaType) extends SpecializedExpression(g) {
+class SpecializedVariable(n: List[String],g: GammaType) extends SpecializedExpression {
   val name = n
+  override val expressionType: GammaType = g
   protected var scope: Option[Scope[SpecializedVariableBinding]] = None
   override def children: List[SpecializedExpression] = Nil
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {

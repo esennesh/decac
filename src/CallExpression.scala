@@ -4,9 +4,10 @@ import scala.collection.mutable.HashMap
 import jllvm._
 import jllvm.llvm.LLVMIntPredicate
 
-abstract class UninferredCall(arrow: ArrowType,arguments: List[UninferredExpression]) extends UninferredExpression(arrow.range) {
+abstract class UninferredCall(arrow: ArrowType,arguments: List[UninferredExpression]) extends UninferredExpression {
   assert(arrow.domain.length == arguments.length)
   val signature = arrow
+  override val expressionType: TauType = signature.range
   override def children: List[UninferredExpression] = arguments
   override def substitute(substitution: TauSubstitution): CallExpression
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
@@ -46,11 +47,11 @@ class UninferredExpressionCall(func: UninferredExpression,arguments: List[Uninfe
   }
 }
 
-abstract class CallExpression(arrow: FunctionArrow,args: List[Expression]) extends Expression(arrow.range) {
+abstract class CallExpression(arrow: FunctionArrow,args: List[Expression]) extends Expression {
   assert(arrow.filter(tau => if(tau.isInstanceOf[TauVariable]) !tau.isInstanceOf[BetaVariable] else false) == Nil)
   val signature = arrow
   val arguments = args
-  
+  override val expressionType: TauType = signature.range
   override def children: List[Expression] = arguments
   override def specialize(specialization: BetaSpecialization): SpecializedCall
 }
@@ -87,10 +88,11 @@ class ExpressionCall(func: Expression,args: List[Expression]) extends CallExpres
   }
 }
 
-abstract class SpecializedCall(arrow: FunctionArrow,args: List[SpecializedExpression]) extends SpecializedExpression(arrow.range.asInstanceOf[GammaType]) {
+abstract class SpecializedCall(arrow: FunctionArrow,args: List[SpecializedExpression]) extends SpecializedExpression {
   assert(arrow.filter(tau => tau.isInstanceOf[TauVariable]) == Nil)
   val signature = arrow
   val arguments = args
+  override val expressionType: GammaType = signature.range.asInstanceOf[GammaType]
   override def children: List[SpecializedExpression] = args
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue
 }
