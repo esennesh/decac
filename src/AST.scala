@@ -67,12 +67,28 @@ object ASTProcessor {
       val name = processQualifiedIdentifier(named.getTypename)
       scope.lookup(name) match {
         //TODO: Add support for using type arguments
-        case defin: TypeDefinition => defin.sigma.freshlyInstantiate
+        case defin: TypeDefinition => {
+          if(named.getTypeParameterization != null) {
+            val args = processTypeForms(named.getTypeParameterization.asInstanceOf[ATypeParameterization].getArguments,scope)
+            defin.sigma.instantiate(args)
+          }
+          else
+            defin.sigma.freshlyInstantiate
+        }
         case binding: TypeBinding => binding.tau
         case _ => throw new Exception("Used an identifier in a type annotation that referred to a non-type definition.")
       }
     }
     case tuple: ATupleLowerTypeForm => processTupleForm(tuple.getTupleForm.asInstanceOf[ATupleForm],scope)
+    case array: AArrayLowerTypeForm => {
+      val element = processLowerTypeForm(array.getLowerTypeForm,scope)
+      if(array.getIntegerConstant != null) {
+        val length = array.getIntegerConstant.getText.toInt
+        new RecordProduct((new Range(1,length,1)).map(_ => new RecordMember(None,element)).toList)
+      }
+      else
+        new DynamicArrayType(element)
+    }
   }
   def processTypeForms(forms: PTypeFormList,scope: TypeBindingScope): List[TauType] = forms match {
     case one: AOneTypeFormList => processTypeForm(one.getTypeForm,scope) :: Nil
@@ -137,6 +153,7 @@ object ASTProcessor {
     case literal: ALiteralExp1 => processLiteral(literal.getLiteralExpression,scope)
     case parens: AParentheticalExp1 => processExpression(parens.getParentheticalExpression.asInstanceOf[AParentheticalExpression].getExpression,scope)
     case call: ACallExp1 => processCallExpression(call.getFunctionCallExpression,scope)
+    case tuple: ATupleExp1 => new UninferredTuple(processExpressionList(tuple.getExpressionList,scope))
   }
   def processExp2(exp: PExp2,scope: UninferredLexicalScope): UninferredExpression = exp match {
     case minus: AMinusExp2 => new UninferredOperator(new UninferredInteger(0),processExp2(minus.getExp2,scope),Subtract)
@@ -282,10 +299,11 @@ object ASTProcessor {
         case sum: SumType => {
           for(addend <- sum.sumCases)
             if(TauOrdering.equiv(addend.record,EmptyRecord))
-              new ModuleVariableDefinition(scope,addend.name.name.get,new EnumerationValue(addend))
+              new ModuleVariableDefinition(scope,addend.name.name.get,new EnumerationValue(addend),false)
             else
               new DefaultConstructor(scope,addend)
         }
+        case _ => Unit
       }
       result
     }

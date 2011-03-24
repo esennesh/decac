@@ -150,13 +150,14 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
     case (alpha: GammaType,beta: TauVariable) => rui.substitute(beta,beta.refine(Some(alpha),None,rui))
     case (alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(beta),rui))
     //Cases for type constructors.
+    case (alpha: DynamicArrayType,beta: DynamicArrayType) => rui.constrain(new Equal(alpha.element,beta.element))
     case (alpha: ScopedPointer,beta: ScopedPointer) => {
       rui.constrain(new Equal(alpha.target,beta.target))
       if(!ScopeTypeOrdering.lt(alpha.scope,beta.scope))
         throw new TypeException("Reference type " + alpha.toString + " has smaller scope than " + beta.toString)
     }
     case (alpha: PointerType,beta: PointerType) => {
-      if(alpha.target.tagged || beta.target.tagged)
+      if(alpha.target.tagged && beta.target.tagged)
         rui.constrain(new LesserEq(alpha.target,beta.target))
       else
         rui.constrain(new Equal(alpha.target,beta.target))
@@ -177,6 +178,11 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
     case (alpha: FunctionArrow,beta: FunctionArrow) => {
       beta.domain.zip(alpha.domain).map(pair => rui.constrain(new LesserEq(pair._1,pair._2)))
       rui.constrain(new LesserEq(alpha.range,beta.range))
+    }
+    case (alpha: RecordProduct,beta: RecordProduct) => {
+      if(alpha.length != beta.length)
+        throw new TypeException("Type inference error: " + alpha.toString + " </: " + beta.toString)
+      alpha.fields.zip(beta.fields).foreach(pair => rui.constrain(new Equal(pair._1.tau,pair._2.tau)))
     }
     case (alpha: TauType,TopGamma) => true
     case (BottomGamma,beta: TauType) => true

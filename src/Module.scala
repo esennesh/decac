@@ -39,10 +39,8 @@ class Module(m: Module,n: String) extends Scope[Definition](m) with Definition {
           function.specialized.foreach(func => func.compile(builder))
         }
         case defin: TypeDefinition => defin.getSpecializations.foreach(gamma => compiledModule.addTypeName(name,gamma.compile))
-        case global: ModuleVariableDefinition => {
-          val compiledGlobal = compiledModule.addGlobal(global.variableType.compile,global.name)
+        case global: ModuleVariableDefinition => global.build 
           //TODO: Add code for constant expressions, and use it to set the initializer on global variables.
-        }
         //TODO: add case for modules, and change Module so that it can distinguish between imported modules and inner modules.
       }
       compiled = true

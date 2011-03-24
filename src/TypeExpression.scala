@@ -217,7 +217,7 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
     new LLVMStructType(compiledFields.toArray,true)
   }
   
-  override def mangle: String = "{" + fields.map(field => field.name + ":" + field.tau.toString).foldRight("")((head: String,tail: String) => "_" + head + tail) + "}"
+  override def mangle: String = "{" + fields.map(field => field.name + ":" + field.tau.toString).foldRight("")((head: String,tail: String) => head + (if(tail != "") "," + tail else tail)) + "}"
   
   def ++(rec: RecordProduct): RecordProduct = new RecordProduct(fields ++ rec.fields)
   

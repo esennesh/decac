@@ -24,7 +24,7 @@ class ImplicitUpcast(expr: SpecializedExpression,gamma: GammaType) extends Speci
       //TODO: Fill in the rest of these cases.
       case (sumx: SumType,sumy: SumType) => (sumx.enumeration,sumy.enumeration) match {
         case (true,true) => new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,child,sumy.compile,"cast")
-        case (true,false) => new LLVMInsertValueInstruction(builder,new LLVMUndefinedValue(sumy.compile),child,0,"variant")
+        case (true,false) => new LLVMInsertValueInstruction(builder,new LLVMUndefinedValue(sumy.compile),new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,child,sumy.tagRepresentation,"cast"),0,"variant")
         case (false,false) => {
           //Insert the tag into the resulting variant.
           val tag = new LLVMExtractValueInstruction(builder,child,0,"extract")

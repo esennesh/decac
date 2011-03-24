@@ -1,6 +1,7 @@
 package decac
 
 import jllvm.LLVMValue
+import jllvm.LLVMConstant
 import jllvm.LLVMBasicBlock
 import jllvm.LLVMFunction
 import jllvm.LLVMInstructionBuilder
@@ -37,4 +38,6 @@ trait ConstantExpression extends SpecializedExpression with UninferredExpression
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = rui
   override def substitute(substitution: TauSubstitution): ConstantExpression = this
   override def specialize(specialization: BetaSpecialization): ConstantExpression = this
+  override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMConstant = build
+  def build: LLVMConstant
 }

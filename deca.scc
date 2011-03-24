@@ -218,7 +218,6 @@ Productions
     {ifwithoutelseexp} if lparen [condition]:expression rparen [thenbody]:expression |
     {ifwithelseexp} if lparen [condition]:expression rparen [thenbody]:expression_with_else else_clause |
     {blockexp} block_expression |
-    {regionexp} region lsbracket integer_constant rsbracket |
     {returnexp} return expression |
     {others} exp5;
     
@@ -234,7 +233,6 @@ Productions
     {throwexp} throw expression_with_else |
     {ifwithelseexp} if lparen [condition]:expression rparen [thenbody]:expression_with_else else [elsebody]:expression_with_else |
     {blockexp} block_expression |
-    {regionexp} region lsbracket integer_constant rsbracket |
     {returnexp} return expression_with_else |
     {others} exp5;
     

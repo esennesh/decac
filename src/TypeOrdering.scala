@@ -44,6 +44,7 @@ object TauOrdering extends PartialOrdering[TauType] {
   }
   override def gt(x: TauType,y: TauType): Boolean = lt(y,x)
   override def equiv(x: TauType,y: TauType): Boolean = (x,y) match {
+    case (dx: DynamicArrayType,dy: DynamicArrayType) => equiv(dx.element,dy.element)
     case (sx: SumType,sy: SumType) => sx.sumCases.forall(gpx => sy.sumCases.exists(gpy => TaggedProductEquivalence.equiv(gpx,gpy))) && sy.sumCases.forall(gpy => sx.sumCases.exists(gpx => TaggedProductEquivalence.equiv(gpy,gpx)))
     case (fx: FunctionArrow,fy: FunctionArrow) => fx.domain.zip(fy.domain).forall(pair => equiv(pair._1,pair._2)) && equiv(fx.range,fy.range)
     case (recx: RecordProduct,recy: RecordProduct) => (recx.length == recy.length) && recx.fields.zip(recy.fields).forall(pair => equiv(pair._1.tau,pair._2.tau))
