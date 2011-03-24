@@ -150,7 +150,6 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
     case (alpha: GammaType,beta: TauVariable) => rui.substitute(beta,beta.refine(Some(alpha),None,rui))
     case (alpha: TauVariable,beta: GammaType) => rui.substitute(alpha,alpha.refine(None,Some(beta),rui))
     //Cases for type constructors.
-    case (alpha: DynamicArrayType,beta: DynamicArrayType) => rui.constrain(new Equal(alpha.element,beta.element))
     case (alpha: ScopedPointer,beta: ScopedPointer) => {
       rui.constrain(new Equal(alpha.target,beta.target))
       if(!ScopeTypeOrdering.lt(alpha.scope,beta.scope))
@@ -179,15 +178,18 @@ class LesserEq(x: TauType,y: TauType) extends Constraint(x,y) {
       beta.domain.zip(alpha.domain).map(pair => rui.constrain(new LesserEq(pair._1,pair._2)))
       rui.constrain(new LesserEq(alpha.range,beta.range))
     }
-    case (alpha: RecordProduct,beta: RecordProduct) => {
-      if(alpha.length != beta.length)
-        throw new TypeException("Type inference error: " + alpha.toString + " </: " + beta.toString)
-      alpha.fields.zip(beta.fields).foreach(pair => rui.constrain(new Equal(pair._1.tau,pair._2.tau)))
-    }
     case (alpha: TauType,TopGamma) => true
     case (BottomGamma,beta: TauType) => true
     case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(!TauOrdering.lteq(alpha,beta)) throw new TypeException("Type inference error: Incorrect <: constraint on base types.")
-    case _ => throw new TypeException("Type inference error: " + alpha.toString + " </: " + beta.toString)
+    case _ => {
+      try {
+        (new Equal(alpha,beta)).infer(rui)
+      }
+      catch  {
+        case te: TypeException => throw new TypeException("Type inference error: " + alpha.toString + " </: " + beta.toString)
+        case e: Exception => throw e
+      }
+    }
   }
   
   override def toString: String = alpha.toString + " <: " + beta.toString
@@ -230,6 +232,12 @@ class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
       case _ => rui.substitute(alpha,beta)
     }
     case (alpha: PrimitiveGamma,beta: PrimitiveGamma) => if(alpha != beta) throw new TypeException("Type inference error: Two primitive types set equal to each other that are not equal.")
+    case (alpha: ArrayType,beta: ArrayType) => {
+      if(alpha.length == beta.length)
+        rui.constrain(new Equal(alpha.element,beta.element))
+      else
+        throw new TypeException("Type inference error: Array types set as equal have different lengths.")
+    }
     case (alpha: RecordProduct,beta: RecordProduct) => {
       if(alpha.length == beta.length) {
         val fields = alpha.fields.zip(beta.fields)
@@ -238,7 +246,7 @@ class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
         fields.foreach(pair => rui.constrain(new Equal(pair._1.tau,pair._2.tau)))
       }
       else
-        throw new TypeException("Type inference error: Product types set as equal have different numbers of fields.")
+        throw new TypeException("Type inference error: Record types set as equal have different numbers of fields.")
     }
     case (alpha: FunctionArrow,beta: FunctionArrow) => {
       alpha.domain.zip(beta.domain).map(pair => rui.constrain(new Equal(pair._1,pair._2)))
