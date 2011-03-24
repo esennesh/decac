@@ -100,11 +100,11 @@ abstract class SpecializedCall(arrow: FunctionArrow,args: List[SpecializedExpres
 class SpecializedDefinitionCall(func: SpecializedFunction,args: List[SpecializedExpression]) extends SpecializedCall(func.signature,args) {
   val function = func
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMCallInstruction = {
-    val args = arguments.map(arg => arg.compile(builder,scope)).toArray
+    val args = arguments.zip(signature.domain).map(pair => (new ImplicitUpcast(pair._1,pair._2.asInstanceOf[GammaType])).compile(builder,scope))
     val block = builder.getInsertBlock
     val func = function.compile(builder)
     builder.positionBuilderAtEnd(block)
-    val call = new LLVMCallInstruction(builder,func,args,"call")
+    val call = new LLVMCallInstruction(builder,func,args.toArray,"call")
     //Use the LLVM compiling infrastructure to check for tail-calls.  Free tail-call optimization!
     call.setTailCall(block.getParent.getInstance == func.getInstance)
     call
@@ -117,7 +117,7 @@ class SpecializedExpressionCall(func: SpecializedExpression,args: List[Specializ
   
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val func = function.compile(builder,scope)
-    val args = arguments.map(arg => arg.compile(builder,scope))
+    val args = arguments.zip(signature.domain).map(pair => (new ImplicitUpcast(pair._1,pair._2.asInstanceOf[GammaType])).compile(builder,scope))
     val closureType = function.expressionType.asInstanceOf[ClosureArrow].representation.get
     closureType.sumCases match {
       case plain :: environment :: Nil => {

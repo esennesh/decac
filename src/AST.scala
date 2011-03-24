@@ -82,12 +82,8 @@ object ASTProcessor {
     case tuple: ATupleLowerTypeForm => processTupleForm(tuple.getTupleForm.asInstanceOf[ATupleForm],scope)
     case array: AArrayLowerTypeForm => {
       val element = processLowerTypeForm(array.getLowerTypeForm,scope)
-      if(array.getIntegerConstant != null) {
-        val length = array.getIntegerConstant.getText.toInt
-        new RecordProduct((new Range(1,length,1)).map(_ => new RecordMember(None,element)).toList)
-      }
-      else
-        new DynamicArrayType(element)
+      val length = if(array.getIntegerConstant != null) Some(array.getIntegerConstant.getText.toInt) else None
+      new ArrayType(element,length)
     }
   }
   def processTypeForms(forms: PTypeFormList,scope: TypeBindingScope): List[TauType] = forms match {

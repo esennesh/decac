@@ -94,7 +94,7 @@ class RangeUnificationInstance(scope: Option[Module]) {
       try 
         constraint.infer(this)
       catch {
-        case te: TypeException => throw new TypeException(constraint.toString + "; " + te.error)
+        case te: TypeException => throw new TypeException("Unsatisfiable type constraint: " + constraint.toString + "; " + te.error)
         case e: Exception => throw e
       }
     }
