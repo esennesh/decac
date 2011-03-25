@@ -2,32 +2,35 @@ module highorder
 
 import list
 
-method map(s: @Sequence or null,f): @Sequence or null
+method map(s: @Sequence,f): @Sequence
 
-override map(s: @list.List or null,f) {
-	match s case(l: list.List) list.cons(f(list.car(l)),map(list.cdr(l),f)) else null
+override map(s: @list.List,f) {
+  match *s {
+    case Cons(head,tail) => list.cons(f(head),map(tail,f))
+    case Nil => Nil
+  }
 }
 
-method filter(s: @Sequence or null,p?): @Sequence or null
+method filter(s: @Sequence<a>,p?: a -> boolean): @Sequence
 
-override filter(s: @list.List or null,p?) {
-	match s case (l: list.List)
-		if {
-			case(p?(l.element) = true) list.cons(list.car(l),filter(list.cdr(l),p?))
-			else filter(list.cdr(l),p?)
-		}
-	else
-		null
+override filter(s: @list.List<a>,p?: a -> boolean) {
+  match *s {
+    case Cons(head,tail) => if(p?(head)) list.cons(head,filter(tail,p?)) else filter(tail,p?)
+    case Nil => Nil
+  }
 }
 
-method fold<T>(s: @Sequence or null,f,base: T): T
+method fold(s: @Sequence<a>,f: (a,b) -> b,base: b): b
 
-override fold(s: @list.List or null,f,base) {
-	match s case(l: list.List) f(list.car(l),fold(list.cdr(l),f,base)) else base
+override fold(s: @list.List<a>,f: (a,b) -> b,base: b): b {
+  match *s {
+    case Cons(head,tail) => f(head,fold(tail,f,base))
+    case Nil => base
+  }
 }
 
 function copy_list(s) {
-	fold(s,function(x,y) { list.cons(x,y) },null)
+  fold(s,list.cons,Nil)
 }
 
 end
