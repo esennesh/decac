@@ -1,0 +1,22 @@
+module list
+
+import malloc
+
+type List<T> = class(e,n) extends Sequence<T> {
+	element: T:= e;
+	next: List<T>:= n;
+}
+
+function cons(element,next) {
+	new List(malloc.malloc(typesize(List)),element,next)
+}
+
+override car(lst: @List or null) {
+	match lst case(lst: List) lst.element else throw NullPointerException
+}
+
+override cdr(lst: @List or null) {
+	match lst case(lst: List) lst.next else throw null
+}
+
+end

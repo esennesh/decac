@@ -1,0 +1,46 @@
+module something
+
+type Option<a> = variant { Some(a) None }
+type TwoTuple<a,b> = [a,b]
+type Either<a,b> = variant { Left(a) Right(b) }
+type Array<a> = a[3]
+
+function troll(x,y: nat,z) {
+  x * (y - z) / 3
+}
+
+function harpdarp(a,b): TwoTuple<nat,nat> {
+  [a,b]
+}
+
+function son(n,x) {
+  if(x)
+    n + 1
+  else
+    son(n-1,x)
+}
+
+function megusta(x) {
+  harpdarp(3,4);
+  Some(x);
+}
+
+function rage(): quadruple {
+  3
+}
+
+function melvin(x,y: boolean) {
+  if(x)
+    megusta(y)
+  else
+    None
+}
+
+function fffffffuuuuuuuuuuuu(x,y) {
+  if(x)
+    Left(x)
+  else
+    Right(y - 1)
+}
+
+end

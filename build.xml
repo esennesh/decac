@@ -1,0 +1,47 @@
+<project name="decac">
+	<property environment="env"/>
+	<property name="scala.lib.dir" location="${env.SCALA_HOME}/lib"/>
+	<path id="scala.classpath">
+		<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
+		<pathelement location="${scala.lib.dir}/scala-library.jar"/>
+		<pathelement location="build/"/>
+	</path>
+	<taskdef resource="scala/tools/ant/antlib.xml">
+		<classpath refid="scala.classpath"/>
+	</taskdef>
+	<target name="build_parser">
+		<exec executable="sablecc">
+			<arg value="-d src/"/>
+			<arg value="deca.scc"/>
+		</exec>
+		<mkdir dir="build/"/>
+		<javac srcdir="src/decasyntax" destdir="build" includeantruntime="false"/>
+		<copy file="src/decasyntax/lexer/lexer.dat" todir="build/decasyntax/lexer"/>
+		<copy file="src/decasyntax/parser/parser.dat" todir="build/decasyntax/parser"/>
+	</target>
+	<target name="build_llvm_bindings">
+		<echo message="Compiling C components of jllvm."/>
+		<exec dir="src/jllvm/llvm/" executable="make"/>
+		<echo message="Compiled C components of jllvm."/>
+		<mkdir dir="build/"/>
+		<javac srcdir="src/jllvm" destdir="build" includeantruntime="false"/>
+	</target>
+	<target name="build">
+		<mkdir dir="build/"/>
+		<fsc sourcepath="" srcdir="src/" destdir="build" classpathref="scala.classpath" deprecation="yes">
+			<include name="**/*.scala"/>
+			<exclude name="**/jllvm"/>
+			<exclude name="**/decasyntax"/>
+		</fsc>
+	</target>
+	<target name="clean">
+		<exec dir="src/jllvm" executable="ant">
+			<arg value="clean"/>
+		</exec>
+		<exec dir="src/" executable="fsc">
+			<arg value="-reset"/>
+		</exec>
+		<delete dir="build/"/>
+		<delete dir="src/decasyntax/"/>
+	</target>
+</project>
