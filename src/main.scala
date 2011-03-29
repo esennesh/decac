@@ -26,7 +26,10 @@ object Decac {
   def compile(file: String): Module = {
     val module: PModuleDefinition = check_syntax(file).getPModuleDefinition()
     ASTProcessor.processDefinition(new AModuledefDefinition(module),GlobalScope) match {
-      case mod: Module => mod
+      case mod: Module => {
+        mod.setPath(file.split('/').init.mkString + "/")
+        mod
+      }
       case _ => throw new Exception("Processing a module definition must yield a Module.")
     }
   }
@@ -40,7 +43,7 @@ object Decac {
     val modules = args.map(arg => compile(arg))
     for(module <- modules) {
       val compiledModule = module.compile
-      (new LLVMBitWriter(compiledModule)).writeBitcodeToFile(module.name + ".bc")
+      (new LLVMBitWriter(compiledModule)).writeBitcodeToFile(module.path + module.name + ".bc")
     }
   }
 }

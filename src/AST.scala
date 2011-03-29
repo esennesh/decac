@@ -125,15 +125,15 @@ object ASTProcessor {
     case lower: AOthersTypeForm => processLowerTypeForm(lower.getLowerTypeForm,scope)
   }
   
-  def processArgument(arg: AArgument,scope: Module): Tuple2[String,TauType] = {
+  def processArgument(arg: AArgument,scope: TypeBindingScope): Tuple2[String,TauType] = {
     val name = arg.getName.getText
     val argType = arg.getType match {
       case null => new TauVariable
-      case annotation: ATypeAnnotation => processTypeForm(annotation.getType,new TypeBindingScope(scope))
+      case annotation: ATypeAnnotation => processTypeForm(annotation.getType,scope)
     }
     (name,argType)
   }
-  def processArguments(args: PArgumentList,scope: Module): List[Tuple2[String,TauType]] = args match {
+  def processArguments(args: PArgumentList,scope: TypeBindingScope): List[Tuple2[String,TauType]] = args match {
     case one: AOneArgumentList => processArgument(one.getArgument match {case real: AArgument => real},scope) :: Nil
     case many: AManyArgumentList => processArguments(many.getArgumentList,scope) ++ (processArgument(many.getArgument match {case real: AArgument => real},scope) :: Nil)
     case null => Nil
@@ -260,9 +260,15 @@ object ASTProcessor {
       afuncdef.getFunctionDefinition() match {
         case normal: AFunctionFunctionDefinition => {
           val name = normal.getName.getText
-          val arguments = processArguments(normal.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},scope).map(arg => (arg._1,UninferredArgument(arg._2)))
-          val resultType = if(normal.getType != null) Some(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,new TypeBindingScope(scope))) else None
-          val function = new ExpressionFunction(scope,name,arguments,resultType,lexical => processBlock(normal.getBody,lexical))
+          val tscope = new TypeBindingScope(scope)
+          if(normal.getTypeFormArguments != null) {
+            val params = processTypeParameters(normal.getTypeFormArguments.asInstanceOf[ATypeFormArguments].getArguments)
+            for((argName,tau) <- params)
+              new TypeBinding(tau,argName,tscope)
+          }
+          val arguments = processArguments(normal.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},tscope).map(arg => (arg._1,UninferredArgument(arg._2)))
+          val resultType = if(normal.getType != null) Some(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) else None
+          val function = new ExpressionFunction(tscope,name,arguments,resultType,lexical => processBlock(normal.getBody,lexical))
           function.infer
           function
         }

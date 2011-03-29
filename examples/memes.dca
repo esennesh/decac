@@ -1,4 +1,4 @@
-module something
+module memes
 
 type Option<a> = variant { Some(a) None }
 type TwoTuple<a,b> = [a,b]
@@ -9,7 +9,7 @@ function troll(x,y: nat,z) {
   x * (y - z) / 3
 }
 
-function harpdarp(a,b): TwoTuple<nat,nat> {
+function harpdarp(a: byte,b: byte): TwoTuple<nat,nat> {
   [a,b]
 }
 
@@ -41,6 +41,10 @@ function fffffffuuuuuuuuuuuu(x,y) {
     Left(x)
   else
     Right(y - 1)
+}
+
+function ok<a>(x: a) {
+  x
 }
 
 end
