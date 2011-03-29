@@ -15,6 +15,11 @@ class Module(m: Module,n: String) extends Scope[Definition](m) with Definition {
   val compiledModule: LLVMModule = new LLVMModule(name)
   var compiled = false
   override def scope: Module = parent
+  protected var fPath: Option[String] = None
+  def path: String = fPath.get
+  def setPath(str: String) = {
+    fPath = Some(str)
+  }
   
   override def lookup(name: String): Definition = symbols.get(name) match {
     case Some(result) => result

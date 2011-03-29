@@ -203,7 +203,7 @@ Productions
   function_definition = 
     {method} method [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [body]:block_expression? |
     {override} override [name]:qualified_identifier function_arguments [body]:block_expression |
-    {function} function [name]:unqualified_identifier function_arguments [type]:type_annotation? [body]:block_expression;
+    {function} function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation? [body]:block_expression;
     
   expression =
     {assignmentexp} qualified_identifier assignment_operator expression |
@@ -254,6 +254,7 @@ Productions
     {lambda} lambda_arguments evaluation_arrow block_expression |
     {call} function_call_expression |
     {parenthetical} parenthetical_expression |
+    {dereference} asterisk exp1 |
     {identifier} qualified_identifier;
   
   exp2 = 

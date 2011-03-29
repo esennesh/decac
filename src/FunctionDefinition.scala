@@ -22,9 +22,9 @@ trait SpecializedFunction {
   def compile(builder: LLVMInstructionBuilder): LLVMFunction
 }
 
-class ExpressionFunction(m: Module,n: String,args: List[Tuple2[String,UninferredArgument]],r: Option[TauType],b: (UninferredLexicalScope) => UninferredBlock) extends FunctionDefinition {
+class ExpressionFunction(s: TypeBindingScope,n: String,args: List[Tuple2[String,UninferredArgument]],r: Option[TauType],b: (UninferredLexicalScope) => UninferredBlock) extends FunctionDefinition {
   override val name: String = n
-  override val scope: Module = { m.define(this) ; m }
+  override val scope: Module = { s.parent.define(this) ; s.parent }
   protected var inferred: Option[GeneralizedExpressionFunction] = None
   val uninferred = new UninferredExpressionFunction(new UninferredLexicalScope(scope,args),r match { case Some(tau) => tau case None => new TauVariable })
   uninferred.generateBody(b)
