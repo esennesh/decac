@@ -49,6 +49,11 @@ abstract class GammaType extends TauType with SigmaType {
   
   override def body: GammaType = this
   
+  def sizeOf: Int = {
+    val target = new LLVMTargetData("i686-pc-linux-gnu")
+    target.storeSizeOfType(compile).toInt
+  }
+  
   override def toString: String = definition match {
     case Some(defined) => defined.name
     case None => mangle
@@ -220,11 +225,6 @@ class RecordProduct(f: List[RecordMember]) extends RhoType {
   override def mangle: String = "{" + fields.map(field => field.name + ":" + field.tau.toString).foldRight("")((head: String,tail: String) => head + (if(tail != "") "," + tail else tail)) + "}"
   
   def ++(rec: RecordProduct): RecordProduct = new RecordProduct(fields ++ rec.fields)
-  
-  def sizeOf: Int = {
-    val target = new LLVMTargetData("i686-pc-linux-gnu")
-    target.storeSizeOfType(compile).toInt
-  }
 }
 
 object EmptyRecord extends RecordProduct(Nil)
