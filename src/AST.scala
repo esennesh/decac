@@ -150,6 +150,10 @@ object ASTProcessor {
     case parens: AParentheticalExp1 => processExpression(parens.getParentheticalExpression.asInstanceOf[AParentheticalExpression].getExpression,scope)
     case call: ACallExp1 => processCallExpression(call.getFunctionCallExpression,scope)
     case tuple: ATupleExp1 => new UninferredTuple(processExpressionList(tuple.getExpressionList,scope))
+    case field: AFieldExp1 => new UninferredMember(processExp1(field.getExp1,scope),field.getMemberSelector match {
+      case name: ANameMemberSelector => NameSelector(name.getUnqualifiedIdentifier.getText)
+      case index: AIndexMemberSelector => IndexSelector(index.getIntegerConstant.getText.toInt)
+    })
   }
   def processExp2(exp: PExp2,scope: UninferredLexicalScope): UninferredExpression = exp match {
     case minus: AMinusExp2 => new UninferredOperator(new UninferredInteger(0),processExp2(minus.getExp2,scope),Subtract)

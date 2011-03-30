@@ -186,7 +186,7 @@ class RecursiveMu(rho: RhoType,alpha: RecursiveVariable) extends RhoType {
   }
 }
 
-case class RecordMember(name: Option[String],tau: TauType)
+case class RecordMember(name: Option[String],tau: TauType,isPublic: Boolean = true)
 
 class RecordProduct(f: List[RecordMember]) extends RhoType {
   val fields: List[RecordMember] = f

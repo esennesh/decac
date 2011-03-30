@@ -33,7 +33,7 @@ class TupleExpression(exprs: List[Expression],record: RecordProduct) extends Exp
     case None => {
       val result = new SpecializedTuple(children.map(child => child.specialize(specialization)),specialization.solve(expressionType).asInstanceOf[RecordProduct])
       specializations.put(specialization,result)
-      return result
+      result
     }
   }
 }

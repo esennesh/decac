@@ -14,6 +14,30 @@ trait UninferredExpression {
   }
   def substitute(substitution: TauSubstitution): Expression
   def constrain(rui: RangeUnificationInstance): RangeUnificationInstance
+  
+  def selectField(field: String,openPrivate: Boolean): Option[Tuple2[TauType,Int]] = expressionType match {
+    case rec: RecordProduct => {
+      val member = rec.fields.zipWithIndex.find(f => f._1.name == Some(field) && (f._1.isPublic || openPrivate)).get
+      Some((member._1.tau,member._2))
+    }
+    case sum: SumType => {
+      val member = sum.minimalRecord.fields.zipWithIndex.find(f => f._1.name == Some(field) && (f._1.isPublic || openPrivate)).get
+      Some((member._1.tau,member._2))
+    }
+    case _ => None
+  }
+  
+  def selectField(index: Int,openPrivate: Boolean): Option[Tuple2[TauType,Int]] = expressionType match {
+    case rec: RecordProduct => {
+      val member = rec.fields.filter(f => f.isPublic || openPrivate).apply(index)
+      Some((member.tau,index))
+    }
+    case sum: SumType => {
+      val member = sum.minimalRecord.fields.filter(f => f.isPublic || openPrivate).apply(index)
+      Some((member.tau,index))
+    }
+    case _ => None
+  }
 }
 
 trait Expression {
