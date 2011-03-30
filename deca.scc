@@ -29,7 +29,7 @@ Helpers
   string_character = single_character | escape_sequence;
   
   at_operator = '@';
-  exponentiation_operator = '^';
+  caret = '^';
   
 Tokens
   var = 'var';
@@ -43,7 +43,7 @@ Tokens
   or_operator = 'or';
   xor_operator = 'xor';
   minus_operator = '-';
-  exponentiation_operator = '^';
+  caret = '^';
   at_operator = '@';
   not_operator = 'not';
   method = 'method';
@@ -59,6 +59,7 @@ Tokens
   dot = '.';
   semicolon = ';';
   colon = ':';
+  double_colon = '::';
   end = 'end';
   module = 'module';
   labracket = '<';
@@ -90,7 +91,6 @@ Tokens
   underscore = '_';
   type_arrow = '->';
   evaluation_arrow = '=>';
-  region = 'region';
   region_combining_operator = '++';
   sizeof = 'sizeof';
   match = 'match';
@@ -116,7 +116,7 @@ Productions
 
   qualified_identifier = 
     {simple} unqualified_identifier |
-    {imported} qualified_identifier dot unqualified_identifier;
+    {imported} qualified_identifier double_colon unqualified_identifier;
 
   identifier_list = {one} unqualified_identifier | {many} identifier_list comma unqualified_identifier;
     
@@ -166,7 +166,6 @@ Productions
     {parenthetical} recursive_type_naming? lparen type_form rparen |
     {tuple} tuple_form |
     {array} lower_type_form lsbracket integer_constant? rsbracket |
-    {region} region |
     {wildcard} underscore;
       
   definition = 
@@ -244,6 +243,8 @@ Productions
   lambda_arguments =
     {one} argument |
     {many} lparen argument comma argument_list rparen;
+    
+  member_selector = {name} unqualified_identifier | {index} lsbracket integer_constant rsbracket;
   
   //Increasing precedence levels.
   exp1 =
@@ -254,11 +255,12 @@ Productions
     {lambda} lambda_arguments evaluation_arrow block_expression |
     {call} function_call_expression |
     {parenthetical} parenthetical_expression |
-    {dereference} asterisk exp1 |
+    {dereference} exp1 caret |
+    {field} exp1 dot member_selector |
     {identifier} qualified_identifier;
   
   exp2 = 
-    {exponentiation} [exp1]:exp1 exponentiation_operator [exp2]:exp2 |
+    {exponentiation} [exp1]:exp1 caret [exp2]:exp2 |
     {minus} minus_operator exp2 |
     {not} not_operator exp2 |
     {others} exp1;
@@ -289,9 +291,8 @@ Productions
   function_call_expression =
     {variable} [function]:qualified_identifier lparen [arguments]:expression_list? rparen |
     {parens} [function]:parenthetical_expression lparen [arguments]:expression_list? rparen |
-    {region_alloc} new [region]:parenthetical_expression [argument]:parenthetical_expression |
-    {region_free} delete [argument]:parenthetical_expression |
-    {deleteregion} delete region [which]:parenthetical_expression;
+    {new} new [region]:parenthetical_expression [argument]:parenthetical_expression |
+    {delete} delete [argument]:parenthetical_expression;
     
   except_case_clause =
     case [name]:unqualified_identifier type_annotation evaluation_arrow [body]:expression;

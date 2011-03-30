@@ -13,6 +13,10 @@ function harpdarp(a: byte,b: byte): TwoTuple<nat,nat> {
   [a,b]
 }
 
+function itstime<a>(derp: Either<a,a>): nat {
+  derp.[0]
+}
+
 function son(n,x) {
   if(x)
     n + 1
