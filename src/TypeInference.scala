@@ -258,6 +258,11 @@ class Equal(x: TauType,y: TauType) extends Constraint(x,y) {
       assert(shared.forall(pair => pair._1.name.name == pair._2.name.name))
       shared.foreach(pair => rui.constrain(new Equal(pair._1.record,pair._2.record)))
     }
+    case (SkolemCall(alpha,aparams,aopen),SkolemCall(beta,bparams,bopen)) => {
+      if(alpha != beta || aopen != bopen)
+        throw new TypeException("Type inference error: " + alpha.toString + " =/= " + beta.toString)
+      aparams.zip(bparams).map(pair => rui.constrain(new Equal(pair._1,pair._2)))
+    }
     
     case (_,_) => throw new TypeException("Type inference error: " + alpha.toString + " =/= " + beta.toString)
   }

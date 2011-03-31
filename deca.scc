@@ -96,6 +96,7 @@ Tokens
   match = 'match';
   return = 'return';
   cast = 'cast';
+  interface = 'interface';
   
   blank = eol | tab | ' ';
   tabspace = [tab + ' '];
@@ -128,11 +129,19 @@ Productions
   variant_component = 
     unqualified_identifier variant_case_contents?;
     
+  gathering_component =
+    qualified_identifier variant_case_contents?;
+    
+  existential_form =
+    interface labracket unqualified_identifier rabracket type_form;
+    
   type_form =
     {function} function_type_form |
     {scoped_pointer} at_operator lower_type_form |
     {pointer} lower_type_form asterisk |
     {variant} variant_keyword lbracket variant_component+ rbracket |
+    {gathering} variant_keyword extends lbracket gathering_component+ rbracket |
+    {existential} existential_form |
     {class} class_keyword function_arguments? extension_clause? lbracket [member]:member_declaration+ destructor_definition? rbracket |
     {exception} exception lparen identifier_list rparen [extension]:extension_clause? |
     {others} lower_type_form;
@@ -218,6 +227,8 @@ Productions
     {ifwithelseexp} if lparen [condition]:expression rparen [thenbody]:expression_with_else else_clause |
     {blockexp} block_expression |
     {returnexp} return expression |
+    {packexp} existential_form assignment_operator expression |
+    {unpack} match unqualified_identifier colon existential_form assignment_operator expression block_expression |
     {others} exp5;
     
   expression_with_else =
@@ -233,6 +244,8 @@ Productions
     {ifwithelseexp} if lparen [condition]:expression rparen [thenbody]:expression_with_else else [elsebody]:expression_with_else |
     {blockexp} block_expression |
     {returnexp} return expression_with_else |
+    {packexp} existential_form assignment_operator expression_with_else |
+    {unpack} match unqualified_identifier colon existential_form assignment_operator expression block_expression |
     {others} exp5;
     
   literal_expression =
