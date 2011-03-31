@@ -3,18 +3,16 @@ package decac
 import scala.collection.mutable._
 import jllvm._
 
-class SkolemConstant extends RhoType {
+class SkolemConstant {
   protected val cases: Set[TauType] = new HashSet[TauType]()
   
-  override def tagged: Boolean = false
-  
-  override def map(f: (TauType) => TauType): SkolemConstant = {
+  def map(f: (TauType) => TauType): SkolemConstant = {
     val result = new SkolemConstant
     cases.foreach(c => result.skolemize(c))
     result
   }
   
-  override def contents: List[TauType] = {
+  def contents: List[TauType] = {
     var result: List[TauType] = Nil
     for(c <- cases.toList)
       c match {
@@ -24,7 +22,7 @@ class SkolemConstant extends RhoType {
     result
   }
   
-  override def compile: LLVMType = {
+  def compile: LLVMType = {
     val max = cases.toList.sortWith((x,y) => (x,y) match {
       case (x: GammaType,y: GammaType) => x.sizeOf >= y.sizeOf
       case (x: GammaType,_) => true
@@ -32,7 +30,6 @@ class SkolemConstant extends RhoType {
     }).head
     max.asInstanceOf[GammaType].compile
   }
-  override def mangle: String = getClass().getName() + '@' + Integer.toHexString(hashCode())
   
   def skolemize(tau: TauType): Unit = {
     assert(tau match {
@@ -47,60 +44,29 @@ class SkolemConstant extends RhoType {
   }
 }
 
+case class SkolemCall(skolem: SkolemConstant,parameters: List[TauVariable],open: Boolean = false) extends RhoType {
+  override def tagged: Boolean = false
+  override def contents: List[TauType] = skolem.contents ++ parameters
+  override def map(f: (TauType) => TauType): SkolemCall = {
+    val params = parameters.map(tvar => f(tvar)).filter(tau => tau.isInstanceOf[TauVariable]).asInstanceOf[List[TauVariable]]
+    SkolemCall(skolem.map(f),params)
+  }
+  override def compile: LLVMType = skolem.compile
+  override def mangle: String = skolem.toString + "<" + parameters.head.toString + parameters.tail.foldLeft("")((rest: String,tvar: TauVariable) => rest + "," + tvar.toString) + ">"
+}
+
 object ExistentialConstants {
   protected val constants: Map[Tuple2[RhoType,TauType],SkolemConstant] = new HashMap[Tuple2[RhoType,TauType],SkolemConstant]()
   
-  def pack(rho: RhoType,tau: TauType): SkolemConstant = constants.get((rho,tau)) match {
-    case Some(skolem) => skolem
+  def existentiallyQuantify(rho: RhoType,tau: TauType): SkolemCall = constants.get((rho,tau)) match {
+    case Some(skolem) => SkolemCall(skolem,Nil)
     case None => {
-      val result = new SkolemConstant
-      result.skolemize(tau)
-      constants.put((rho,tau),result)
-      result
+      val skolem = new SkolemConstant
+      skolem.skolemize(tau)
+      constants.put((rho,tau),skolem)
+      SkolemCall(skolem,Nil)
     }
   }
-}
-
-abstract class ExistentialVariable {
-  def contents: TauType
-}
-case class PackedType(tau: TauType) extends ExistentialVariable {
-  override def contents: TauType = tau
-}
-case class PackedSkolem(skolem: SkolemConstant) extends ExistentialVariable {
-  override def contents: SkolemConstant = skolem
-}
-
-class ExistentialType(rho: RhoType,alpha: ExistentialVariable) extends RhoType {
-  val skolem: SkolemConstant = alpha match {
-    case PackedType(alpha) => ExistentialConstants.pack(rho,alpha)
-    case PackedSkolem(s) => s
-  }
-  val internals = rho.map(tau => if(TauOrdering.equiv(tau,alpha.contents)) skolem else tau)
   
-  assert({
-    val funcs = rho.filter(tau => tau.isInstanceOf[FunctionArrow])
-    val safeToCall = funcs.filter(tau => tau == alpha).length == funcs.filter(tau => tau match { case p: PointerType => p.target == alpha case _ => false }).length
-    val notHidingVars = internals.filter(tau => tau.isInstanceOf[TauVariable]).forall(tvar => rho.filter(tau => tau == tvar) != Nil)
-    safeToCall && notHidingVars
-  })
-  
-  override def tagged: Boolean = false
-  
-  override def map(f: (TauType) => TauType): ExistentialType = {
-    val s = skolem.map(f)
-    val b = internals.map(tau => if(tau == skolem) s else tau).map(f)
-    new ExistentialType(b,PackedSkolem(s))
-  }
-  
-  override def contents: List[TauType] = {
-    skolem.contents ++ internals.contents
-  }
-  
-  override def mangle: String = {
-    val alpha = new TauVariable
-    "∃" + alpha.toString + ". " + internals.map(tau => if(tau == skolem) alpha else tau).toString
-  }
-  
-  override def compile: LLVMType = internals.compile 
+  def pack(rho: RhoType,tau: TauType): RhoType = rho.replace(tau,existentiallyQuantify(rho,tau))
 }

@@ -54,6 +54,9 @@ object TauOrdering extends PartialOrdering[TauType] {
       val unrecy = recy.map(tau => if(tau == recy) alpha else tau)
       equiv(unrecx,unrecy)
     }
+    case (SkolemCall(alpha,aparams,aopen),SkolemCall(beta,bparams,bopen)) => {
+      alpha == beta && aopen == bopen && aparams.zip(bparams).forall(pair => TauOrdering.equiv(pair._1,pair._2))
+    }
     case (recx: RecursiveMu,rhoy: RhoType) => equiv(recx.unfold,rhoy)
     case (rhox: RhoType,recy: RecursiveMu) => equiv(rhox,recy.unfold)
     case (gx: GammaType,ry: GammaRange) => gteq(gx,ry.lowerBound) && lteq(gx,ry.upperBound)

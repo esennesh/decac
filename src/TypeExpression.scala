@@ -124,7 +124,11 @@ abstract class RhoType extends GammaType {
     if(tvars == Nil)
       substitution.solve(this).asInstanceOf[RhoType]
     else {
-      tvars.foldLeft[SigmaType](this)((sigma: SigmaType,tau: TauVariable) => sigma match {
+      val existentialsRight = map(tau => tau match {
+        case skolem: SkolemCall => SkolemCall(skolem.skolem,tvars)
+        case _ => tau
+      })
+      tvars.foldLeft[SigmaType](existentialsRight)((sigma: SigmaType,tau: TauVariable) => sigma match {
         case rho: RhoType => {
           val result = new BetaRho(rho,tau)
           substitution.substitute(tau,result.alpha)
