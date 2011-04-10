@@ -51,4 +51,9 @@ function ok<a>(x: a) {
   x
 }
 
+function foreveralone(x,y: Either<boolean,nat>) {
+  megusta(x);
+  foreveralone(x,Left(x));
+}
+
 end
