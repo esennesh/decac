@@ -46,7 +46,6 @@ class ExpressionFunction(s: TypeBindingScope,n: String,args: List[Tuple2[String,
 	}
       }
     }
-    System.err.println(scope.name + "::" + name + ": " + signature.toString)
     result
   }
   

@@ -106,7 +106,7 @@ class SpecializedDefinitionCall(func: SpecializedFunction,args: List[Specialized
     builder.positionBuilderAtEnd(block)
     val call = new LLVMCallInstruction(builder,func,args.toArray,"call")
     //Use the LLVM compiling infrastructure to check for tail-calls.  Free tail-call optimization!
-    call.setTailCall(block.getParent.getInstance == func.getInstance)
+    call.setTailCall(true)
     call
   }
 }
