@@ -51,7 +51,7 @@ function ok<a>(x: a) {
   x
 }
 
-function foreveralone(x,y: Either<boolean,nat>) {
+function foreveralone(x,y: Either<boolean,nat>): boolean {
   megusta(x);
   foreveralone(x,Left(x));
 }
