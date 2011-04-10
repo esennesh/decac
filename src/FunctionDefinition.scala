@@ -38,8 +38,15 @@ class ExpressionFunction(s: TypeBindingScope,n: String,args: List[Tuple2[String,
     inferred = Some(result)
     result.signature match {
       case gammaArrow: FunctionArrow => result.specialize(this,Nil)
-      case _ => {}
+      case beta: BetaType => {
+        val arrow = beta.body.asInstanceOf[FunctionArrow]
+	arrow.range match {
+          case rho: RhoType => assert(rho.filter(tau => tau.isInstanceOf[BetaVariable]).forall(bvar => arrow.domain.find(arg => arg match { case rhoarg: RhoType => rho.filter(t => t == bvar) != None case _ => arg == bvar }) != None))
+	  case _ => {}
+	}
+      }
     }
+    System.err.println(scope.name + "::" + name + ": " + signature.toString)
     result
   }
   

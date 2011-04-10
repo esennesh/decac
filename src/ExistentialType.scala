@@ -6,6 +6,7 @@ import jllvm._
 class SkolemConstant {
   protected val cases: Set[TauType] = new HashSet[TauType]()
   
+  def <(s: SkolemConstant): Boolean = cases.forall(c => s.cases.contains(c))
   def map(f: (TauType) => TauType): SkolemConstant = {
     val result = new SkolemConstant
     cases.foreach(c => result.skolemize(c))
@@ -44,7 +45,7 @@ class SkolemConstant {
   }
 }
 
-case class SkolemCall(skolem: SkolemConstant,parameters: List[TauVariable],open: Boolean = false) extends RhoType {
+case class SkolemCall(skolem: SkolemConstant,parameters: List[TauVariable],open: Option[TauVariable] = None) extends RhoType {
   override def tagged: Boolean = false
   override def contents: List[TauType] = skolem.contents ++ parameters
   override def map(f: (TauType) => TauType): SkolemCall = {

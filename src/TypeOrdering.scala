@@ -55,7 +55,13 @@ object TauOrdering extends PartialOrdering[TauType] {
       equiv(unrecx,unrecy)
     }
     case (SkolemCall(alpha,aparams,aopen),SkolemCall(beta,bparams,bopen)) => {
-      alpha == beta && aopen == bopen && aparams.zip(bparams).forall(pair => TauOrdering.equiv(pair._1,pair._2))
+      val skolemsEqual = alpha == beta
+      val openingsEqual = (aopen,bopen) match {
+        case (Some(a),Some(b)) => TauOrdering.equiv(a,b)
+        case (None,None) => true
+        case _ => false
+      }
+      skolemsEqual && openingsEqual && aparams.length == bparams.length && aparams.zip(bparams).forall(pair => TauOrdering.equiv(pair._1,pair._2))
     }
     case (recx: RecursiveMu,rhoy: RhoType) => equiv(recx.unfold,rhoy)
     case (rhox: RhoType,recy: RecursiveMu) => equiv(rhox,recy.unfold)
