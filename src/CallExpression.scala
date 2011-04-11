@@ -27,7 +27,7 @@ class UninferredDefinitionCall(func: FunctionDefinition,arguments: List[Uninferr
   }
 }
 
-class UninferredExpressionCall(func: UninferredExpression,arguments: List[UninferredExpression]) extends UninferredCall(new ClosureArrow(arguments.map(tau => new TauVariable),new TauVariable,None),arguments) {
+class UninferredExpressionCall(func: UninferredExpression,arguments: List[UninferredExpression]) extends UninferredCall(new ClosureArrow(arguments.map(tau => new TauVariable),new TauVariable),arguments) {
   val function = func
   override def children: List[UninferredExpression] = function :: arguments
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
@@ -118,7 +118,7 @@ class SpecializedExpressionCall(func: SpecializedExpression,args: List[Specializ
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val func = function.compile(builder,scope)
     val args = arguments.zip(signature.domain).map(pair => (new ImplicitUpcast(pair._1,pair._2.asInstanceOf[GammaType])).compile(builder,scope))
-    val closureType = function.expressionType.asInstanceOf[ClosureArrow].representation.get
+    val closureType = function.expressionType.asInstanceOf[ClosureArrow].representation
     closureType.sumCases match {
       case plain :: environment :: Nil => {
         val mergeBlock = builder.getInsertBlock.getParent.appendBasicBlock("tag_merge")
