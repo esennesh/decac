@@ -97,7 +97,7 @@ object ASTProcessor {
         node.setLowerTypeForm(one.getArgument)
         val argument = processTypeForm(node,scope)
         val range = processTypeForm(one.getResult,scope)
-        new ClosureArrow(argument :: Nil,range,None)
+        new ClosureArrow(argument :: Nil,range)
       }
       case many: AManyFunctionTypeForm => {
         val formals: List[TauType] = if(many.getFunctionArgumentsTypeForm != null) {
@@ -107,7 +107,7 @@ object ASTProcessor {
         else
           Nil
         val result = processTypeForm(many.getResult,scope)
-        new ClosureArrow(formals,result,None)
+        new ClosureArrow(formals,result)
       }
     }
     case scopedPointer: AScopedPointerTypeForm => {
