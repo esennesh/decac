@@ -2,6 +2,7 @@ package decac
 
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
+import jllvm.llvm.LLVMLinkage
 import jllvm.LLVMFunction
 import jllvm.LLVMInstructionBuilder
 import jllvm.LLVMReturnInstruction
@@ -37,7 +38,7 @@ class ExpressionFunction(s: TypeBindingScope,n: String,args: List[Tuple2[String,
     val result = new GeneralizedExpressionFunction(uninferred,rui.solve)
     inferred = Some(result)
     result.signature match {
-      case gammaArrow: FunctionArrow => result.specialize(this,Nil)
+      case gammaArrow: FunctionArrow => result.specialize(this,Nil).function.setLinkage(LLVMLinkage.LLVMAvailableExternallyLinkage)
       case beta: BetaType => {
         val arrow = beta.body.asInstanceOf[FunctionArrow]
 	arrow.range match {
@@ -104,7 +105,7 @@ class GeneralizedExpressionFunction(uninferred: UninferredExpressionFunction,sub
     }).asInstanceOf[FunctionArrow]
   }
   
-  def specialize(definition: ExpressionFunction,specialization: List[GammaType]): SpecializedFunction = {
+  def specialize(definition: ExpressionFunction,specialization: List[GammaType]): SpecializedExpressionFunction = {
     for((key,value) <- specializations)
       if(specialization.zip(key).forall(pair => TauOrdering.equiv(pair._1,pair._2)))
         return value
@@ -123,7 +124,12 @@ class SpecializedExpressionFunction(definition: ExpressionFunction,general: Gene
     case frho: FunctionArrow => frho
     case _ => throw new Exception("Specializing a function's type should never yield anything but an arrow type.")
   }
-  val function = new LLVMFunction(definition.scope.compiledModule,definition.name + signature.toString,signature.compile)
+  val function = {
+    val f = new LLVMFunction(definition.scope.compiledModule,definition.name + signature.toString,signature.compile)
+    if(!specializer.isEmpty)
+      f.setLinkage(LLVMLinkage.LLVMWeakODRLinkage)
+    f
+  }
   protected var compiled: Boolean = false
   val fScope = general.scope.specialize(specializer,Some(function.getParameters.toList))
   protected var bodyBlock: Option[SpecializedBlock] = None

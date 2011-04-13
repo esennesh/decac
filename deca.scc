@@ -78,9 +78,11 @@ Tokens
   lessereq = '<=';
   function = 'function';
   while = 'while';
+  do = 'do';
   for = 'for';
   case = 'case';
   if = 'if';
+  then = 'then';
   let = 'let';
   except = 'except';
   finally = 'finally';
@@ -143,7 +145,7 @@ Productions
     {gathering} variant_keyword extends lbracket gathering_component+ rbracket |
     {existential} existential_form |
     {class} class_keyword function_arguments? extension_clause? lbracket [member]:member_declaration+ destructor_definition? rbracket |
-    {exception} exception lparen identifier_list rparen [extension]:extension_clause? |
+    {exception} exception variant_case_contents [extension]:extension_clause? |
     {others} lower_type_form;
   
   destructor_definition = delete [destructor]:block_expression;
@@ -209,9 +211,10 @@ Productions
   function_arguments = lparen [arguments]:argument_list? rparen;
     
   function_definition = 
-    {method} method [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [body]:block_expression? |
+    {method} method [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [body]:block_expression |
     {override} override [name]:qualified_identifier function_arguments [body]:block_expression |
-    {function} function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation? [body]:block_expression;
+    {function} function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation? [body]:block_expression |
+    {external} import function [name]:unqualified_identifier function_arguments [type]:type_annotation;
     
   expression =
     {assignmentexp} qualified_identifier assignment_operator expression |
@@ -221,10 +224,10 @@ Productions
     {tryexp} try_expression |
     {finalexp} finally [finalizer]:expression |
     {forexp} for lparen [initializer]:let_assignment [first_separator]:comma [test]:expression [second_separator]:comma [step]:expression rparen [loop]:expression |
-    {whilexp} while lparen [condition]:expression rparen [body]:expression |
+    {whilexp} while [condition]:expression do [body]:expression |
     {throwexp} throw expression |
-    {ifwithoutelseexp} if lparen [condition]:expression rparen [thenbody]:expression |
-    {ifwithelseexp} if lparen [condition]:expression rparen [thenbody]:expression_with_else else_clause |
+    {ifwithoutelseexp} if [condition]:expression then [thenbody]:expression |
+    {ifwithelseexp} if [condition]:expression then [thenbody]:expression_with_else else_clause |
     {blockexp} block_expression |
     {returnexp} return expression |
     {packexp} existential_form assignment_operator expression |
@@ -239,9 +242,9 @@ Productions
     {tryexp} try_expression_with_else |
     {finalexp} finally [finalizer]:expression_with_else |
     {forexp} for lparen [initializer]:let_assignment [first_separator]:comma [test]:expression [second_separator]:comma [step]:expression rparen [loop]:expression_with_else |
-    {whilexp} while lparen [condition]:expression rparen [body]:expression_with_else |
+    {whilexp} while [condition]:expression do [body]:expression_with_else |
     {throwexp} throw expression_with_else |
-    {ifwithelseexp} if lparen [condition]:expression rparen [thenbody]:expression_with_else else [elsebody]:expression_with_else |
+    {ifwithelseexp} if [condition]:expression then [thenbody]:expression_with_else else [elsebody]:expression_with_else |
     {blockexp} block_expression |
     {returnexp} return expression_with_else |
     {packexp} existential_form assignment_operator expression_with_else |

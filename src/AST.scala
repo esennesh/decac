@@ -252,6 +252,38 @@ object ASTProcessor {
     new UninferredBlock(processBlockContents(expression.getBlockContents).map(expr => processExpression(expr,scope)))
   }
   
+  def processFunctionDefinition(func: PFunctionDefinition,scope: Module): Definition = func match {
+    case normal: AFunctionFunctionDefinition => {
+      val name = normal.getName.getText
+      val tscope = new TypeBindingScope(scope)
+      if(normal.getTypeFormArguments != null) {
+       val params = processTypeParameters(normal.getTypeFormArguments.asInstanceOf[ATypeFormArguments].getArguments)
+        for((argName,tau) <- params)
+          new TypeBinding(tau,argName,tscope)
+      }
+      val arguments = processArguments(normal.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},tscope).map(arg => (arg._1,UninferredArgument(arg._2)))
+      val resultType = if(normal.getType != null) Some(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) else None
+      val function = new ExpressionFunction(tscope,name,arguments,resultType,lexical => processBlock(normal.getBody,lexical))
+      function.infer
+      function
+    }
+    case method: AMethodFunctionDefinition => null
+    case over: AOverrideFunctionDefinition => null
+    case external: AExternalFunctionDefinition => {
+      val name = external.getName.getText
+      val tscope = new TypeBindingScope(scope)
+      val arguments = processArguments(external.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},tscope).map(arg => (arg._1,arg._2.asInstanceOf[GammaType]))
+      assert(arguments.forall(arg => arg match {
+        case rho: RhoType => rho.filter(tau => !tau.isInstanceOf[GammaType]) == Nil
+        case gamma: GammaType => true
+        case _ => false
+      }))
+      val resultType = processTypeForm(external.getType.asInstanceOf[ATypeAnnotation].getType,tscope).asInstanceOf[GammaType]
+      val function = new ExternalFunction(tscope,name,arguments,resultType)
+      function
+    }
+  }
+  
   def processDefinition(adef: PDefinition,scope: Module): Definition = adef match {
     case amoddef: AModuledefDefinition => {
       val moddef: AModuleDefinition = amoddef.getModuleDefinition() match {case real: AModuleDefinition => real}
@@ -260,26 +292,7 @@ object ASTProcessor {
       convertList(moddef.getDefinitions).foreach(definition => processDefinition(definition,result))
       return result
     }
-    case afuncdef: AFundefDefinition => {
-      afuncdef.getFunctionDefinition() match {
-        case normal: AFunctionFunctionDefinition => {
-          val name = normal.getName.getText
-          val tscope = new TypeBindingScope(scope)
-          if(normal.getTypeFormArguments != null) {
-            val params = processTypeParameters(normal.getTypeFormArguments.asInstanceOf[ATypeFormArguments].getArguments)
-            for((argName,tau) <- params)
-              new TypeBinding(tau,argName,tscope)
-          }
-          val arguments = processArguments(normal.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},tscope).map(arg => (arg._1,UninferredArgument(arg._2)))
-          val resultType = if(normal.getType != null) Some(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) else None
-          val function = new ExpressionFunction(tscope,name,arguments,resultType,lexical => processBlock(normal.getBody,lexical))
-          function.infer
-          function
-        }
-        case method: AMethodFunctionDefinition => null
-        case over: AOverrideFunctionDefinition => null
-      }
-    }
+    case afuncdef: AFundefDefinition => processFunctionDefinition(afuncdef.getFunctionDefinition(),scope)
     case atypedef: ATypedefDefinition => {
       val name = atypedef.getUnqualifiedIdentifier.getText
       val tscope = new TypeBindingScope(scope)

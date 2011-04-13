@@ -4,7 +4,10 @@ import scala.collection.mutable.Queue
 import scala.collection.mutable.Stack
 
 abstract class Substitution[A <: TauVariable,B <: TauType] {
-  val queue: Queue[Tuple2[A,B]] = new Queue[Tuple2[A,B]]()
+  protected val queue: Queue[Tuple2[A,B]] = new Queue[Tuple2[A,B]]()
+  
+  def substitute(x: A,y: B): Unit = queue.enqueue((x,y))
+  def isEmpty: Boolean = queue.isEmpty
 
   def solve(tau: TauType): TauType = tau match {
     case alpha: TauVariable => queue.foldLeft[TauType](alpha)((result: TauType,sub: Tuple2[TauVariable,TauType]) => if(TauOrdering.equiv(sub._1,result)) sub._2 else result) match {
@@ -17,8 +20,8 @@ abstract class Substitution[A <: TauVariable,B <: TauType] {
 }
 
 class TauSubstitution extends Substitution[TauVariable,TauType] {
-  def substitute(x: TauVariable,y: TauType): Unit = {
-    queue.enqueue((x,y))
+  override def substitute(x: TauVariable,y: TauType): Unit = {
+    super.substitute(x,y)
     y match {
       case y: GammaRange => if(TauOrdering.equiv(y.lowerBound,y.upperBound)) substitute(y,y.lowerBound)
       case _ => {}
@@ -27,8 +30,6 @@ class TauSubstitution extends Substitution[TauVariable,TauType] {
 }
 
 class BetaSpecialization extends Substitution[BetaVariable,GammaType] {
-  def substitute(x: BetaVariable,y: GammaType): Unit = queue.enqueue((x,y))
-  
   override def solve(tau: TauType): GammaType = tau match {
     case range: GammaRange => solve(range.lowerBound)
     case alpha: BetaVariable => {
