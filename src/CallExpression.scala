@@ -102,11 +102,11 @@ class SpecializedDefinitionCall(func: SpecializedFunction,args: List[Specialized
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMCallInstruction = {
     val args = arguments.zip(signature.domain).map(pair => (new ImplicitUpcast(pair._1,pair._2.asInstanceOf[GammaType])).compile(builder,scope))
     val block = builder.getInsertBlock
-    val func = function.compile(builder)
     builder.positionBuilderAtEnd(block)
+    val func = function.compile
     val call = new LLVMCallInstruction(builder,func,args.toArray,"call")
     //Use the LLVM compiling infrastructure to check for tail-calls.  Free tail-call optimization!
-    call.setTailCall(true)
+    call.setTailCall(block.getParent.equals(func))
     call
   }
 }

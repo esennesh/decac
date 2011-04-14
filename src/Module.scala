@@ -4,6 +4,7 @@ import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 import jllvm.LLVMModule
 import jllvm.LLVMInstructionBuilder
+import jllvm.LLVMBitWriter
 
 abstract trait Definition extends Scopeable {
   override def scope: Module
@@ -39,19 +40,18 @@ class Module(m: Module,n: String) extends Scope[Definition](m) with Definition {
   def compile: LLVMModule = {
     if(!compiled) {
       for(definition <- symbols.values) definition match {
-        case function: FunctionDefinition => {
-          val builder = new LLVMInstructionBuilder
-          function.specialized.foreach(func => func.compile(builder))
-        }
+        case function: FunctionDefinition => function.specialized.foreach(func => func.compile)
         case defin: TypeDefinition => defin.getSpecializations.foreach(gamma => compiledModule.addTypeName(name,gamma.compile))
         case global: ModuleVariableDefinition => global.build 
-          //TODO: Add code for constant expressions, and use it to set the initializer on global variables.
-        //TODO: add case for modules, and change Module so that it can distinguish between imported modules and inner modules.
+        //TODO: Add code for constant expressions, and use it to set the initializer on global variables.
+        //TODO: add case for modules, and change Module so that it can handle imported modules.
       }
       compiled = true
     }
     compiledModule
   }
+  
+  def writeBitcode: Unit = (new LLVMBitWriter(compile)).writeBitcodeToFile(path + name + ".bc")
   
   override def scopeType: ScopeType = new GlobalScopeType(Some(this))
 }

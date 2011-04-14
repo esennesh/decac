@@ -27,5 +27,5 @@ class ExternalFunction(s: TypeBindingScope,n: String,args: List[Tuple2[String,Ga
   def specialize(specialization: List[GammaType]): ExternalFunction = specs.get(specialization).get
   def specialized: Iterable[SpecializedFunction] = specs.values
   
-  def compile(builder: LLVMInstructionBuilder): LLVMFunction = function
+  def compile: LLVMFunction = function
 }

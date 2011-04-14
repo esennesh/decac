@@ -3,6 +3,7 @@ package decac
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
 import jllvm._
+import jllvm.llvm.LLVMLinkage
 
 abstract class ConstructorDefinition(m: Module,tp: TaggedProduct,args: List[Tuple2[String,TauType]]) extends FunctionDefinition {
   override val name = tp.name.name match {
@@ -75,15 +76,21 @@ class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecial
   override val signature: FunctionArrow = specializer.solve(original.signature.body).asInstanceOf[FunctionArrow]
   protected val range = signature.range.asInstanceOf[SumType].sumCases.head
   
-  val function = new LLVMFunction(original.scope.compiledModule,name + "constructor" + signature.toString,signature.compile)
+  val function = {
+    val f = new LLVMFunction(original.scope.compiledModule,name + "constructor" + signature.toString,signature.compile)
+    if(!specializer.isEmpty)
+      f.setLinkage(LLVMLinkage.LLVMWeakODRLinkage)
+    f
+  }
   protected var compiled: Boolean = false
   val bodyScope = org.bodyScope.specialize(specializer,Some(function.getParameters.toList))
   val bodies = org.bodies.mapValues(expr => expr.specialize(specializer))
   
-  def compile(builder: LLVMInstructionBuilder): LLVMFunction = {
+  def compile: LLVMFunction = {
     if(compiled == false) {
       compiled = true
       val entry = function.appendBasicBlock("entry")
+      val builder = new LLVMInstructionBuilder
       builder.positionBuilderAtEnd(entry)
       bodyScope.compile(builder)
       

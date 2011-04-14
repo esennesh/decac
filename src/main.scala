@@ -5,7 +5,6 @@ import decasyntax.lexer._
 import decasyntax.node._
 import java.io.FileReader
 import java.io.PushbackReader
-import jllvm.LLVMBitWriter
 
 object Decac {
   System.loadLibrary("jllvm")
@@ -41,9 +40,7 @@ object Decac {
     BuiltInSums;
     FloatGamma;
     val modules = args.map(arg => compile(arg))
-    for(module <- modules) {
-      val compiledModule = module.compile
-      (new LLVMBitWriter(compiledModule)).writeBitcodeToFile(module.path + module.name + ".bc")
-    }
+    for(module <- modules)
+      module.writeBitcode
   }
 }

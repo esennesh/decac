@@ -18,7 +18,7 @@ function itstime<a>(derp: Either<a,a>): nat {
 }
 
 function son(n,x) {
-  if(x)
+  if x then
     n + 1
   else
     son(n-1,x)
@@ -34,14 +34,14 @@ function rage(): quadruple {
 }
 
 function melvin(x,y: boolean) {
-  if(x)
+  if x then
     megusta(y)
   else
     None
 }
 
 function fffffffuuuuuuuuuuuu(x,y) {
-  if(x)
+  if x then
     Left(x)
   else
     Right(y - 1)
