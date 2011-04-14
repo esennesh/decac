@@ -20,7 +20,7 @@ trait FunctionDefinition extends Definition {
 trait SpecializedFunction {
   val signature: FunctionArrow
   
-  def compile(builder: LLVMInstructionBuilder): LLVMFunction
+  def compile: LLVMFunction
 }
 
 class ExpressionFunction(s: TypeBindingScope,n: String,args: List[Tuple2[String,UninferredArgument]],r: Option[TauType],b: (UninferredLexicalScope) => UninferredBlock) extends FunctionDefinition {
@@ -38,7 +38,7 @@ class ExpressionFunction(s: TypeBindingScope,n: String,args: List[Tuple2[String,
     val result = new GeneralizedExpressionFunction(uninferred,rui.solve)
     inferred = Some(result)
     result.signature match {
-      case gammaArrow: FunctionArrow => result.specialize(this,Nil).function.setLinkage(LLVMLinkage.LLVMAvailableExternallyLinkage)
+      case gammaArrow: FunctionArrow => result.specialize(this,Nil)
       case beta: BetaType => {
         val arrow = beta.body.asInstanceOf[FunctionArrow]
 	arrow.range match {
@@ -138,11 +138,12 @@ class SpecializedExpressionFunction(definition: ExpressionFunction,general: Gene
   }
   def body: SpecializedBlock = bodyBlock.get
   
-  override def compile(builder: LLVMInstructionBuilder): LLVMFunction = {
+  override def compile: LLVMFunction = {
     if(compiled == false) {
       //Make this assignment here at the top to prevent infinite recursion when compiling recursive functions.
       compiled = true
       val entry = function.appendBasicBlock("entry")
+      val builder = new LLVMInstructionBuilder
       builder.positionBuilderAtEnd(entry)
       fScope.compile(builder)
       val result = (new ImplicitUpcast(body,signature.range.asInstanceOf[GammaType])).compile(builder,fScope)
