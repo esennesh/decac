@@ -63,10 +63,13 @@ abstract class Assumption(x: TauVariable,y: TauVariable)
 case class Subtype(x: TauVariable,y: TauVariable) extends Assumption(x,y)
 case class Equality(x: TauVariable,y: TauVariable) extends Assumption(x,y)
 
-class RangeUnificationInstance(scope: Option[Module]) {
+class RangeUnificationInstance(scope: Option[Module],subst: Option[TauSubstitution]=None) {
   protected val constraints = new ConstraintSet()
   val assumptions = new Stack[Assumption]()
-  protected val result = new TauSubstitution
+  protected val result = subst match {
+    case Some(s) => s
+    case None => new TauSubstitution
+  }
   scope match {
     case Some(module) => SigmaLattice.addModule(module)
     case None => None

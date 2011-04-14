@@ -183,7 +183,8 @@ Productions
     {globaldef} define var? unqualified_identifier type_annotation? assignment_operator expression |
     {typedef} type unqualified_identifier [parameters]:type_form_arguments? equals type_form |
     {moduledef} module_definition |
-    {fundef} function_definition;
+    {fundef} function_definition |
+    {pooldef} define unqualified_identifier colon lsbracket integer_constant rsbracket;
   
   type_form_arguments =
     labracket [arguments]:identifier_list rabracket;  
