@@ -13,29 +13,34 @@ class UninferredMember(struct: UninferredExpression,selector: MemberSelector,ope
   override val expressionType = new TauVariable
   val structure = struct
   override def children = (structure :: Nil)
-  override def substitute(substitution: TauSubstitution): MemberExpression = {
-    val member = (substitution.solve(structure.expressionType),selection) match {
-      case (rec: RecordProduct,NameSelector(field)) => {
-        val mem = rec.fields.zipWithIndex.find(f => f._1.name == Some(field) && (f._1.isPublic || openPrivate)).get
-        (mem._1.tau,mem._2)
-      }
-      case (rec: RecordProduct,IndexSelector(index)) => {
-        val mem = rec.fields.filter(f => f.isPublic || openPrivate).apply(index)
-        (mem.tau,index)
-      }
-      case (sum: SumType,NameSelector(field)) => {
-        val mem = sum.minimalRecord.fields.zipWithIndex.find(f => f._1.name == Some(field) && (f._1.isPublic || openPrivate)).get
-        (mem._1.tau,mem._2)
-      }
-      case (sum: SumType,IndexSelector(index)) => {
-        val mem = sum.minimalRecord.fields.filter(f => f.isPublic || openPrivate).apply(index)
-        (mem.tau,index)
-      }
-      case _ => throw new TypeException("Cannot select fields of non-variant, non-record type.")
+  def checkMember(substitution: TauSubstitution): Tuple2[TauType,Int] = (substitution.solve(structure.expressionType),selection) match {
+    case (rec: RecordProduct,NameSelector(field)) => {
+      val mem = rec.fields.zipWithIndex.find(f => f._1.name == Some(field) && (f._1.isPublic || openPrivate)).get
+      (mem._1.tau,mem._2)
     }
-    val rui = new RangeUnificationInstance(None,Some(substitution))
+    case (rec: RecordProduct,IndexSelector(index)) => {
+      val mem = rec.fields.filter(f => f.isPublic || openPrivate).apply(index)
+      (mem.tau,index)
+    }
+    case (sum: SumType,NameSelector(field)) => {
+      val mem = sum.minimalRecord.fields.zipWithIndex.find(f => f._1.name == Some(field) && (f._1.isPublic || openPrivate)).get
+      (mem._1.tau,mem._2)
+    }
+    case (sum: SumType,IndexSelector(index)) => {
+      val mem = sum.minimalRecord.fields.filter(f => f.isPublic || openPrivate).apply(index)
+      (mem.tau,index)
+    }
+    case _ => throw new TypeException("Cannot select fields of non-variant, non-record type.")
+  }
+  override def check(rui: RangeUnificationInstance): RangeUnificationInstance = {
+    val substitution = rui.solve
+    val member = checkMember(substitution)
     rui.constrain(new Equal(member._1,substitution.solve(expressionType)))
-    rui.solve
+    rui
+  }
+  override def substitute(substitution: TauSubstitution): MemberExpression = {
+    val member = checkMember(substitution)
+    System.err.println("Member type evaluates after member-unification to: " + member._1.toString)
     val struct = structure.substitute(substitution)
     new MemberExpression(struct,(substitution.solve(member._1),member._2))
   }
