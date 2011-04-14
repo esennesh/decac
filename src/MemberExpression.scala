@@ -9,17 +9,35 @@ case class NameSelector(name: String) extends MemberSelector
 case class IndexSelector(index: Int) extends MemberSelector
 
 class UninferredMember(struct: UninferredExpression,selector: MemberSelector,openPrivate: Boolean = false) extends UninferredExpression {
-  val member: Tuple2[TauType,Int] = selector match {
-    case NameSelector(name) => struct.selectField(name,openPrivate).get
-    case IndexSelector(index) => struct.selectField(index,openPrivate).get
-  }
-  override val expressionType: TauType = member._1
+  val selection = selector
+  override val expressionType = new TauVariable
   val structure = struct
   override def children = (structure :: Nil)
   override def substitute(substitution: TauSubstitution): MemberExpression = {
+    val member = (substitution.solve(structure.expressionType),selection) match {
+      case (rec: RecordProduct,NameSelector(field)) => {
+        val mem = rec.fields.zipWithIndex.find(f => f._1.name == Some(field) && (f._1.isPublic || openPrivate)).get
+        (mem._1.tau,mem._2)
+      }
+      case (rec: RecordProduct,IndexSelector(index)) => {
+        val mem = rec.fields.filter(f => f.isPublic || openPrivate).apply(index)
+        (mem.tau,index)
+      }
+      case (sum: SumType,NameSelector(field)) => {
+        val mem = sum.minimalRecord.fields.zipWithIndex.find(f => f._1.name == Some(field) && (f._1.isPublic || openPrivate)).get
+        (mem._1.tau,mem._2)
+      }
+      case (sum: SumType,IndexSelector(index)) => {
+        val mem = sum.minimalRecord.fields.filter(f => f.isPublic || openPrivate).apply(index)
+        (mem.tau,index)
+      }
+      case _ => throw new TypeException("Cannot select fields of non-variant, non-record type.")
+    }
+    val rui = new RangeUnificationInstance(None,Some(substitution))
+    rui.constrain(new Equal(member._1,substitution.solve(expressionType)))
+    rui.solve
     val struct = structure.substitute(substitution)
-    val mem = (substitution.solve(member._1),member._2)
-    new MemberExpression(struct,mem)
+    new MemberExpression(struct,(substitution.solve(member._1),member._2))
   }
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     children.map(child => child.constrain(rui))
