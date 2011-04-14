@@ -15,6 +15,10 @@ trait UninferredExpression {
   }
   def substitute(substitution: TauSubstitution): Expression
   def constrain(rui: RangeUnificationInstance): RangeUnificationInstance
+  def check(rui: RangeUnificationInstance): RangeUnificationInstance = {
+    children.foreach(child => child.check(rui))
+    rui
+  }
 }
 
 trait Expression {

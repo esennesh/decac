@@ -35,6 +35,7 @@ class ExpressionFunction(s: TypeBindingScope,n: String,args: List[Tuple2[String,
     if(uninferred.signature.range != UnitGamma)
       rui.constrain(new LesserEq(uninferred.body.expressionType,uninferred.signature.range))
     uninferred.body.constrain(rui)
+    uninferred.body.check(rui)
     val result = new GeneralizedExpressionFunction(uninferred,rui.solve)
     inferred = Some(result)
     result.signature match {
