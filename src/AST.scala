@@ -242,10 +242,13 @@ object ASTProcessor {
     case one: AOneExpressionList => processExpression(one.getExpression,scope) :: Nil
     case many: AManyExpressionList => processExpressionList(many.getExpressionList,scope) ++ (processExpression(many.getExpression,scope) :: Nil)
   }
-  
+  def processBlockSteps(contents: PBlockStepsList): List[PExpression] = contents match {
+    case one: AOneBlockStepsList => one.getExpression :: Nil
+    case many: AManyBlockStepsList => many.getExpression :: processBlockSteps(many.getBlockStepsList)
+  }
   def processBlockContents(contents: PBlockContents): List[PExpression] = contents match {
     case one:  AOneBlockContents => one.getExpression :: Nil
-    case many: AManyBlockContents => processBlockContents(many.getBlockContents) ++ (many.getExpression :: Nil)
+    case many: AManyBlockContents => many.getExpression :: processBlockSteps(many.getBlockStepsList)
   }  
   def processBlock(expr: PBlockExpression,scope: UninferredLexicalScope): UninferredBlock = {
     val expression = expr match { case expression: ABlockExpression => expression }
