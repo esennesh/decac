@@ -170,6 +170,12 @@ object ASTProcessor {
     case others: AOthersExp4 => processExp3(others.getExp3,scope)
   }
   def processExp5(exp: PExp5,scope: UninferredLexicalScope): UninferredExpression = exp match {
+    case greater: AGreaterExp5 => new UninferredComparison(GreaterComp(false),processExp4(greater.getExp1,scope),processExp4(greater.getExp2,scope))
+    case greatereq: AGreatereqExp5 => new UninferredComparison(GreaterComp(true),processExp4(greatereq.getExp1,scope),processExp4(greatereq.getExp2,scope))
+    case lesser: ALessExp5 => new UninferredComparison(LesserComp(false),processExp4(lesser.getExp1,scope),processExp4(lesser.getExp2,scope))
+    case lessereq: ALessereqExp5 => new UninferredComparison(LesserComp(true),processExp4(lessereq.getExp1,scope),processExp4(lessereq.getExp2,scope))
+    case equals: AEqualsExp5 => new UninferredComparison(EqualComp,processExp4(equals.getExp1,scope),processExp4(equals.getExp2,scope))
+    case different: ADifferentExp5 => new UninferredComparison(DifferentComp,processExp4(different.getExp1,scope),processExp4(different.getExp2,scope))
     case others: AOthersExp5 => processExp4(others.getExp4,scope)
   }
   def processCallExpression(call: PFunctionCallExpression,scope: UninferredLexicalScope): UninferredCall = call match {

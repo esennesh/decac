@@ -97,6 +97,48 @@ class SpecializedComparison(op: ComparisonOperator,l: SpecializedExpression,r: S
           }
         }
       }
+      case EqualComp => gamma match {
+        case num: NumericalGamma => num match {
+          case real: RealGamma => new LLVMFloatComparison(builder,LLVMRealPredicate.LLVMRealOEQ,compLeft,compRight,"comparison")
+          case _ => {
+            val op = num match {
+              case unsigned: UnsignedIntegerGamma => LLVMIntPredicate.LLVMIntEQ
+              case signed: IntegerGamma => LLVMIntPredicate.LLVMIntEQ
+            }
+            new LLVMIntegerComparison(builder,op,compLeft,compRight,"comparison")
+          }
+        }
+        case sum: SumType => {
+          assert(sum.enumeration)
+          new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,compLeft,compRight,"comparison")
+        }
+        case pointer: PointerType => new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,compLeft,compRight,"comparison")
+        case array: ArrayType => {
+          assert(array.dynamic)
+          new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,compLeft,compRight,"comparison")
+        }
+      }
+      case DifferentComp => gamma match {
+        case num: NumericalGamma => num match {
+          case real: RealGamma => new LLVMFloatComparison(builder,LLVMRealPredicate.LLVMRealONE,compLeft,compRight,"comparison")
+          case _ => {
+            val op = num match {
+              case unsigned: UnsignedIntegerGamma => LLVMIntPredicate.LLVMIntNE
+              case signed: IntegerGamma => LLVMIntPredicate.LLVMIntNE
+            }
+            new LLVMIntegerComparison(builder,op,compLeft,compRight,"comparison")
+          }
+        }
+        case sum: SumType => {
+          assert(sum.enumeration)
+          new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntNE,compLeft,compRight,"comparison")
+        }
+        case pointer: PointerType => new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntNE,compLeft,compRight,"comparison")
+        case array: ArrayType => {
+          assert(array.dynamic)
+          new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntNE,compLeft,compRight,"comparison")
+        }
+      }
     }
   }
 }

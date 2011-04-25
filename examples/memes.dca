@@ -24,6 +24,13 @@ function son(n,x) {
     son(n-1,x)
 }
 
+function fib(n) {
+  if n = 0 then
+    n
+  else
+    fib(n-1) + fib(n-2)
+}
+
 function megusta(x) {
   harpdarp(3,4);
   Some(x);

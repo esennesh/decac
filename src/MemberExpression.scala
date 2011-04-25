@@ -41,7 +41,6 @@ class UninferredMember(struct: UninferredExpression,selector: MemberSelector,ope
   }
   override def substitute(substitution: TauSubstitution): MemberExpression = {
     val member = checkMember(substitution)
-    System.err.println("Member type evaluates after member-unification to: " + member._1.toString)
     val struct = structure.substitute(substitution)
     new MemberExpression(struct,(substitution.solve(member._1),member._2))
   }

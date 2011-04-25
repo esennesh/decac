@@ -79,11 +79,10 @@ class SpecializedIf(c: SpecializedExpression,t: SpecializedExpression,e: Option[
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = otherwise match {
     case Some(expr) => {
       val comparator = condition.compile(builder,scope)
-      val comparison = new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,comparator,LLVMConstantInteger.constantInteger(new LLVMIntegerType(1),1,false),"ifcmp")
       val merge = builder.getInsertBlock.getParent.appendBasicBlock("merge")
       val thenBlock = merge.insertBasicBlockBefore("then")
       val elseBlock = merge.insertBasicBlockBefore("else")
-      new LLVMBranchInstruction(builder,comparison,thenBlock,elseBlock)
+      new LLVMBranchInstruction(builder,comparator,thenBlock,elseBlock)
       
       builder.positionBuilderAtEnd(thenBlock)
       val thenValue = (new ImplicitUpcast(then,expressionType)).compile(builder,scope)
@@ -100,10 +99,9 @@ class SpecializedIf(c: SpecializedExpression,t: SpecializedExpression,e: Option[
     }
     case None => {
       val comparator = condition.compile(builder,scope)
-      val comparison = new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,comparator,LLVMConstantInteger.constantInteger(new LLVMIntegerType(1),1,false),"ifcmp")
       val merge = builder.getInsertBlock.getParent.appendBasicBlock("merge")
       val thenBlock = merge.insertBasicBlockBefore("then")
-      new LLVMBranchInstruction(builder,comparison,thenBlock,merge)
+      new LLVMBranchInstruction(builder,comparator,thenBlock,merge)
       
       builder.positionBuilderAtEnd(thenBlock)
       val value = (new ImplicitUpcast(then,expressionType)).compile(builder,scope)
