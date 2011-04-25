@@ -33,6 +33,7 @@ class UninferredMember(struct: UninferredExpression,selector: MemberSelector,ope
     case _ => throw new TypeException("Cannot select fields of non-variant, non-record type.")
   }
   override def check(rui: RangeUnificationInstance): RangeUnificationInstance = {
+    structure.check(rui)
     val substitution = rui.solve
     val member = checkMember(substitution)
     rui.constrain(new Equal(member._1,substitution.solve(expressionType)))

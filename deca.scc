@@ -39,6 +39,7 @@ Tokens
   division_operator = '/';
   addition_operator = '+';
   subtraction_operator = '-';
+  exponentiation_operator = '**';
   and_operator = 'and';
   or_operator = 'or';
   xor_operator = 'xor';
@@ -62,16 +63,16 @@ Tokens
   double_colon = '::';
   end = 'end';
   module = 'module';
+  unsafe = 'unsafe';
   labracket = '<';
   rabracket = '>';
   import = 'import';
   define = 'define';
-  new = 'new';
-  delete = 'delete';
   extends = 'extends';
   class_keyword = 'class';
   variant_keyword = 'variant';
   exception = 'exception';
+  destructor = 'destructor';
   equals = '=';
   different = '<>';
   greatereq = '>=';
@@ -91,9 +92,9 @@ Tokens
   else = 'else';
   type = 'type';
   underscore = '_';
-  type_arrow = '->';
+  firstclass_function_arrow = '->';
+  function_pointer_arrow = '@->';
   evaluation_arrow = '=>';
-  region_combining_operator = '++';
   sizeof = 'sizeof';
   match = 'match';
   return = 'return';
@@ -115,7 +116,7 @@ Ignored Tokens
   
 Productions
   module_definition = 
-    module [name]:unqualified_identifier [imports]:import_declaration* [definitions]:definition* end;
+    unsafe? module [name]:unqualified_identifier [imports]:import_declaration* [definitions]:definition* end;
 
   qualified_identifier = 
     {simple} unqualified_identifier |
@@ -139,18 +140,22 @@ Productions
     
   type_form =
     {function} function_type_form |
-    {scoped_pointer} at_operator lower_type_form |
-    {pointer} lower_type_form asterisk |
+    {scoped_pointer} lower_type_form asterisk |
+    {pointer} at_operator lower_type_form |
     {variant} variant_keyword lbracket variant_component+ rbracket |
     {gathering} variant_keyword extends lbracket gathering_component+ rbracket |
     {existential} existential_form |
-    {class} class_keyword function_arguments? extension_clause? lbracket [member]:member_declaration+ destructor_definition? rbracket |
+    {class} class_keyword function_arguments? class_extension_clause? lbracket [member]:member_declaration+ destructor_definition? rbracket |
     {exception} exception variant_case_contents [extension]:extension_clause? |
     {others} lower_type_form;
   
-  destructor_definition = delete [destructor]:block_expression;
+  destructor_definition = destructor [body]:block_expression;
   
   function_arguments_type_form = type_form comma type_form_list;
+  
+  type_arrow =
+    {closure} firstclass_function_arrow |
+    {pointer} function_pointer_arrow;
     
   function_type_form = 
     {one} [argument]:lower_type_form type_arrow [result]:type_form |
@@ -181,6 +186,7 @@ Productions
       
   definition = 
     {globaldef} define var? unqualified_identifier type_annotation? assignment_operator expression |
+    {extglobaldef} define var? import unqualified_identifier type_annotation |
     {typedef} type unqualified_identifier [parameters]:type_form_arguments? equals type_form |
     {moduledef} module_definition |
     {fundef} function_definition |
@@ -202,6 +208,9 @@ Productions
   extension_clause = 
     extends lower_type_form;
     
+  class_extension_clause =
+    extends lower_type_form function_arguments?;
+    
   argument =
     [name]:unqualified_identifier [type]:type_annotation?;
     
@@ -218,9 +227,8 @@ Productions
     {external} import function [name]:unqualified_identifier function_arguments [type]:type_annotation;
     
   expression =
-    {assignmentexp} qualified_identifier assignment_operator expression |
+    {assignmentexp} exp1 assignment_operator expression |
     {letexp} let lparen let_assignment_list rparen expression |
-    {castexp} cast labracket type_form rabracket lparen expression rparen |
     {matchexp} match_expression |
     {tryexp} try_expression |
     {finalexp} finally [finalizer]:expression |
@@ -236,9 +244,8 @@ Productions
     {others} exp5;
     
   expression_with_else =
-    {assignmentexp} qualified_identifier assignment_operator expression_with_else |
+    {assignmentexp} exp1 assignment_operator expression_with_else |
     {letexp} let lparen let_assignment_list rparen expression_with_else |
-    {castexp} cast labracket type_form rabracket lparen expression rparen |
     {matchexp} match_with_else |
     {tryexp} try_expression_with_else |
     {finalexp} finally [finalizer]:expression_with_else |
@@ -271,13 +278,14 @@ Productions
     {tuple} lsbracket expression_list rsbracket |
     {lambda} lambda_arguments evaluation_arrow block_expression |
     {call} function_call_expression |
+    {cast} cast labracket type_form rabracket lparen expression rparen |
     {parenthetical} parenthetical_expression |
-    {dereference} exp1 caret |
+    {identifier} qualified_identifier |
     {field} exp1 dot member_selector |
-    {identifier} qualified_identifier;
+    {dereference} exp1 caret;
   
   exp2 = 
-    {exponentiation} [exp1]:exp1 caret [exp2]:exp2 |
+    {exponentiation} [exp1]:exp1 exponentiation_operator [exp2]:exp2 |
     {minus} minus_operator exp2 |
     {not} not_operator exp2 |
     {others} exp1;
@@ -293,7 +301,6 @@ Productions
   exp4 =
     {plus} [exp1]:exp4 addition_operator [exp2]:exp3 |
     {minus} [exp1]:exp4 subtraction_operator [exp2]:exp3 |
-    {regions} [exp1]:exp4 region_combining_operator [exp2]:exp3 |
     {others} exp3;
     
   exp5 = 
@@ -307,9 +314,7 @@ Productions
     
   function_call_expression =
     {variable} [function]:qualified_identifier lparen [arguments]:expression_list? rparen |
-    {parens} [function]:parenthetical_expression lparen [arguments]:expression_list? rparen |
-    {new} new [region]:parenthetical_expression [argument]:parenthetical_expression |
-    {delete} delete [argument]:parenthetical_expression;
+    {parens} [function]:parenthetical_expression lparen [arguments]:expression_list? rparen;
     
   except_case_clause =
     case [name]:unqualified_identifier type_annotation evaluation_arrow [body]:expression;
@@ -362,9 +367,13 @@ Productions
   match_with_else = 
     match lparen expression rparen lbracket match_case_clause+ rbracket else expression_with_else;
     
+  block_steps_list =
+    {one} expression semicolon |
+    {many} expression semicolon block_steps_list;
+    
   block_contents =
     {one} expression |
-    {many} block_contents [separator]:semicolon expression [terminator]:semicolon;
+    {many} expression semicolon block_steps_list;
   	
   block_expression =
     lbracket block_contents rbracket;
