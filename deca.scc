@@ -246,7 +246,7 @@ Productions
   expression_with_else =
     {assignmentexp} exp1 assignment_operator expression_with_else |
     {letexp} let lparen let_assignment_list rparen expression_with_else |
-    {matchexp} match_with_else |
+    {matchexp} match_expression |
     {tryexp} try_expression_with_else |
     {finalexp} finally [finalizer]:expression_with_else |
     {forexp} for lparen [initializer]:let_assignment [first_separator]:comma [test]:expression [second_separator]:comma [step]:expression rparen [loop]:expression_with_else |
@@ -362,10 +362,7 @@ Productions
   match_case_clause = case [pattern]:match_pattern evaluation_arrow [body]:expression;
   
   match_expression = 
-    match lparen expression rparen lbracket match_case_clause+ rbracket else_clause?;
-  
-  match_with_else = 
-    match lparen expression rparen lbracket match_case_clause+ rbracket else expression_with_else;
+    match lparen expression rparen lbracket match_case_clause+ rbracket;
     
   block_steps_list =
     {one} expression semicolon |
