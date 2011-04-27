@@ -279,7 +279,7 @@ class FunctionArrow(d: List[TauType],r: TauType) extends RhoType with ArrowType 
     new LLVMFunctionType(compiledRange,compiledDomain.toArray,false)
   }
   
-  override def mangle: String = "((" + (domain match { case head :: tail => head.toString + tail.foldLeft("")((x: String,y: TauType) => x + "," + y.toString) case Nil => "" }) + ")->" + range.toString + ")*"
+  override def mangle: String = "(" + (domain match { case head :: tail => head.toString + tail.foldLeft("")((x: String,y: TauType) => x + "," + y.toString) case Nil => "" }) + ") @->" + range.toString
 }
 
 case class DataConstructor(name: Option[String],representation: Option[Int])
