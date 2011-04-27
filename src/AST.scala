@@ -110,9 +110,9 @@ object ASTProcessor {
         else
           Nil
         val result = processTypeForm(many.getResult,scope)
-        one.getTypeArrow match {
-          case pointer: APointerTypeArrow => new FunctionArrow(formals,range)
-          case closure: AClosureTypeArrow => new ClosureArrow(formals,range)
+        many.getTypeArrow match {
+          case pointer: APointerTypeArrow => new FunctionArrow(formals,result)
+          case closure: AClosureTypeArrow => new ClosureArrow(formals,result)
         }
       }
     }
