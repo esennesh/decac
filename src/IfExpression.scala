@@ -9,8 +9,9 @@ class UninferredIf(c: UninferredExpression,t: UninferredExpression,e: Option[Uni
   val condition = c
   val then = t
   val otherwise = e
+  override val writable = false
   override val expressionType: TauType = new TauVariable
-  override def children = List(condition,then) ++ (otherwise match {
+  override val children = List(condition,then) ++ (otherwise match {
     case Some(exp) => (exp :: Nil)
     case None => Nil
   })
@@ -45,7 +46,7 @@ class IfExpression(c: Expression,t: Expression,e: Option[Expression],ty: TauType
   val then = t
   val otherwise = e
   override val expressionType: TauType = ty
-  override def children = List(condition,then) ++ (otherwise match {
+  override val children = List(condition,then) ++ (otherwise match {
     case Some(exp) => (exp :: Nil)
     case None => Nil
   })
@@ -71,7 +72,7 @@ class SpecializedIf(c: SpecializedExpression,t: SpecializedExpression,e: Option[
   val then = t
   val otherwise = e
   override val expressionType: GammaType = typ
-  override def children = List(condition,then) ++ (otherwise match {
+  override val children = List(condition,then) ++ (otherwise match {
     case Some(exp) => (exp :: Nil)
     case None => Nil
   })

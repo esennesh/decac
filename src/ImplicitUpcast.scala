@@ -5,7 +5,7 @@ import jllvm._
 class ImplicitUpcast(expr: SpecializedExpression,gamma: GammaType) extends SpecializedExpression {
   override val expressionType: GammaType = gamma
   assert(TauOrdering.lteq(expr.expressionType,expressionType))
-  override def children: List[SpecializedExpression] = (expr :: Nil)
+  override val children: List[SpecializedExpression] = (expr :: Nil)
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = if(TauOrdering.lt(children.apply(0).expressionType,expressionType)) {
     val child = children.apply(0).compile(builder,scope)
     (children.apply(0).expressionType,expressionType) match {

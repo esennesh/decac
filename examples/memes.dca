@@ -42,7 +42,7 @@ function rage(): quadruple {
 
 function melvin(x,y: boolean) {
   if x then
-    megusta(y)
+    megusta(x:= y)
   else
     None
 }

@@ -116,7 +116,8 @@ class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecial
 class EnumerationValue(tp: TaggedProduct) extends ConstantExpression {
   val value = tp
   override val expressionType: SumType = new SumType(tp :: Nil)
-  override def children: List[ConstantExpression] = Nil
+  override val children: List[ConstantExpression] = Nil
+  override val writable = false
   override def build: LLVMConstantInteger = {
     val representation = expressionType.asInstanceOf[SumType].tagRepresentation
     LLVMConstantInteger.constantInteger(representation,value.constructor,false)

@@ -7,6 +7,7 @@ import scala.collection.mutable.HashMap
 
 abstract class UninferredArithmetic extends UninferredExpression {
   override val expressionType: TauType = new TauVariable
+  override val writable = false
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     rui.constrain(new LesserEq(expressionType,FP128Gamma))
     for(child <- children) {
@@ -42,7 +43,7 @@ case object Divide extends ArithmeticOperator {
 
 class UninferredOperator(x: UninferredExpression,y: UninferredExpression,op: ArithmeticOperator) extends UninferredArithmetic {
   val operator = op
-  override def children: List[UninferredExpression] = List(x,y)
+  override val children: List[UninferredExpression] = List(x,y)
   override def substitute(substitution: TauSubstitution): OperatorExpression = {
     val substitutionResult = substituteTypes(substitution)
     val subexprs = substitutionResult._2
@@ -52,7 +53,7 @@ class UninferredOperator(x: UninferredExpression,y: UninferredExpression,op: Ari
 
 class UninferredInteger(i: Int) extends UninferredArithmetic {
   val value: Int = i
-  override def children: List[UninferredArithmetic] = Nil
+  override val children: List[UninferredArithmetic] = Nil
   override val expressionType = if(value >= 0) {
       if(value <= IntegerConstants.max_byte)
         Byte
@@ -91,7 +92,7 @@ abstract class ArithmeticExpression(exprType: NumericalGamma) extends Expression
 class OperatorExpression(x: Expression,y: Expression,op: ArithmeticOperator,exprType: NumericalGamma) extends ArithmeticExpression(exprType) {
   val specializations: Map[BetaSpecialization,SpecializedOperator] = new HashMap[BetaSpecialization,SpecializedOperator]()
   val operator = op
-  override def children: List[Expression] = x :: y :: Nil
+  override val children: List[Expression] = x :: y :: Nil
   override def specialize(specialization: BetaSpecialization): SpecializedOperator = specializations.get(specialization) match {
     case Some(so) => so
     case None => {
@@ -107,7 +108,7 @@ class OperatorExpression(x: Expression,y: Expression,op: ArithmeticOperator,expr
 
 class IntegerConstant(i: Int,exprType: IntegerGamma) extends ArithmeticExpression(exprType) {
   val value: Int = i
-  override def children: List[ArithmeticExpression] = Nil
+  override val children: List[ArithmeticExpression] = Nil
   override def specialize(specialization: BetaSpecialization): SpecializedArithmetic = {
     new SpecializedIntConst(value,exprType)
   }
@@ -119,7 +120,7 @@ abstract class SpecializedArithmetic(gamma: NumericalGamma) extends SpecializedE
 
 class SpecializedOperator(x: SpecializedExpression,y: SpecializedExpression,op: ArithmeticOperator,exprType: NumericalGamma) extends SpecializedArithmetic(exprType) {
   val operator = op
-  override def children: List[SpecializedExpression] = x :: y :: Nil
+  override val children: List[SpecializedExpression] = x :: y :: Nil
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val lhs = (new ImplicitUpcast(children.apply(0),expressionType)).compile(builder,scope)
     val rhs = (new ImplicitUpcast(children.apply(1),expressionType)).compile(builder,scope)
@@ -142,7 +143,7 @@ class SpecializedOperator(x: SpecializedExpression,y: SpecializedExpression,op: 
 class SpecializedIntConst(i: Int,exprType: IntegerGamma) extends SpecializedArithmetic(exprType) {
   override val expressionType: IntegerGamma = exprType
   val value: Int = i
-  override def children: List[SpecializedArithmetic] = Nil
+  override val children: List[SpecializedArithmetic] = Nil
   def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     LLVMConstantInteger.constantInteger(expressionType.compile,value,true)
   }

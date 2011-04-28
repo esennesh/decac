@@ -9,7 +9,8 @@ import jllvm.LLVMInstructionBuilder
 
 trait UninferredExpression {
   val expressionType: TauType
-  def children: List[UninferredExpression]
+  val children: List[UninferredExpression]
+  val writable: Boolean
   protected def substituteTypes(substitution: TauSubstitution): Tuple2[TauType,List[Expression]] = {
     (substitution.solve(expressionType),children.map(child => child.substitute(substitution)))
   }
@@ -23,7 +24,7 @@ trait UninferredExpression {
 
 trait Expression {
   val expressionType: TauType
-  def children: List[Expression]
+  val children: List[Expression]
   def specialize(specialization: BetaSpecialization): SpecializedExpression
 }
 
@@ -33,13 +34,17 @@ trait SpecializedExpression {
     case rho: RhoType => assert(rho.filter(tau => tau.isInstanceOf[TauVariable]) == Nil)
     case _ => Unit
   }
-  def children: List[SpecializedExpression]
+  val children: List[SpecializedExpression]
   def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue
+}
+
+trait WritableExpression extends SpecializedExpression {
+  def store(builder: LLVMInstructionBuilder,scope: Scope[_],value: LLVMValue): LLVMValue
 }
 
 trait ConstantExpression extends SpecializedExpression with UninferredExpression with Expression {
   override val expressionType: GammaType
-  override def children: List[ConstantExpression]
+  override val children: List[ConstantExpression]
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = rui
   override def substitute(substitution: TauSubstitution): ConstantExpression = this
   override def specialize(specialization: BetaSpecialization): ConstantExpression = this

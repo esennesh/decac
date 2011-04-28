@@ -10,7 +10,8 @@ import jllvm.LLVMBitCast
 
 class UninferredBitcast(expr: UninferredExpression,tau: TauType) extends UninferredExpression {
   override val expressionType: TauType = tau
-  override def children: List[UninferredExpression] = (expr :: Nil)
+  override val children: List[UninferredExpression] = (expr :: Nil)
+  override val writable = false
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = rui
   override def substitute(substitution: TauSubstitution): Expression = {
     val pair = substituteTypes(substitution)
@@ -20,7 +21,7 @@ class UninferredBitcast(expr: UninferredExpression,tau: TauType) extends Uninfer
 
 class BitcastExpression(expr: Expression,sigma: TauType) extends Expression {
   override val expressionType: TauType = sigma
-  override def children: List[Expression] = (expr :: Nil)
+  override val children: List[Expression] = (expr :: Nil)
   override def specialize(specialization: BetaSpecialization): SpecializedExpression = {
     val child = children.apply(0).specialize(specialization)
     val gamma = specialization.solve(expressionType)
@@ -30,7 +31,7 @@ class BitcastExpression(expr: Expression,sigma: TauType) extends Expression {
 
 class SpecializedBitcast(expr: SpecializedExpression,gamma: GammaType) extends SpecializedExpression {
   override val expressionType: GammaType = gamma
-  override def children: List[SpecializedExpression] = (expr :: Nil)
+  override val children: List[SpecializedExpression] = (expr :: Nil)
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val child = children.apply(0).compile(builder,scope)
     val pResult = new LLVMStackAllocation(builder,child.typeOf,LLVMConstantInteger.constantInteger(Nat.compile,1,false),"cast_alloc")
