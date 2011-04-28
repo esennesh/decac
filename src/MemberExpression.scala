@@ -12,7 +12,8 @@ class UninferredMember(struct: UninferredExpression,selector: MemberSelector,ope
   val selection = selector
   override val expressionType = new TauVariable
   val structure = struct
-  override def children = (structure :: Nil)
+  override val children = (structure :: Nil)
+  override val writable = struct.writable
   def checkMember(substitution: TauSubstitution): Tuple2[TauType,Int] = (substitution.solve(structure.expressionType),selection) match {
     case (rec: RecordProduct,NameSelector(field)) => {
       val mem = rec.fields.zipWithIndex.find(f => f._1.name == Some(field) && (f._1.isPublic || openPrivate)).get
@@ -54,7 +55,7 @@ class MemberExpression(struct: Expression,m: Tuple2[TauType,Int]) extends Expres
   val member = m
   override val expressionType: TauType = member._1
   val structure = struct
-  override def children = (structure :: Nil)
+  override val children = (structure :: Nil)
   val specializations: Map[BetaSpecialization,SpecializedMember] = new HashMap[BetaSpecialization,SpecializedMember]()
   override def specialize(specialization: BetaSpecialization): SpecializedMember = specializations.get(specialization) match {
     case Some(sm) => sm
@@ -72,7 +73,7 @@ class SpecializedMember(struct: SpecializedExpression,m: Tuple2[GammaType,Int]) 
   val member = m
   override val expressionType: GammaType = member._1
   val structure = struct
-  override def children: List[SpecializedExpression] = (structure :: Nil)
+  override val children: List[SpecializedExpression] = (structure :: Nil)
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val struct = structure.compile(builder,scope)
     structure.expressionType match {

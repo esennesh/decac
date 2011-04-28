@@ -18,7 +18,8 @@ class UninferredComparison(op: ComparisonOperator,l: UninferredExpression,r: Uni
   val left = l
   val right = r
   val alpha = new TauVariable
-  override def children: List[UninferredExpression] = List(l,r)
+  override val children: List[UninferredExpression] = List(l,r)
+  override val writable = false
   
   def substitute(substitution: TauSubstitution): ComparisonExpression = {
     val genLeft = left.substitute(substitution)
@@ -42,7 +43,7 @@ class ComparisonExpression(op: ComparisonOperator,l: Expression,r: Expression,ta
   val left = l
   val right = r
   val commonType = tau
-  override def children: List[Expression] = List(l,r)
+  override val children: List[Expression] = List(l,r)
   val specializations: Map[BetaSpecialization,SpecializedComparison] = new HashMap[BetaSpecialization,SpecializedComparison]()
   def specialize(specialization: BetaSpecialization): SpecializedExpression = {
     val specLeft = left.specialize(specialization)
@@ -58,7 +59,7 @@ class SpecializedComparison(op: ComparisonOperator,l: SpecializedExpression,r: S
   val right = l
   val operator = op
   val gamma = g
-  override def children: List[SpecializedExpression] = List(left,right)
+  override val children: List[SpecializedExpression] = List(left,right)
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val compLeft = (new ImplicitUpcast(left,gamma)).compile(builder,scope)
     val compRight = (new ImplicitUpcast(right,gamma)).compile(builder,scope)

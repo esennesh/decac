@@ -10,7 +10,8 @@ import scala.collection.mutable.HashMap
 class UninferredBlock(exprs: List[UninferredExpression]) extends UninferredExpression {
   val steps: List[UninferredExpression] = exprs
   override val expressionType: TauType = steps.last.expressionType
-  override def children = steps
+  override val children = steps
+  override val writable = false
   override def substitute(substitution: TauSubstitution): BlockExpression = {
     new BlockExpression(substituteTypes(substitution)._2)
   }
@@ -23,7 +24,7 @@ class UninferredBlock(exprs: List[UninferredExpression]) extends UninferredExpre
 class BlockExpression(exprs: List[Expression]) extends Expression {
   val steps: List[Expression] = exprs
   override val expressionType: TauType = steps.last.expressionType
-  override def children = steps
+  override val children = steps
   val specializations: Map[BetaSpecialization,SpecializedBlock] = new HashMap[BetaSpecialization,SpecializedBlock]()
   override def specialize(specialization: BetaSpecialization): SpecializedBlock = specializations.get(specialization) match {
     case Some(sb) => sb
@@ -38,7 +39,7 @@ class BlockExpression(exprs: List[Expression]) extends Expression {
 class SpecializedBlock(exprs: List[SpecializedExpression]) extends SpecializedExpression {
   val steps: List[SpecializedExpression] = exprs
   override val expressionType: GammaType = steps.last.expressionType
-  override def children = steps
+  override val children = steps
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val builtSteps = children.map(child => child.compile(builder,scope))
     builtSteps.last

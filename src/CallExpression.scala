@@ -8,7 +8,8 @@ abstract class UninferredCall(arrow: ArrowType,arguments: List[UninferredExpress
   assert(arrow.domain.length == arguments.length)
   val signature = arrow
   override val expressionType: TauType = signature.range
-  override def children: List[UninferredExpression] = arguments
+  override val children: List[UninferredExpression] = arguments
+  override val writable = false
   override def substitute(substitution: TauSubstitution): CallExpression
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     children.map(child => child.constrain(rui))
@@ -29,7 +30,7 @@ class UninferredDefinitionCall(func: FunctionDefinition,arguments: List[Uninferr
 
 class UninferredExpressionCall(func: UninferredExpression,arguments: List[UninferredExpression]) extends UninferredCall(new ClosureArrow(arguments.map(tau => new TauVariable),new TauVariable),arguments) {
   val function = func
-  override def children: List[UninferredExpression] = function :: arguments
+  override val children: List[UninferredExpression] = function :: arguments
   override def constrain(rui: RangeUnificationInstance): RangeUnificationInstance = {
     super.constrain(rui)
     val sigType = signature match {
@@ -52,39 +53,30 @@ abstract class CallExpression(arrow: FunctionArrow,args: List[Expression]) exten
   val signature = arrow
   val arguments = args
   override val expressionType: TauType = signature.range
-  override def children: List[Expression] = arguments
+  override val children: List[Expression] = arguments
   override def specialize(specialization: BetaSpecialization): SpecializedCall
 }
 
 class DefinitionCall(func: FunctionDefinition,sig: FunctionArrow,arguments: List[Expression]) extends CallExpression(sig,arguments) {
   val definition = func
-  val specializations = new HashMap[BetaSpecialization,SpecializedDefinitionCall]
   
-  override def specialize(specialization: BetaSpecialization): SpecializedDefinitionCall = specializations.get(specialization) match {
-    case Some(spec) => spec
-    case None => {
-      val args = arguments.map(expr => expr.specialize(specialization))
-      val typeArgs = args.map(arg => arg.expressionType).zip(definition.signature.body.asInstanceOf[FunctionArrow].domain).filter(pair => pair._2.isInstanceOf[BetaVariable]).map(pair => pair._1)
-      val specFunc = definition.specialize(typeArgs)
-      val result = new SpecializedDefinitionCall(specFunc,args)
-      specializations.put(specialization,result)
-      result
-    }
+  override def specialize(specialization: BetaSpecialization): SpecializedDefinitionCall = {
+    val args = arguments.map(expr => expr.specialize(specialization))
+    val typeArgs = args.map(arg => arg.expressionType).zip(definition.signature.body.asInstanceOf[FunctionArrow].domain).filter(pair => pair._2.isInstanceOf[BetaVariable]).map(pair => pair._1)
+    val specFunc = definition.specialize(typeArgs)
+    new SpecializedDefinitionCall(specFunc,args)
   }
 }
 
 class ExpressionCall(func: Expression,args: List[Expression]) extends CallExpression(func.expressionType.asInstanceOf[ClosureArrow].signature,args) {
   val function = func
-  override def children: List[Expression] = function :: arguments
+  override val children: List[Expression] = function :: arguments
   val specializations = new HashMap[BetaSpecialization,SpecializedExpressionCall]
   
-  override def specialize(specialization: BetaSpecialization): SpecializedExpressionCall = specializations.get(specialization) match {
-    case Some(spec) => spec
-    case None => {
-      val args = arguments.map(arg => arg.specialize(specialization))
-      val func = function.specialize(specialization)
-      new SpecializedExpressionCall(func,args)
-    }
+  override def specialize(specialization: BetaSpecialization): SpecializedExpressionCall = {
+    val args = arguments.map(arg => arg.specialize(specialization))
+    val func = function.specialize(specialization)
+    new SpecializedExpressionCall(func,args)
   }
 }
 
@@ -93,7 +85,7 @@ abstract class SpecializedCall(arrow: FunctionArrow,args: List[SpecializedExpres
   val signature = arrow
   val arguments = args
   override val expressionType: GammaType = signature.range.asInstanceOf[GammaType]
-  override def children: List[SpecializedExpression] = args
+  override val children: List[SpecializedExpression] = args
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue
 }
 
@@ -113,7 +105,7 @@ class SpecializedDefinitionCall(func: SpecializedFunction,args: List[Specialized
 
 class SpecializedExpressionCall(func: SpecializedExpression,args: List[SpecializedExpression]) extends SpecializedCall(func.expressionType.asInstanceOf[ClosureArrow].signature,args) {
   val function = func
-  override def children: List[SpecializedExpression] = function :: arguments
+  override val children: List[SpecializedExpression] = function :: arguments
   
   override def compile(builder: LLVMInstructionBuilder,scope: Scope[_]): LLVMValue = {
     val func = function.compile(builder,scope)

@@ -352,11 +352,17 @@ Productions
     {many} pattern_list comma match_pattern;
     
   pattern_variable = {some} unqualified_identifier | {none} underscore;
+  
+  variant_pattern_arguments = lparen pattern_list rparen;
     
   match_pattern = 
+    //literal = value
     {literal} literal_expression |
+    //bind variable:= value, unify types rather than values
     {variable} [name]:pattern_variable type_annotation? |
-    {variant} [name]:qualified_identifier lparen pattern_list? rparen |
+    //data constructor = value, unify by testing value.tag and pushing new constraints on stack based on pattern_list
+    {variant} [name]:qualified_identifier variant_pattern_arguments? |
+    //tuple = value, unify by pushing new component-wise constraints
     {tuple} lsbracket pattern_list rsbracket;
     
   match_case_clause = case [pattern]:match_pattern evaluation_arrow [body]:expression;

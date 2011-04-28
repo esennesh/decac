@@ -223,6 +223,11 @@ object ASTProcessor {
     new UninferredIf(condition,body,Some(otherwise))
   }
   def processExpressionWithElse(expression: PExpressionWithElse,scope: UninferredLexicalScope): UninferredExpression = expression match {
+    case assignment: AAssignmentexpExpressionWithElse => {
+      val left = processExp1(assignment.getExp1,scope)
+      val right = processExpressionWithElse(assignment.getExpressionWithElse,scope)
+      new UninferredAssignment(left,right)
+    }
     case blockexp: ABlockexpExpressionWithElse => processBlock(blockexp.getBlockExpression,scope)
     case exp5: AOthersExpressionWithElse => processExp5(exp5.getExp5,scope)
     case ifelse: AIfwithelseexpExpressionWithElse => processIfElseWithElseWithElse(ifelse,scope)
@@ -236,6 +241,11 @@ object ASTProcessor {
     }
   }
   def processExpression(expression: PExpression,scope: UninferredLexicalScope): UninferredExpression = expression match {
+    case assignment: AAssignmentexpExpression => {
+      val left = processExp1(assignment.getExp1,scope)
+      val right = processExpression(assignment.getExpression,scope)
+      new UninferredAssignment(left,right)
+    }
     case blockexp: ABlockexpExpression => processBlock(blockexp.getBlockExpression,scope)
     case exp5: AOthersExpression => processExp5(exp5.getExp5,scope)
     case ifthen: AIfwithoutelseexpExpression => processIfThen(ifthen,scope)
