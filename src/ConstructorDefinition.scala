@@ -70,14 +70,14 @@ class ExplicitConstructor(m: Module,tp: TaggedProduct,args: List[Tuple2[String,T
 }
 
 class SpecializedConstructor(org: ConstructorDefinition,specializer: BetaSpecialization) extends SpecializedFunction {
-  val original = org
+  override val generic = org
   val name: String = org.name
   
-  override val signature: FunctionArrow = specializer.solve(original.signature.body).asInstanceOf[FunctionArrow]
+  override val signature: FunctionArrow = specializer.solve(generic.signature.body).asInstanceOf[FunctionArrow]
   protected val range = signature.range.asInstanceOf[SumType].sumCases.head
   
   val function = {
-    val f = new LLVMFunction(original.scope.compiledModule,name + "constructor" + signature.toString,signature.compile)
+    val f = new LLVMFunction(generic.scope.compiledModule,name + "constructor" + signature.toString,signature.compile)
     if(!specializer.isEmpty)
       f.setLinkage(LLVMLinkage.LLVMWeakODRLinkage)
     f

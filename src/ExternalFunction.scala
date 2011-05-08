@@ -8,7 +8,8 @@ import jllvm.LLVMInstructionBuilder
 
 class ExternalFunction(s: TypeBindingScope,n: String,args: List[Tuple2[String,GammaType]],result: GammaType) extends FunctionDefinition with SpecializedFunction {
   override val name: String = n
-  override val scope: Module = { s.parent.define(this) ; s.parent }
+  override val scope: Module = { s.owner.define(this) ; s.owner }
+  override val generic = this
   override val signature: FunctionArrow = new FunctionArrow(args.map(arg => arg._2),result)
   protected val specs: Map[List[GammaType],ExternalFunction] = new HashMap[List[GammaType],ExternalFunction]()
   specs.put(Nil,this)

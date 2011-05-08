@@ -118,7 +118,7 @@ object ASTProcessor {
     }
     case scopedPointer: AScopedPointerTypeForm => {
       val form = processLowerTypeForm(scopedPointer.getLowerTypeForm,scope)
-      new ScopedPointer(form,new GlobalScopeType(Some(scope.parent)))
+      new ScopedPointer(form,new GlobalScopeType(Some(scope.owner)))
     }
     case variant: AVariantTypeForm => {
       val componentForms = convertList(variant.getVariantComponent)
@@ -233,8 +233,8 @@ object ASTProcessor {
     case ifelse: AIfwithelseexpExpressionWithElse => processIfElseWithElseWithElse(ifelse,scope)
     case cast: ACastexpExpressionWithElse => {
       var tscope: Scope[_] = scope
-      while(!tscope.isInstanceOf[Module] && tscope.parent != null)
-        tscope = tscope.parent
+      while(!tscope.isInstanceOf[Module] && tscope.parent != None)
+        tscope = tscope.parent.get
       val tau = processTypeForm(cast.getTypeForm,new TypeBindingScope(tscope.asInstanceOf[Module]))
       val expr = processExpression(cast.getExpression,scope)
       new UninferredBitcast(expr,tau)
@@ -252,8 +252,8 @@ object ASTProcessor {
     case ifelse: AIfwithelseexpExpression => processIfElse(ifelse,scope)
     case cast: ACastexpExpression => {
       var tscope: Scope[_] = scope
-      while(!tscope.isInstanceOf[Module] && tscope.parent != null)
-        tscope = tscope.parent
+      while(!tscope.isInstanceOf[Module] && tscope.parent != None)
+        tscope = tscope.parent.get
       val tau = processTypeForm(cast.getTypeForm,new TypeBindingScope(tscope.asInstanceOf[Module]))
       val expr = processExpression(cast.getExpression,scope)
       new UninferredBitcast(expr,tau)
@@ -312,7 +312,7 @@ object ASTProcessor {
   def processDefinition(adef: PDefinition,scope: Module): Definition = adef match {
     case amoddef: AModuledefDefinition => {
       val moddef: AModuleDefinition = amoddef.getModuleDefinition() match {case real: AModuleDefinition => real}
-      val result = new Module(scope,moddef.getName().getText())
+      val result = new Module(Some(scope),moddef.getName().getText())
       convertList(moddef.getImports()).foreach(imp => declareImportDeclaration(result,imp))
       convertList(moddef.getDefinitions).foreach(definition => processDefinition(definition,result))
       return result

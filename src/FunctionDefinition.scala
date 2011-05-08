@@ -19,13 +19,14 @@ trait FunctionDefinition extends Definition {
 
 trait SpecializedFunction {
   val signature: FunctionArrow
+  val generic: FunctionDefinition
   
   def compile: LLVMFunction
 }
 
 class ExpressionFunction(s: TypeBindingScope,n: String,args: List[Tuple2[String,UninferredArgument]],r: Option[TauType],b: (UninferredLexicalScope) => UninferredBlock) extends FunctionDefinition {
   override val name: String = n
-  override val scope: Module = { s.parent.define(this) ; s.parent }
+  override val scope: Module = { s.owner.define(this) ; s.owner }
   protected var inferred: Option[GeneralizedExpressionFunction] = None
   val uninferred = new UninferredExpressionFunction(new UninferredLexicalScope(scope,args),r match { case Some(tau) => tau case None => new TauVariable })
   uninferred.generateBody(b)
@@ -121,6 +122,7 @@ class GeneralizedExpressionFunction(uninferred: UninferredExpressionFunction,sub
 }
 
 class SpecializedExpressionFunction(definition: ExpressionFunction,general: GeneralizedExpressionFunction,specializer: BetaSpecialization) extends SpecializedFunction {
+  override val generic = definition
   override val signature: FunctionArrow = specializer.solve(general.signature.body) match {
     case frho: FunctionArrow => frho
     case _ => throw new Exception("Specializing a function's type should never yield anything but an arrow type.")

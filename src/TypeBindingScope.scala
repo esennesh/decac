@@ -6,8 +6,9 @@ class TypeBinding(t: TauType,n: String,s: TypeBindingScope) extends Scopeable {
   val tau = t
 }
 
-class TypeBindingScope(p: Module) extends Scope[TypeBinding](p) {
-  override val parent: Module = p
+class TypeBindingScope(p: Module) extends Scope[TypeBinding](Some(p)) {
+  override val parent: Option[Module] = Some(p)
+  val owner: Module = p
   def bind(b: TypeBinding) = declare(b)
-  override def scopeType = parent.scopeType
+  override def scopeType = owner.scopeType
 }
