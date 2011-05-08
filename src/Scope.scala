@@ -22,12 +22,15 @@ trait SpecializedVariableBinding extends VariableBinding {
   def store(builder: LLVMInstructionBuilder,value: LLVMValue): LLVMValue
 }
 
-abstract class Scope[T <: Scopeable](p: Scope[_]) {
+abstract class Scope[T <: Scopeable](p: Option[Scope[_]]) {
   val symbols: Map[String,T] = new HashMap[String,T]()
 
   def lookup(name: String): Scopeable = symbols.get(name) match {
     case Some(result) => result
-    case None => if(parent != null) parent.lookup(name) else throw new UndeclaredIdentifierException(name)
+    case None => parent match {
+      case Some(p) => p.lookup(name)
+      case None => throw new UndeclaredIdentifierException(name)
+    }
   }
   
   def lookup(name: List[String]): Scopeable = name.tail match {
@@ -54,9 +57,12 @@ abstract class Scope[T <: Scopeable](p: Scope[_]) {
     symbols.put(obj.name,obj)
   }
   
-  val parent: Scope[_] = p
+  val parent: Option[Scope[_]] = p
   
-  def enclosed(s: Scope[_]): Boolean = parent == s || parent.enclosed(s)
+  def enclosed(s: Scope[_]): Boolean = parent match {
+    case Some(p) => p == s || p.enclosed(s)
+    case None => false
+  }
   def scopeType: ScopeType
   
   override def toString: String = "Scope { " + symbols.toString + " }"

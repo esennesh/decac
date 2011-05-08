@@ -118,6 +118,8 @@ class SpecializedComparison(op: ComparisonOperator,l: SpecializedExpression,r: S
           assert(array.dynamic)
           new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,compLeft,compRight,"comparison")
         }
+        case function: FunctionArrow => new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,compLeft,compRight,"comparison")
+        //How the hell do I define equality for closures?
       }
       case DifferentComp => gamma match {
         case num: NumericalGamma => num match {

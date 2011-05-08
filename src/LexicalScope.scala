@@ -9,7 +9,9 @@ import jllvm.LLVMStoreInstruction
 import jllvm.LLVMValue
 import jllvm.LLVMArgument
 
-abstract class AnyLexicalScope[T <: VariableBinding](p: Scope[_]) extends Scope[T](p)
+abstract class AnyLexicalScope[T <: VariableBinding](p: Scope[_ <: Scopeable]) extends Scope[T](Some(p)) {
+  val owner: Scope[_ <: Scopeable] = p
+}
 
 abstract class UninferredLexicalKind(t: TauType) {
   val variableType: TauType = t
@@ -29,13 +31,13 @@ class UninferredLexicalBinding(n: String,s: UninferredLexicalScope,k: Uninferred
   }
 }
 
-class UninferredLexicalScope(p: Scope[_],binds: List[Tuple2[String,UninferredLexicalKind]]) extends AnyLexicalScope[VariableBinding](p) {
+class UninferredLexicalScope(p: Scope[_ <: Scopeable],binds: List[Tuple2[String,UninferredLexicalKind]]) extends AnyLexicalScope[VariableBinding](p) {
   val bindings = binds.map(pair => new UninferredLexicalBinding(pair._1,this,pair._2))
   bindings.foreach(binding => declare(binding))
   
   def infer(substitution: TauSubstitution): LexicalScope = {
     val bound = bindings.map(binding => binding.infer(substitution))
-    new LexicalScope(parent,bound)
+    new LexicalScope(owner,bound)
   }
   
   override def scopeType: ScopeType = new LexicalScopeType(this)
@@ -65,7 +67,7 @@ class LexicalBinding(n: String,s: LexicalScope,k: LexicalKind) extends VariableB
   }
 }
 
-class LexicalScope(p: Scope[_],bound: List[Tuple2[String,LexicalKind]]) extends AnyLexicalScope[LexicalBinding](p) {
+class LexicalScope(p: Scope[_ <: Scopeable],bound: List[Tuple2[String,LexicalKind]]) extends AnyLexicalScope[LexicalBinding](p) {
   protected val bindings: List[LexicalBinding] = bound.map(pair => new LexicalBinding(pair._1,this,pair._2))
   bindings.foreach(binding => declare(binding))
   protected val specializations = new HashMap[BetaSpecialization,SpecializedLexicalScope]()
@@ -75,7 +77,7 @@ class LexicalScope(p: Scope[_],bound: List[Tuple2[String,LexicalKind]]) extends 
         case None => bindings.map(binding => binding.specialize(substitution,None))
         case Some(arguments) => bindings.zip(arguments).map(pair => pair._1.specialize(substitution,Some(pair._2)))
       }
-      val result = new SpecializedLexicalScope(parent,bound)
+      val result = new SpecializedLexicalScope(owner,bound)
       specializations.put(substitution,result)
       result
     }
@@ -102,7 +104,7 @@ class SpecializedLexicalBinding(n: String,s: SpecializedLexicalScope,k: Speciali
     case None => {
       val result = new LLVMStackAllocation(builder,variableType.compile,null,name)
       val init = kind match {
-        case SpecializedLet(initializer) => initializer.compile(builder,scope.parent)
+        case SpecializedLet(initializer) => initializer.compile(builder,scope.owner)
         case SpecializedArgument(_,arg) => arg
       }
       new LLVMStoreInstruction(builder,init,result)
@@ -122,7 +124,7 @@ class SpecializedLexicalBinding(n: String,s: SpecializedLexicalScope,k: Speciali
   }
 }
 
-class SpecializedLexicalScope(p: Scope[_],bound: List[Tuple2[String,SpecializedKind]]) extends AnyLexicalScope[SpecializedLexicalBinding](p) {
+class SpecializedLexicalScope(p: Scope[_ <: Scopeable],bound: List[Tuple2[String,SpecializedKind]]) extends AnyLexicalScope[SpecializedLexicalBinding](p) {
   val bindings: List[SpecializedLexicalBinding] = bound.map(pair => new SpecializedLexicalBinding(pair._1,this,pair._2))
   bindings.foreach(binding => declare(binding))
   def compile(builder: LLVMInstructionBuilder): List[LLVMValue] = bindings.map(binding => binding.compile(builder))
