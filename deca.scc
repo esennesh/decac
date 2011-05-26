@@ -135,8 +135,7 @@ Productions
   gathering_component =
     qualified_identifier variant_case_contents?;
     
-  existential_form =
-    interface labracket unqualified_identifier rabracket type_form;
+  interface_component_form = unqualified_identifier colon function_pointer_form;
     
   type_form =
     {function} function_type_form |
@@ -144,7 +143,7 @@ Productions
     {pointer} at_operator lower_type_form |
     {variant} variant_keyword lbracket variant_component+ rbracket |
     {gathering} variant_keyword extends lbracket gathering_component+ rbracket |
-    {existential} existential_form |
+    {interface} interface lbracket interface_component_form+ rbracket |
     {class} class_keyword function_arguments? class_extension_clause? lbracket [member]:member_declaration+ destructor_definition? rbracket |
     {exception} exception variant_case_contents [extension]:extension_clause? |
     {others} lower_type_form;
@@ -160,6 +159,10 @@ Productions
   function_type_form = 
     {one} [argument]:lower_type_form type_arrow [result]:type_form |
     {many} lparen function_arguments_type_form? rparen type_arrow [result]:type_form;
+    
+  function_pointer_form = 
+    {one} [argument]:lower_type_form function_pointer_arrow [result]:type_form |
+    {many} lparen function_arguments_type_form? rparen function_pointer_arrow [result]:type_form;
     
   recursive_type_naming =
     let [name]:unqualified_identifier equals;
@@ -239,8 +242,6 @@ Productions
     {ifwithelseexp} if [condition]:expression then [thenbody]:expression_with_else else_clause |
     {blockexp} block_expression |
     {returnexp} return expression |
-    {packexp} existential_form assignment_operator expression |
-    {unpack} match unqualified_identifier colon existential_form assignment_operator expression block_expression |
     {others} exp5;
     
   expression_with_else =
@@ -255,8 +256,6 @@ Productions
     {ifwithelseexp} if [condition]:expression then [thenbody]:expression_with_else else [elsebody]:expression_with_else |
     {blockexp} block_expression |
     {returnexp} return expression_with_else |
-    {packexp} existential_form assignment_operator expression_with_else |
-    {unpack} match unqualified_identifier colon existential_form assignment_operator expression block_expression |
     {others} exp5;
     
   literal_expression =
@@ -265,10 +264,15 @@ Productions
     {string} string_constant;
     
   lambda_arguments =
+    {zero} lparen rparen |
     {one} argument |
     {many} lparen argument comma argument_list rparen;
     
   member_selector = {name} unqualified_identifier | {index} lsbracket integer_constant rsbracket;
+  
+  interface_component = unqualified_identifier assignment_operator lambda_expression;
+  
+  lambda_expression = lambda_arguments evaluation_arrow block_expression;
   
   //Increasing precedence levels.
   exp1 =
@@ -276,7 +280,8 @@ Productions
     {sizeof} sizeof lparen type_form rparen |
     {literal} literal_expression |
     {tuple} lsbracket expression_list rsbracket |
-    {lambda} lambda_arguments evaluation_arrow block_expression |
+    {lambda} lambda_expression |
+    {interface} interface lbracket interface_component+ rbracket |
     {call} function_call_expression |
     {cast} cast labracket type_form rabracket lparen expression rparen |
     {parenthetical} parenthetical_expression |
