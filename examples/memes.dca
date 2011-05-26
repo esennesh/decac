@@ -63,4 +63,11 @@ function foreveralone(x,y: Either<boolean,nat>): boolean {
   foreveralone(x,Left(x));
 }
 
+function ilied(x) {
+  if x then
+    Some(x)
+  else
+    None
+}
+
 end
