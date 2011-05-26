@@ -26,6 +26,12 @@ class ModuleVariableDefinition(m: Module,n: String,value: ConstantExpression,mut
     }
   }
   override def compile(builder: LLVMInstructionBuilder): LLVMValue = build
-  override def load(builder: LLVMInstructionBuilder): LLVMValue = new LLVMLoadInstruction(builder,compiledGlobal.get,name)
-  override def store(builder: LLVMInstructionBuilder,value: LLVMValue): LLVMValue = new LLVMStoreInstruction(builder,value,compiledGlobal.get)
+  override def load(builder: LLVMInstructionBuilder): LLVMValue = {
+    build
+    new LLVMLoadInstruction(builder,compiledGlobal.get,name)
+  }
+  override def store(builder: LLVMInstructionBuilder,value: LLVMValue): LLVMValue = {
+    build
+    new LLVMStoreInstruction(builder,value,compiledGlobal.get)
+  }
 }

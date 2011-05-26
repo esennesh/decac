@@ -1,0 +1,98 @@
+unsafe module malloc
+
+type MemoryBlock = class(l) {
+  length: nat:= l;
+}
+type FreeBlock = class(l,p,n) extends MemoryBlock(l) {
+  last: Option<@FreeBlock>:= p;
+  next: Option<@FreeBlock>:= n;
+}
+
+type BlockEnd = [length: nat]
+
+define minimumBlockSize:= sizeof(MemoryBlock) - sizeof(FreeBlock)
+
+define import heap: @byte
+define import freeList: @FreeBlock
+define import heapPages: nat
+
+function blockEnd(block: @MemoryBlock): @MemoryBlock {
+  cast<@MemoryBlock>(block^.length + sizeof(variant { MemoryBlock(length: nat) }) + cast<nat>(block))
+}
+
+function lastBlock(block: @MemoryBlock): Option<@MemoryBlock> {
+  let(blockLoc:= cast<nat>(block))
+    let(lastEndLoc:= blockLoc - sizeof(BlockEnd)) {
+      if blockLoc >= cast<nat>(heap) + sizeof(variant { MemoryBlock(length: nat) }) + sizeof(BlockEnd) + minimumBlockSize then
+        Some(cast<@MemoryBlock>(lastEndLoc - (cast<@BlockEnd>(lastEndLoc))^.length))
+      else
+        None
+    }
+}
+
+function nextBlock(block: @MemoryBlock): Option<@MemoryBlock> {
+  if cast<nat>(block) + sizeof(BlockEnd) <= (cast<nat>(heap) + heapPages * 4096) - 2*(sizeof(variant { MemoryBlock(length: nat) }) + sizeof(BlockEnd) + minimumBlockSize) then
+    Some(cast<@MemoryBlock>(cast<nat>(block) + sizeof(variant { MemoryBlock(length: nat) }) + block^.length + sizeof(BlockEnd)))
+  else
+    None
+}
+
+function new<a>(object: a,destructor: a @-> Unit): @a {
+  let(result:= cast<@[a,a @-> Unit]>(malloc(sizeof([a,a @-> Unit])))) {
+    result^.[0]:= a;
+    result^.[1]:= destructor;
+    @result^.[0];
+  }
+}
+
+function delete<a>(object: @a): Unit {
+  let(tuple:= cast<@[a,a @-> Unit]>(object)) {
+    (tuple^.[1])(tuple^.[0]);
+    free(cast<@byte>(tuple))
+  }
+}
+
+function malloc(num_bytes: nat): @byte {
+  if num_bytes < minimumBlockSize then
+    num_bytes:= minimumBlockSize;
+  let(free: Option<@FreeBlock>:= Some(freeList), exhausted:= false, result:= None) {
+    while (exhausted = false) and (result = None) do match(free) {
+      case Some(block) => {
+        if block.length >= num_bytes then {
+          if block.length > num_bytes then
+            let(newBlock:= cast<FreeBlock*>(cast<nat>(block) + sizeof(MemoryBlock) + num_bytes + sizeof(BlockEnd))) {
+              newBlock^:= FreeBlock(block^.length - num_bytes - sizeof(BlockEnd) - sizeof(variant { MemoryBlock(length: nat) }),block,block^.next);
+              blockEnd(newBlock)^.length:= newBlock^.length;
+              block^.length:= num_bytes;
+              blockEnd(block)^.length:= num_bytes;
+              block^.next:= Some(newBlock);
+            };
+          match(block^.last) {
+            case Some(last) => last^.next:= block^.next
+          };
+          match(block^.next) {
+            case Some(next) => next^.last:= block^.last
+          };
+          if block = freeList then
+            match(block^.next) {
+              case Some(next) => freeList:= next
+              case None => throw OutOfFreeBlocks
+            };
+          cast<MemoryBlock*>(block)^:= MemoryBlock(block.length);
+          result:= Some(cast<@byte>(cast<nat>(block) + sizeof(variant { MemoryBlock(length: nat) })));
+        };
+        free:= block^.next;
+      }
+      case None => exhausted:= true
+    };
+    match(result) {
+      case Some(pointer) => pointer
+      case None => throw OutOfMemory
+    };
+  };
+}
+
+/* function coalesce(free: @FreeBlock,block: @FreeBlock,forwards: Boolean): @FreeBlock
+   function free(mem: @byte): Unit */
+
+end

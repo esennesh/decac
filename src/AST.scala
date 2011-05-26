@@ -160,6 +160,14 @@ object ASTProcessor {
       case name: ANameMemberSelector => NameSelector(name.getUnqualifiedIdentifier.getText)
       case index: AIndexMemberSelector => IndexSelector(index.getIntegerConstant.getText.toInt)
     })
+    case cast: ACastExp1 => {
+      var tscope: Scope[_] = scope
+      while(!tscope.isInstanceOf[Module] && tscope.parent != None)
+        tscope = tscope.parent.get
+      val tau = processTypeForm(cast.getTypeForm,new TypeBindingScope(tscope.asInstanceOf[Module]))
+      val expr = processExpression(cast.getExpression,scope)
+      new UninferredBitcast(expr,tau)
+    }
   }
   def processExp2(exp: PExp2,scope: UninferredLexicalScope): UninferredExpression = exp match {
     case minus: AMinusExp2 => new UninferredOperator(new UninferredInteger(0),processExp2(minus.getExp2,scope),Subtract)
@@ -231,14 +239,6 @@ object ASTProcessor {
     case blockexp: ABlockexpExpressionWithElse => processBlock(blockexp.getBlockExpression,scope)
     case exp5: AOthersExpressionWithElse => processExp5(exp5.getExp5,scope)
     case ifelse: AIfwithelseexpExpressionWithElse => processIfElseWithElseWithElse(ifelse,scope)
-    case cast: ACastexpExpressionWithElse => {
-      var tscope: Scope[_] = scope
-      while(!tscope.isInstanceOf[Module] && tscope.parent != None)
-        tscope = tscope.parent.get
-      val tau = processTypeForm(cast.getTypeForm,new TypeBindingScope(tscope.asInstanceOf[Module]))
-      val expr = processExpression(cast.getExpression,scope)
-      new UninferredBitcast(expr,tau)
-    }
   }
   def processExpression(expression: PExpression,scope: UninferredLexicalScope): UninferredExpression = expression match {
     case assignment: AAssignmentexpExpression => {
@@ -250,14 +250,6 @@ object ASTProcessor {
     case exp5: AOthersExpression => processExp5(exp5.getExp5,scope)
     case ifthen: AIfwithoutelseexpExpression => processIfThen(ifthen,scope)
     case ifelse: AIfwithelseexpExpression => processIfElse(ifelse,scope)
-    case cast: ACastexpExpression => {
-      var tscope: Scope[_] = scope
-      while(!tscope.isInstanceOf[Module] && tscope.parent != None)
-        tscope = tscope.parent.get
-      val tau = processTypeForm(cast.getTypeForm,new TypeBindingScope(tscope.asInstanceOf[Module]))
-      val expr = processExpression(cast.getExpression,scope)
-      new UninferredBitcast(expr,tau)
-    }
   }
   
   def processExpressionList(exprs: PExpressionList,scope: UninferredLexicalScope): List[UninferredExpression] = exprs match {
