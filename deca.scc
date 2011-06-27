@@ -246,10 +246,10 @@ Productions
   function_arguments = lparen [arguments]:argument_list? rparen implicit_arguments?;
     
   function_definition = 
-    {method} method [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [effect]:effect_annotation? [body]:block_expression |
+    {method} implicit? method [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [effect]:effect_annotation? [body]:block_expression |
     {override} override [name]:qualified_identifier function_arguments [body]:block_expression |
-    {function} function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation? [effect]:effect_annotation? [body]:block_expression |
-    {external} import function [name]:unqualified_identifier function_arguments [type]:type_annotation [effect]:effect_annotation;
+    {function} implicit? function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation? [effect]:effect_annotation? [body]:block_expression |
+    {external} import implicit? function [name]:unqualified_identifier function_arguments [type]:type_annotation [effect]:effect_annotation;
     
   expression =
     {assignmentexp} exp1 assignment_operator expression |
