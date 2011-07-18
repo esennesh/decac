@@ -1,4 +1,4 @@
-Package decasyntax;
+Package decac.parser;
 
 Helpers
   unicode_input_character = [0..0xffff];
@@ -119,7 +119,7 @@ Ignored Tokens
   
 Productions
   module_definition = 
-    unsafe? module [name]:unqualified_identifier [imports]:import_declaration* [definitions]:definition* end;
+    unsafe? module [name]:unqualified_identifier [imports]:import_declaration* [definitions]:definition+ end;
 
   qualified_identifier = 
     {simple} unqualified_identifier |
@@ -165,7 +165,6 @@ Productions
     
   type_form =
     {function} function_type_form |
-    {scoped_pointer} lower_type_form asterisk |
     {pointer} at_operator lower_type_form |
     {closed_variant} final variant_keyword lbracket closed_variant_component+ rbracket |
     {open_variant} variant_keyword extension_clause? lbracket open_variant_component+ rbracket |
@@ -173,44 +172,41 @@ Productions
     {class} class_keyword function_arguments? class_extension_clause? lbracket [member]:member_declaration+ rbracket |
     {exception} exception variant_case_contents [extension]:extension_clause? |
     {others} lower_type_form;
-  
-  function_arguments_type_form = type_form comma type_form_list;
+    
+  arguments_form = lparen type_form_list? rparen;
     
   function_type_form = 
     {pointer} function_pointer_form |
     {firstclass} firstclass_function_form;
     
   firstclass_function_form =
-    {one} [argument]:lower_type_form firstclass_function_arrow [effect]:effect_annotation? [result]:type_form |
-    {many} lparen function_arguments_type_form? rparen firstclass_function_arrow [effect]:effect_annotation? [result]:type_form;
+    [formals]:arguments_form [implicits]:arguments_form? firstclass_function_arrow [effect]:effect_annotation? [result]:type_form;
     
   function_pointer_form = 
-    {one} [argument]:lower_type_form function_pointer_arrow [effect]:effect_annotation? [result]:type_form |
-    {many} lparen function_arguments_type_form? rparen function_pointer_arrow [effect]:effect_annotation? [result]:type_form;
+    [formals]:arguments_form [implicits]:arguments_form? function_pointer_arrow [effect]:effect_annotation? [result]:type_form;
     
   tuple_component =
-    {type} type_form |
-    {binding} [name]:unqualified_identifier type_annotation;
+    {type} var? type_form |
+    {binding} var? [name]:unqualified_identifier type_annotation;
     
   tuple_component_list = 
     {one} tuple_component |
-    {many} tuple_component_list comma tuple_component;
-    
-  tuple_form = 
-    lbracket tuple_component_list rbracket;
+    {many} tuple_component comma tuple_component_list;
     
   type_parameterization = labracket [arguments]:type_form_list rabracket;
   
   lower_type_form =
+    {tuple} lsbracket tuple_component_list rsbracket |
+    {array} basic_type_form lsbracket integer_constant? rsbracket |
+    {others} basic_type_form;
+    
+  basic_type_form =
     {named} [typename]:qualified_identifier type_parameterization? |
-    {parenthetical} lparen type_form rparen |
-    {tuple} tuple_form |
-    {array} lower_type_form lsbracket integer_constant? rsbracket |
     {wildcard} underscore;
       
   definition = 
-    {globaldef} define implicit? var? unqualified_identifier type_annotation? assignment_operator expression |
-    {extglobaldef} define implicit? var? import unqualified_identifier type_annotation |
+    {globaldef} define implicit_annotation? var? unqualified_identifier type_annotation? assignment_operator expression |
+    {extglobaldef} define implicit_annotation? var? import unqualified_identifier type_annotation |
     {typedef} type unqualified_identifier [parameters]:type_form_arguments? equals type_form |
     {moduledef} module_definition |
     {fundef} function_definition;
@@ -239,21 +235,23 @@ Productions
     
   argument_list = 
     {one} argument |
-    {many} argument_list comma argument;
-    
+    {many} argument comma argument_list;
+  
+  implicit_annotation = final? implicit;
+  
   implicit_arguments = lparen [implicits]:argument_list rparen;
     
   function_arguments = lparen [arguments]:argument_list? rparen implicit_arguments?;
     
   function_definition = 
-    {method} implicit? method [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [effect]:effect_annotation? [body]:block_expression |
+    {method} implicit_annotation? method [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [effect]:effect_annotation? [body]:block_expression |
     {override} override [name]:qualified_identifier function_arguments [body]:block_expression |
-    {function} implicit? function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation? [effect]:effect_annotation? [body]:block_expression |
-    {external} import implicit? function [name]:unqualified_identifier function_arguments [type]:type_annotation [effect]:effect_annotation;
-    
+    {function} implicit_annotation? function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation? [effect]:effect_annotation? [body]:block_expression |
+    {external} import implicit_annotation? function [name]:unqualified_identifier function_arguments [type]:type_annotation [effect]:effect_annotation;
+
   expression =
     {assignmentexp} exp1 assignment_operator expression |
-    {letexp} let implicit? unqualified_identifier type_annotation? assignment_operator expression |
+    {letexp} let var? implicit_annotation? unqualified_identifier type_annotation? assignment_operator expression |
     {matchexp} match_expression |
     {tryexp} try_expression |
     {finalexp} finally [finalizer]:expression |
@@ -268,7 +266,7 @@ Productions
     
   expression_with_else =
     {assignmentexp} exp1 assignment_operator expression_with_else |
-    {letexp} let implicit? unqualified_identifier type_annotation? assignment_operator expression_with_else |
+    {letexp} let var? implicit_annotation? unqualified_identifier type_annotation? assignment_operator expression_with_else |
     {matchexp} match_expression |
     {tryexp} try_expression_with_else |
     {finalexp} finally [finalizer]:expression_with_else |
@@ -291,19 +289,21 @@ Productions
     {named} unqualified_identifier assignment_operator lambda_expression |
     {unnamed} lambda_expression;
     
-  lambda_arguments = 
-    {zero} lparen rparen |
+  short_lambda_arguments =
+    {none} lparen rparen |
     {one} unqualified_identifier type_annotation? |
-    {many} lparen argument_list comma argument rparen implicit_arguments?;
+    {many} lparen argument comma argument_list rparen;
   
-  lambda_expression = lambda_arguments evaluation_arrow block_expression;
+  lambda_expression = 
+    {short} short_lambda_arguments evaluation_arrow block_expression |
+    {long} function function_arguments block_expression;
   
   //Increasing precedence levels.
   exp1 =
     {at} at_operator [variable]:qualified_identifier |
     {sizeof} sizeof lparen type_form rparen |
     {literal} literal_expression |
-    {tuple} lbracket expression_list rbracket |
+    {tuple} lsbracket expression_list rsbracket |
     {lambda} lambda_expression |
     {interface} interface lbracket interface_component+ rbracket |
     {call} function_call_expression |
@@ -404,7 +404,7 @@ Productions
     //data constructor = value, unify by testing value.tag and pushing new constraints on stack based on pattern_list
     {variant} [name]:qualified_identifier variant_pattern_arguments? |
     //tuple = value, unify by pushing new component-wise constraints
-    {tuple} lbracket pattern_list rbracket;
+    {tuple} lsbracket pattern_list rsbracket;
     
   match_case_clause = case [pattern]:match_pattern evaluation_arrow [body]:expression;
   
@@ -414,4 +414,5 @@ Productions
   block_step = expression semicolon;
   	
   block_expression =
-    lbracket block_step+ rbracket;
+    {one} lbracket expression rbracket |
+    {many} lbracket block_step+ rbracket;

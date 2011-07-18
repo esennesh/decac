@@ -13,11 +13,12 @@
 		<exec executable="sablecc">
 			<arg value="-d src/"/>
 			<arg value="deca.scc"/>
+			<arg value="--no-inline"/>
 		</exec>
 		<mkdir dir="build/"/>
-		<javac srcdir="src/decasyntax" destdir="build" includeantruntime="false"/>
-		<copy file="src/decasyntax/lexer/lexer.dat" todir="build/decasyntax/lexer"/>
-		<copy file="src/decasyntax/parser/parser.dat" todir="build/decasyntax/parser"/>
+		<javac srcdir="src/decac/parser" destdir="build" includeantruntime="false"/>
+		<copy file="src/decac/parser/lexer/lexer.dat" todir="build/decac/parser/lexer"/>
+		<copy file="src/decac/parser/parser/parser.dat" todir="build/decac/parser/parser"/>
 	</target>
 	<target name="build_llvm_bindings">
 		<echo message="Compiling C components of jllvm."/>
