@@ -43,6 +43,6 @@
 			<arg value="-reset"/>
 		</exec>
 		<delete dir="build/"/>
-		<delete dir="src/decasyntax/"/>
+		<delete dir="src/decac/"/>
 	</target>
 </project>
