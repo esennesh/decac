@@ -4,13 +4,13 @@ Helpers
   unicode_input_character = [0..0xffff];
   letter = ['A'..'Z'] | ['a'..'z'] | [0x7F .. 0xFF];
   digit = ['0'..'9'];
-  nondigit = '_' | '?' | '!' | letter;
   all = [0 .. 0xFFFF];
   cr = 13;
   lf = 10;
   tab = 9;
   eol = cr | lf | cr lf;
   input_character = [unicode_input_character - [cr + lf]];
+  nondigit = [input_character - digit];
   not_cr_lf = [all - [cr + lf]];
   not_star = [all - '*'];
   not_star_slash = [not_star - '/'];
@@ -32,13 +32,13 @@ Helpers
   caret = '^';
   
 Tokens
-  var = 'var';
+  slot_mutability = 'val' | 'var';
   private = 'private';
   boolean_constant = 'true' | 'false';
   asterisk = '*';
-  division_operator = '/';
-  addition_operator = '+';
-  subtraction_operator = '-';
+  slash = '/';
+  plus = '+';
+  minus = '-';
   exponentiation_operator = '**';
   and_operator = 'and';
   or_operator = 'or';
@@ -58,7 +58,6 @@ Tokens
   lsbracket = '[';
   rsbracket = ']';
   dot = '.';
-  semicolon = ';';
   colon = ':';
   double_colon = '::';
   bang_colon = '!:';
@@ -68,7 +67,6 @@ Tokens
   labracket = '<';
   rabracket = '>';
   import = 'import';
-  define = 'define';
   extends = 'extends';
   class_keyword = 'class';
   variant_keyword = 'variant';
@@ -84,7 +82,6 @@ Tokens
   case = 'case';
   if = 'if';
   then = 'then';
-  let = 'let';
   except = 'except';
   finally = 'finally';
   try = 'try';
@@ -99,10 +96,11 @@ Tokens
   evaluation_arrow = '=>';
   sizeof = 'sizeof';
   match = 'match';
-  return = 'return';
   cast = 'cast';
   interface = 'interface';
-  effect_name = '!read' | '!write' | '!destroy';
+  abstract = 'abstract';
+  effect_name = '!read' | '!write' | '!destroy' | '!throw' | '!call';
+  expression_end = eol | ';';
   
   blank = eol | tab | ' ';
   tabspace = [tab + ' '];
@@ -132,7 +130,7 @@ Productions
   
   effect_set = labracket effect_form_list rabracket;
   
-  positive_effect = addition_operator effect_set;
+  positive_effect = plus effect_set;
   
   negative_effect = minus_operator effect_set;
   
@@ -153,25 +151,31 @@ Productions
   
   variant_case_contents = lparen tuple_component_list rparen;
     
-  closed_variant_component = 
+  variant_component = 
     unqualified_identifier variant_case_contents?;
-    
-  open_variant_component =
-    qualified_identifier variant_case_contents?;
     
   interface_component_form = 
     {named} unqualified_identifier colon firstclass_function_form |
     {unnamed} firstclass_function_form;
     
+  pointer_type_form =
+    {simple} at_operator lower_type_form |
+    {complex} at_operator lparen slot_mutability type_form rparen;
+    
   type_form =
     {function} function_type_form |
-    {pointer} at_operator lower_type_form |
-    {closed_variant} final variant_keyword lbracket closed_variant_component+ rbracket |
-    {open_variant} variant_keyword extension_clause? lbracket open_variant_component+ rbracket |
+    {pointer} pointer_type_form |
+    {variant} variant_keyword lbracket variant_component+ rbracket |
     {interface} interface lbracket interface_component_form+ rbracket |
-    {class} class_keyword function_arguments? class_extension_clause? lbracket [member]:member_declaration+ rbracket |
+    {class} class_declaration_form |
     {exception} exception variant_case_contents [extension]:extension_clause? |
     {others} lower_type_form;
+    
+  class_declaration_form =
+    {concrete} class_keyword function_arguments? class_extension_clause? lbracket [members]:member_declaration+ rbracket |
+    {abstract} abstract class_keyword |
+    //What about case objects like Nil?
+    {case_class} case class_keyword variant_case_contents extension_clause?;
     
   arguments_form = lparen type_form_list? rparen;
     
@@ -186,8 +190,8 @@ Productions
     [formals]:arguments_form [implicits]:arguments_form? function_pointer_arrow [effect]:effect_annotation? [result]:type_form;
     
   tuple_component =
-    {type} var? type_form |
-    {binding} var? [name]:unqualified_identifier type_annotation;
+    {type} slot_mutability type_form |
+    {binding} slot_mutability [name]:unqualified_identifier type_annotation;
     
   tuple_component_list = 
     {one} tuple_component |
@@ -205,8 +209,8 @@ Productions
     {wildcard} underscore;
       
   definition = 
-    {globaldef} define implicit_annotation? var? unqualified_identifier type_annotation? assignment_operator expression |
-    {extglobaldef} define implicit_annotation? var? import unqualified_identifier type_annotation |
+    {globaldef} implicit_annotation? slot_declaration assignment_operator expression |
+    {extglobaldef} import implicit_annotation? slot_mutability unqualified_identifier type_annotation |
     {typedef} type unqualified_identifier [parameters]:type_form_arguments? equals type_form |
     {moduledef} module_definition |
     {fundef} function_definition;
@@ -222,7 +226,7 @@ Productions
     colon [type]:type_form;
     
   member_declaration = 
-    {named} private? member_assignment_list semicolon;
+    {named} private? member_assignment_list expression_end;
     
   extension_clause = 
     extends lower_type_form;
@@ -251,7 +255,7 @@ Productions
 
   expression =
     {assignmentexp} exp1 assignment_operator expression |
-    {letexp} let var? implicit_annotation? unqualified_identifier type_annotation? assignment_operator expression |
+    {letexp} implicit_annotation? slot_declaration assignment_operator expression |
     {matchexp} match_expression |
     {tryexp} try_expression |
     {finalexp} finally [finalizer]:expression |
@@ -261,12 +265,11 @@ Productions
     {ifwithoutelseexp} if [condition]:expression then [thenbody]:expression |
     {ifwithelseexp} if [condition]:expression then [thenbody]:expression_with_else else_clause |
     {blockexp} block_expression |
-    {returnexp} return expression |
     {others} exp5;
     
   expression_with_else =
     {assignmentexp} exp1 assignment_operator expression_with_else |
-    {letexp} let var? implicit_annotation? unqualified_identifier type_annotation? assignment_operator expression_with_else |
+    {letexp} implicit_annotation? slot_declaration assignment_operator expression_with_else |
     {matchexp} match_expression |
     {tryexp} try_expression_with_else |
     {finalexp} finally [finalizer]:expression_with_else |
@@ -275,7 +278,6 @@ Productions
     {throwexp} throw expression_with_else |
     {ifwithelseexp} if [condition]:expression then [thenbody]:expression_with_else else [elsebody]:expression_with_else |
     {blockexp} block_expression |
-    {returnexp} return expression_with_else |
     {others} exp5;
     
   literal_expression =
@@ -324,12 +326,12 @@ Productions
     {or}  [exp1]:exp3 or_operator [exp2]:exp2 |
     {xor}  [exp1]:exp3 xor_operator [exp2]:exp2 |
     {multiply} [exp1]:exp3 asterisk [exp2]:exp2 |
-    {division} [exp1]:exp3 division_operator [exp2]:exp2 |
+    {division} [exp1]:exp3 slash [exp2]:exp2 |
     {others} exp2;
     
   exp4 =
-    {plus} [exp1]:exp4 addition_operator [exp2]:exp3 |
-    {minus} [exp1]:exp4 subtraction_operator [exp2]:exp3 |
+    {plus} [exp1]:exp4 plus [exp2]:exp3 |
+    {minus} [exp1]:exp4 minus [exp2]:exp3 |
     {others} exp3;
     
   exp5 = 
@@ -351,11 +353,12 @@ Productions
     
   actual_implicit_parameters = lparen actual_implicit_list rparen;
     
-  actual_parameters = lparen [arguments]:expression_list? rparen actual_implicit_parameters;
+  actual_parameters = lparen [arguments]:expression_list? rparen actual_implicit_parameters?;
     
   function_call_expression =
     {named} [function]:qualified_identifier actual_parameters |
-    {expr} [function]:parenthetical_expression actual_parameters;
+    {expr} [function]:parenthetical_expression actual_parameters |
+    {interface} [interface]:exp1 dot [method]:member_selector actual_parameters;
     
   except_case_clause =
     case [name]:unqualified_identifier type_annotation evaluation_arrow [body]:expression;
@@ -380,13 +383,15 @@ Productions
     
   else_clause = 
     else [else_body]:expression;
-    
+  
+  slot_declaration = slot_mutability unqualified_identifier type_annotation?;
+      
   member_assignment =
-    unqualified_identifier type_annotation? assignment_operator expression;
+    slot_declaration assignment_operator expression;
 
   member_assignment_list = 
     {one} member_assignment |
-    {many} member_assignment_list comma member_assignment;
+    {many} member_assignment comma member_assignment_list;
     
   pattern_list = 
     {one} match_pattern |
@@ -400,7 +405,7 @@ Productions
     //literal = value
     {literal} literal_expression |
     //bind variable:= value, unify types rather than values
-    {variable} [name]:pattern_variable type_annotation |
+    {variable} slot_mutability [name]:pattern_variable type_annotation |
     //data constructor = value, unify by testing value.tag and pushing new constraints on stack based on pattern_list
     {variant} [name]:qualified_identifier variant_pattern_arguments? |
     //tuple = value, unify by pushing new component-wise constraints
@@ -411,7 +416,7 @@ Productions
   match_expression = 
     match lparen expression rparen lbracket match_case_clause+ rbracket;
     
-  block_step = expression semicolon;
+  block_step = expression expression_end;
   	
   block_expression =
     {one} lbracket expression rbracket |
