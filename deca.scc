@@ -167,15 +167,8 @@ Productions
     {pointer} pointer_type_form |
     {variant} variant_keyword lbracket variant_component+ rbracket |
     {interface} interface lbracket interface_component_form+ rbracket |
-    {class} class_declaration_form |
     {exception} exception variant_case_contents [extension]:extension_clause? |
     {others} lower_type_form;
-    
-  class_declaration_form =
-    {concrete} class_keyword function_arguments? class_extension_clause? lbracket [members]:member_declaration+ rbracket |
-    {abstract} abstract class_keyword |
-    //What about case objects like Nil?
-    {case_class} case class_keyword variant_case_contents extension_clause?;
     
   arguments_form = lparen type_form_list? rparen;
     
@@ -213,7 +206,14 @@ Productions
     {extglobaldef} import implicit_annotation? slot_mutability unqualified_identifier type_annotation |
     {typedef} type unqualified_identifier [parameters]:type_form_arguments? equals type_form |
     {moduledef} module_definition |
-    {fundef} function_definition;
+    {fundef} function_definition |
+    {classdef} class_definition;
+    
+  class_definition =
+    {concrete} class_keyword unqualified_identifier type_form_arguments? function_arguments? class_extension_clause? lbracket [members]:member_declaration+ rbracket |
+    {abstract} abstract class_keyword unqualified_identifier type_form_arguments? |
+    //What about case objects like Nil?
+    {case_class} case class_keyword unqualified_identifier type_form_arguments? variant_case_contents? extension_clause?;
   
   type_form_arguments =
     labracket [arguments]:identifier_list rabracket;  
