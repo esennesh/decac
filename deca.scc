@@ -33,7 +33,6 @@ Helpers
   
 Tokens
   slot_mutability = 'val' | 'var';
-  private = 'private';
   boolean_constant = 'true' | 'false';
   asterisk = '*';
   slash = '/';
@@ -69,7 +68,7 @@ Tokens
   import = 'import';
   extends = 'extends';
   class_keyword = 'class';
-  variant_keyword = 'variant';
+  object_keyword = 'object';
   exception = 'exception';
   equals = '=';
   different = '<>';
@@ -165,7 +164,6 @@ Productions
   type_form =
     {function} function_type_form |
     {pointer} pointer_type_form |
-    {variant} variant_keyword lbracket variant_component+ rbracket |
     {interface} interface lbracket interface_component_form+ rbracket |
     {exception} exception variant_case_contents [extension]:extension_clause? |
     {others} lower_type_form;
@@ -207,13 +205,18 @@ Productions
     {typedef} type unqualified_identifier [parameters]:type_form_arguments? equals type_form |
     {moduledef} module_definition |
     {fundef} function_definition |
-    {classdef} class_definition;
+    {classdef} class_definition |
+    {singdef} object_definition;
     
   class_definition =
     {concrete} class_keyword unqualified_identifier type_form_arguments? function_arguments? class_extension_clause? lbracket [members]:member_declaration+ rbracket |
     {abstract} abstract class_keyword unqualified_identifier type_form_arguments? |
-    //What about case objects like Nil?
-    {case_class} case class_keyword unqualified_identifier type_form_arguments? variant_case_contents? extension_clause?;
+    {case_class} case class_keyword unqualified_identifier type_form_arguments? variant_case_contents? class_extension_clause? |
+    {variant} match class_keyword unqualified_identifier type_form_arguments? lbracket variant_component+ rbracket;
+    
+  object_definition =
+    {concrete} object_keyword unqualified_identifier class_extension_clause? lbracket [members]:member_declaration+ rbracket |
+    {case_object} case object_keyword unqualified_identifier class_extension_clause?;
   
   type_form_arguments =
     labracket [arguments]:identifier_list rabracket;  
@@ -225,8 +228,8 @@ Productions
   type_annotation =
     colon [type]:type_form;
     
-  member_declaration = 
-    {named} private? member_assignment_list expression_end;
+  member_declaration =
+    member_assignment expression_end;
     
   extension_clause = 
     extends lower_type_form;
