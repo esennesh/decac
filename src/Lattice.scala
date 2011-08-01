@@ -1,10 +1,10 @@
 package scala.collection.mutable
 
-import scala.collection.mutable.Set.Coll
-import scala.collection.mutable.HashSet.Coll
+import scala.collection.mutable.Set
+import scala.collection.mutable.HashSet
 import scala.math.PartialOrdering
 
-protected class LatticeNode[E](v: E,po: PartialOrdering[E]) {
+protected class LatticeNode[E](v: E)(implicit po: PartialOrdering[E]) {
   val value: E = v
   protected val ordering = po
   protected val parents: HashSet[LatticeNode[E]] = new HashSet[LatticeNode[E]]()
@@ -45,14 +45,11 @@ protected class LatticeNode[E](v: E,po: PartialOrdering[E]) {
         child.remove(elem)
   }
   
-  def locate(elem: E): Option[LatticeNode[E]] = {
+  def find(elem: E): Option[LatticeNode[E]] = {
     if(ordering.equiv(elem,value))
       Some(this)
     else
-      children.map(child => child.locate(elem)).find(possibility => possibility != None) match {
-        case Some(Some(e)) => Some(e)
-        case _ => None
-      }
+      children.map(child => child.find(elem)).foldLeft[Option[LatticeNode[E]]](None)((x: Option[LatticeNode[E]],y: Option[LatticeNode[E]]) => if(x != None) x else if(y != None) y else None)
   }
   
   def greaterElements: Set[LatticeNode[E]] = parents ++ parents.flatMap(parent => parent.greaterElements)
@@ -70,22 +67,19 @@ trait Lattice[E] extends Set[E] {
   val top: E
   val bottom: E
   val ordering: PartialOrdering[E]
+  assert(ordering.lt(bottom,top))
   
   def join(x: E,y: E): E
   def meet(x: E,y: E): E
 }
 
-class GraphLattice[E](t: E,b: E,po: PartialOrdering[E]) extends Lattice[E] {
+class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends Lattice[E] {
   protected val topNode: LatticeNode[E] = new LatticeNode[E](t,po)
   protected val bottomNode: LatticeNode[E] = new LatticeNode[E](b,po)
-  override val top: E = topNode.value
-  override val bottom: E = bottomNode.value
   override val ordering: PartialOrdering[E] = po
-  assert(ordering.lt(bottom,top))
-  bottomNode.placeBelow(topNode)
-  topNode.placeBelow(bottomNode)
+  assert(po.lt(b,t))
   
-  override def contains(key: E): Boolean = topNode.locate(key) match {
+  override def contains(key: E): Boolean = topNode.find(key) match {
     case Some(node) => true
     case None => false
   }
@@ -111,7 +105,7 @@ class GraphLattice[E](t: E,b: E,po: PartialOrdering[E]) extends Lattice[E] {
     result
   }
   
-  protected def locate(elem: E): LatticeNode[E] = topNode.locate(elem) match {
+  protected def find(elem: E): LatticeNode[E] = topNode.find(elem) match {
     case Some(node) => node
     case None => {
       val node = new LatticeNode(elem,ordering)
@@ -121,10 +115,10 @@ class GraphLattice[E](t: E,b: E,po: PartialOrdering[E]) extends Lattice[E] {
     }
   }
   
-  override def add(elem: E): Boolean = topNode.locate(elem) match {
+  override def add(elem: E): Boolean = topNode.find(elem) match {
     case Some(node) => false
     case None => {
-      locate(elem)
+      find(elem)
       true
     }
   }
@@ -145,8 +139,8 @@ class GraphLattice[E](t: E,b: E,po: PartialOrdering[E]) extends Lattice[E] {
     else if(ordering.lteq(y,x))
       x
     else {
-      val xn = locate(x)
-      val yn = locate(y)
+      val xn = find(x)
+      val yn = find(y)
       
       val attempts = (xn.greaterElements ++ yn.greaterElements).filter(a => ordering.lt(x,a.value) && ordering.lt(y,a.value))
       attempts.toList.sortWith((a: LatticeNode[E],b: LatticeNode[E]) => ordering.lt(a.value,b.value)).head.value
@@ -159,11 +153,14 @@ class GraphLattice[E](t: E,b: E,po: PartialOrdering[E]) extends Lattice[E] {
     else if(ordering.lteq(y,x))
       y
     else {
-      val xn = locate(x)
-      val yn = locate(y)
+      val xn = find(x)
+      val yn = find(y)
       
       val attempts = (xn.lesserElements ++ yn.lesserElements).filter(a => ordering.lt(a.value,x) && ordering.lt(a.value,y))
       attempts.toList.sortWith((a: LatticeNode[E],b: LatticeNode[E]) => ordering.gt(a.value,b.value)).head.value
     }
   }
+  
+  override val top: E = topNode.value
+  override val bottom: E = bottomNode.value
 }
