@@ -67,8 +67,7 @@ Tokens
   rabracket = '>';
   import = 'import';
   extends = 'extends';
-  class_keyword = 'class';
-  object_keyword = 'object';
+  variant = 'variant';
   exception = 'exception';
   equals = '=';
   different = '<>';
@@ -92,7 +91,7 @@ Tokens
   underscore = '_';
   firstclass_function_arrow = '->';
   function_pointer_arrow = '@->';
-  evaluation_arrow = '=>';
+  lambda_slash = '\';
   sizeof = 'sizeof';
   match = 'match';
   cast = 'cast';
@@ -148,10 +147,11 @@ Productions
   
   effect_annotation = bang_colon effect_signature;
   
-  variant_case_contents = lparen tuple_component_list rparen;
+  variant_case_parameters = lparen tuple_component_list rparen;
     
-  variant_component = 
-    unqualified_identifier variant_case_contents?;
+  variant_case =
+    {simple} unqualified_identifier variant_case_parameters? |
+    {complex} unqualified_identifier [parameters]:variant_case_parameters lbracket [members]:member_declaration+ rbracket;
     
   interface_component_form = 
     {named} unqualified_identifier colon firstclass_function_form |
@@ -163,9 +163,10 @@ Productions
     
   type_form =
     {function} function_type_form |
+    {variant} final? variant extension_clause? lbracket variant_case+ rbracket |
     {pointer} pointer_type_form |
     {interface} interface lbracket interface_component_form+ rbracket |
-    {exception} exception variant_case_contents [extension]:extension_clause? |
+    {exception} exception variant_case_parameters [extension]:extension_clause? |
     {others} lower_type_form;
     
   arguments_form = lparen type_form_list? rparen;
@@ -204,19 +205,7 @@ Productions
     {extglobaldef} import implicit_annotation? slot_mutability unqualified_identifier type_annotation |
     {typedef} type unqualified_identifier [parameters]:type_form_arguments? equals type_form |
     {moduledef} module_definition |
-    {fundef} function_definition |
-    {classdef} class_definition |
-    {singdef} object_definition;
-    
-  class_definition =
-    {concrete} class_keyword unqualified_identifier type_form_arguments? function_arguments? class_extension_clause? lbracket [members]:member_declaration+ rbracket |
-    {abstract} abstract class_keyword unqualified_identifier type_form_arguments? |
-    {case_class} case class_keyword unqualified_identifier type_form_arguments? variant_case_contents? class_extension_clause? |
-    {variant} match class_keyword unqualified_identifier type_form_arguments? lbracket variant_component+ rbracket;
-    
-  object_definition =
-    {concrete} object_keyword unqualified_identifier class_extension_clause? lbracket [members]:member_declaration+ rbracket |
-    {case_object} case object_keyword unqualified_identifier class_extension_clause?;
+    {fundef} function_definition;
   
   type_form_arguments =
     labracket [arguments]:identifier_list rabracket;  
@@ -293,15 +282,12 @@ Productions
   interface_component =
     {named} unqualified_identifier assignment_operator lambda_expression |
     {unnamed} lambda_expression;
-    
-  short_lambda_arguments =
-    {none} lparen rparen |
+
+  lambda_arguments =
     {one} unqualified_identifier type_annotation? |
-    {many} lparen argument comma argument_list rparen;
-  
-  lambda_expression = 
-    {short} short_lambda_arguments evaluation_arrow block_expression |
-    {long} function function_arguments block_expression;
+    {many} function_arguments;
+
+  lambda_expression = lambda_slash lambda_arguments? firstclass_function_arrow block_expression;
   
   //Increasing precedence levels.
   exp1 =
@@ -364,10 +350,10 @@ Productions
     {interface} [interface]:exp1 dot [method]:member_selector actual_parameters;
     
   except_case_clause =
-    case [name]:unqualified_identifier type_annotation evaluation_arrow [body]:expression;
+    case [name]:unqualified_identifier type_annotation firstclass_function_arrow [body]:expression;
     
   except_case_clause_with_else =
-    case [name]:unqualified_identifier type_annotation evaluation_arrow [body]:expression_with_else;
+    case [name]:unqualified_identifier type_annotation firstclass_function_arrow [body]:expression_with_else;
     
   try_expression = 
     {one} try expression except except_case_clause |
@@ -414,7 +400,7 @@ Productions
     //tuple = value, unify by pushing new component-wise constraints
     {tuple} lsbracket pattern_list rsbracket;
     
-  match_case_clause = case [pattern]:match_pattern evaluation_arrow [body]:expression;
+  match_case_clause = case [pattern]:match_pattern firstclass_function_arrow [body]:expression;
   
   match_expression = 
     match lparen expression rparen lbracket match_case_clause+ rbracket;
