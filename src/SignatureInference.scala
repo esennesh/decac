@@ -2,50 +2,57 @@ package decac;
 
 import scala.collection.mutable.Queue
 import scala.collection.mutable.Stack
+import scala.collection.mutable.Lattice
 
-class SignatureSubstitution[T] {
-  protected val queue: Queue[Tuple2[SignatureVariable[T],T]] = new Queue[Tuple2[SignatureVariable[T],T]]
+class SignatureSubstitution {
+  protected val queue: Queue[Tuple2[SignatureVariable,MonoSignature]] = new Queue[Tuple2[SignatureVariable,MonoSignature]]
   
-  def substitute(x: SignatureVariable[T],y: T): Unit = {
+  def substitute(x: SignatureVariable,y: MonoSignature): Unit = {
     assert(!x.universal)
     queue.enqueue((x,y))
   }
   def isEmpty: Boolean = queue.isEmpty
   
-  def solve(sig: T): T = {
-    val substituted = queue.foldLeft(sig)((result: T,sub: Tuple2[SignatureVariable,T]) => sig.replace(sub._1,sub._2))
-    substituted.map(sigprime => sigprime match {
-      case bounded: BoundsVariable[T] => {
+  def solve(sig: MonoSignature): MonoSignature = {
+    val substituted = queue.foldLeft(sig)((result: MonoSignature,sub: Tuple2[SignatureVariable,MonoSignature]) => sub._1 match {
+      case t: MonoType => sig.mapT((st: MonoType) => if(st == sub._1) sub._2.asInstanceOf[MonoType] else st)
+      case e: MonoEffect => sig.mapE((se: MonoEffect) => if(se == sub._1) sub._2.asInstanceOf[MonoEffect] else se)
+      case r: MonoRegion => sig.mapR((sr: MonoRegion) => if(sr == sub._1) sub._2.asInstanceOf[MonoRegion] else sr)
+    })
+    val typeBounded = substituted.mapT((sigprime: MonoType) => sigprime match {
+      case bounded: BoundsVariable[MonoType] => {
         assert(!bounded.universal)
         bounded.signature
       }
       case _ => sigprime
     })
+    //Build up effectBounded and regionBounded
+    typeBounded
   }
 }
 
-class SignatureConstraints[T] {
-  val current = new Stack[InferenceConstraint[T]]
-  val polyHypotheses = new Queue[InferenceConstraint[T]]
+class SignatureConstraints {
+  val current = new Stack[InferenceConstraint]
+  val polyHypotheses = new Queue[InferenceConstraint]
   
-  def substitute(x: SignatureVariable[T],y: T): Unit = {
+  def substitute(x: SignatureVariable,y: MonoSignature): Unit = {
     for(constraint <- current)
       constraint.substitute(x,y)
     for(hypoth <- polyHypotheses) {
       hypoth.substitute(x,y)
-      (hypoth.x,hypoth.y) match {
-        case (vx: SignatureVariable[T],vy: SignatureVariable[T]) => if(vx.isInstanceOf[BoundsVariable] || vy.isInstanceOf[BoundsVariable]) { current.push(hypoth) polyHypotheses.remove(hypoth) }
+      (hypoth.alpha,hypoth.beta) match {
+        case (vx: SignatureVariable,vy: SignatureVariable) => if(vx.isInstanceOf[BoundsVariable[_]] || vy.isInstanceOf[BoundsVariable[_]]) { current.push(hypoth); polyHypotheses.dequeueFirst(h => h == hypoth) }
         case _ => {
           current.push(hypoth)
-          polyHypotheses.remove(hypoth)
+          polyHypotheses.dequeueFirst(h => h == hypoth)
         }
       }
     }
   }
   
-  def push(c: InferenceConstraint[T]): Unit = (c.x,c.y) match {
-    case (vx: SignatureVariable[T],vy: SignatureVariable[T]) => {
-      if(!vx.isInstanceOf[BoundsVariable[T]] && !vy.isInstanceOf[BoundsVariable[T]])
+  def push(c: InferenceConstraint): Unit = (c.alpha,c.beta) match {
+    case (vx: SignatureVariable,vy: SignatureVariable) => {
+      if(!vx.isInstanceOf[BoundsVariable[_]] && !vy.isInstanceOf[BoundsVariable[_]])
         polyHypotheses.enqueue(c)
       else
         current.push(c)
@@ -53,9 +60,9 @@ class SignatureConstraints[T] {
     case _ => current.push(c)
   }
   
-  def pop: InferenceConstraint[T] = {
+  def pop: InferenceConstraint = {
     if(current.isEmpty)
-      polyHypotheses.deque
+      polyHypotheses.dequeue
     else
       current.pop
   }
@@ -63,32 +70,39 @@ class SignatureConstraints[T] {
   def isEmpty = current.isEmpty && polyHypotheses.isEmpty
 }
 
-class LatticeUnificationInstance[T](subst: Option[SignatureSubstitution[T]] = None)(implicit lat: Lattice[T]) {
-  protected lattice = lat
-  protected val constraints = new SignatureConstraints[T]
+class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None)(implicit lat: Lattice[MonoSignature]) {
+  protected val lattice = lat
+  protected val constraints = new SignatureConstraints
   protected val result = subst match {
     case Some(s) => s
-    case None => new SignatureSubstitution[T]
+    case None => new SignatureSubstitution
   }
   
-  def constrain(c: InferenceConstraint[T]): Unit = constraints.push(c)
+  def constrain(c: InferenceConstraint): Unit = constraints.push(c)
   
-  def substitute(x: SignatureVariable[T],y: T): Unit = {
+  def substitute(x: SignatureVariable,y: MonoSignature): Unit = {
     result.substitute(x,y)
     constraints.substitute(x,y)
   }
   
-  def solve: SignatureSubstitution[T] = {
+  def solve: SignatureSubstitution = {
     while(!constraints.isEmpty) {
       val constraint = constraints.pop
-      val cs = constraint match {
-        case SubsumptionConstraint(x,y) => SignatureOrdering.lt(x,y)
-        case PhysicalSubtypingConstraint(x,y) => TypeRelation.lt(x,y,true)
-        case EqualityConstraint(x,y) => SignatureOrdering.equiv(x,y)
+      val cs: Option[Set[InferenceConstraint]] = constraint match {
+        case SubsumptionConstraint(x,y) => (x,y) match {
+          case (tx: MonoType,ty: MonoType) => TypeRelation.lt(tx,ty)
+          case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.lt(ex,ey)
+          case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.lt(rx,ry)
+        }
+        case PhysicalSubtypingConstraint(x,y) => TypeRelation.actuallt(x,y,true)
+        case EqualityConstraint(x,y) => (x,y) match {
+          case (tx: MonoType,ty: MonoType) => TypeRelation.equiv(tx,ty)
+          case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.equiv(ex,ey)
+          case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.equiv(rx,ry)
+        }
       }
-      for(c <- cs.getOrElse(() => throw new SignatureException("Unsatisfiable signature constraint: " + constraint.toString)) c match {
-        case SubsumptionConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
-        case SubsumptionConstraint(vx: BoundsVariable,vy: BoundsVariable) => {
+      for(c <- cs.getOrElse(throw new Exception("Unsatisfiable signature constraint: " + constraint.toString))) c match {
+        case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],vy: BoundsVariable[MonoSignature]) => {
           val px = vx.meet(lattice.meet(vy.signature,vx.signature))
           val py = vy.join(lattice.join(vy.signature,vx.signature))
           constrain(px._1)
@@ -96,21 +110,22 @@ class LatticeUnificationInstance[T](subst: Option[SignatureSubstitution[T]] = No
           substitute(vx,px._2)
           substitute(vy,py._2)
         }
-        case SubsumptionConstraint(vx: BoundsVariable,_) => {
-          val pair = vx.meet(lattice.meet(vx.signature,c.y))
+        case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],_) => {
+          val pair = vx.meet(lattice.meet(vx.signature,c.beta))
           constrain(pair._1)
           substitute(vx,pair._2)
         }
-        case SubsumptionConstraint(_,vy: BoundsVariable) => {
-          val pair = vy.join(lattice.join(c.x,vy.signature))
+        case SubsumptionConstraint(_,vy: BoundsVariable[MonoSignature]) => {
+          val pair = vy.join(lattice.join(c.alpha,vy.signature))
           constrain(pair._1)
           substitute(vy,pair._2)
         }
-        case SubsumptionConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundsType(ty,MeetBound,false))
-        case SubsumptionConstraint(tx: MonoType,vy: TypeVariable) => substitute(vy,new BoundsType(tx,JoinBound,false))
+        case SubsumptionConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,false))
+        case SubsumptionConstraint(tx: MonoType,vy: TypeVariable) => substitute(vy,new BoundedTypeVariable(tx,JoinBound,false))
+        case SubsumptionConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
         case EqualityConstraint(vx: SignatureVariable,vy: SignatureVariable) => substitute(vx,vy)
-        case EqualityConstraint(vx: SignatureVariable,_) => substitute(vx,c.y)
-        case EqualityConstraint(_,vy: SignatureVariable) => substitute(c.x,vy)
+        case EqualityConstraint(vx: SignatureVariable,_) => substitute(vx,c.beta)
+        case EqualityConstraint(_,vy: SignatureVariable) => substitute(vy,c.alpha)
       }
     }
     result

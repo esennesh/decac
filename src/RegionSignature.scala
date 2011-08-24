@@ -2,24 +2,31 @@ package decac
 
 import scala.collection.immutable.HashSet
 
-case class ScopeRegion(scope: Scope) extends MonoRegion
-case class RegionVariable(formal: Boolean) extends SignatureVariable[MonoRegion] {
+class Scope {
+  def enclosedIn(s: Scope): Boolean = s == this
+}
+class Module extends Scope
+class LexicalScope extends Scope
+case class ScopeRegion(scope: Scope) extends MonoRegion {
+  override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable]
+}
+case class RegionVariable(formal: Boolean) extends MonoRegion with SignatureVariable {
   override val universal = formal
 }
 
 object RegionRelation extends InferenceOrdering[MonoRegion] {
-  def lt(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint[MonoRegion]]] = (x,y) match {
+  def lt(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {
     case (ScopeRegion(sx),ScopeRegion(sy)) => if(sx enclosedIn sy) Some(HashSet.empty) else None
     case (RegionVariable(_),RegionVariable(true)) => Some(HashSet.empty)
-    case (RegionVariable(false),RegionVariable(false)) => Some(HashSet.empty + SubsumptionConstraint(x,y))
+    case (RegionVariable(false),RegionVariable(false)) => Some(HashSet.empty[InferenceConstraint] + SubsumptionConstraint(x,y))
     case (RegionVariable(true),ScopeRegion(sy: Module)) => Some(HashSet.empty)
-    case (ScopeRegion(sx: LexicalScope),RegionVariable(false)) => Some(HashSet.empty + SubsumptionConstraint(x,y))
-    case (RegionVariable(false),ScopeRegion(sx: LexicalScope)) => Some(HashSet.empty + SubsumptionConstraint(x,y))
+    case (ScopeRegion(sx: LexicalScope),RegionVariable(false)) => Some(HashSet.empty[InferenceConstraint] + (SubsumptionConstraint(x,y)))
+    case (RegionVariable(false),ScopeRegion(sx: LexicalScope)) => Some(HashSet.empty[InferenceConstraint] + (SubsumptionConstraint(x,y)))
     case _ => None
   }
-  def equiv(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint[MonoRegion]]] = (x,y) match {
+  def equiv(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {
     case (ScopeRegion(sx),ScopeRegion(sy)) => if(sx == sy) Some(HashSet.empty) else None
-    case (RegionVariable(fx),RegionVariable(fy)) => if(fx == fy) Some(HashSet.empty + EqualityConstraint(x,y)) else None
+    case (RegionVariable(fx),RegionVariable(fy)) => if(fx == fy) Some(HashSet.empty[InferenceConstraint] + EqualityConstraint(x,y)) else None
     case _ => None
   }
 }
