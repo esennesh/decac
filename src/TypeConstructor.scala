@@ -2,13 +2,15 @@ package decac
 
 import scala.collection.mutable.Set
 import scala.collection.mutable.HashSet
+import scala.collection.mutable.HashMap
+import scala.collection.mutable.GraphLattice
 import jllvm._
 
-class TypeDefinition(cons: TypeConstructor,n: String,context: Module) extends Definition {
+/* class TypeDefinition(cons: TypeConstructor,n: String,context: Module) extends Definition {
   override val name = n
   override val scope = {context.define(this) ; context }
   val constructor = { cons.declare(name) ; cons }
-}
+} */
 
 abstract class TypeConstructor(alphas: List[TypeVariable]) {
   protected var strName: Option[String] = None
@@ -31,7 +33,7 @@ abstract class TypeConstructor(alphas: List[TypeVariable]) {
   def resolve(params: List[MonoType]): LLVMType
   def represent(params: List[MonoType]): MonoType
   protected def getSpecialization(params: List[MonoType]): Option[LLVMType] = {
-    for((specialization,llvmType) <- specializations.contents)
+    for((specialization,llvmType) <- specializations)
       if(specialization.zip(params).forall(p => p._1 == p._2))
         return Some(llvmType)
     None
@@ -39,8 +41,8 @@ abstract class TypeConstructor(alphas: List[TypeVariable]) {
   def allSpecializations: Iterable[LLVMType] = specializations.values
 }
 
-class TypeExpressionConstructor(alphas: List[TypeVariable],t: MonoType extends TypeConstructor(alphas) {
-  assert(t.filter(t => t.isInstanceOf[TypeVariable]).forall(tvar => parameters.contains(tvar)))
+class TypeExpressionConstructor(alphas: List[TypeVariable],t: MonoType) extends TypeConstructor(alphas) {
+  assert(t.variables.forall(tvar => alphas.contains(tvar)))
   protected val tau: MonoType = t
   
   override def compile(params: List[MonoType]): LLVMType = specializations.get(params) match {
@@ -53,22 +55,22 @@ class TypeExpressionConstructor(alphas: List[TypeVariable],t: MonoType extends T
   }
   override def resolve(params: List[MonoType]): LLVMType = compile(params)
   override def represent(params: List[MonoType]): MonoType = {
-    parameters.zip(params).foldLeft(tau)((result: MonoType,spec: Tuple2[TypeVariable,MonoType]) => result.replace(spec._1,spec._2))
+    parameters.zip(params).foldLeft(tau)((result: MonoType,spec: Tuple2[TypeVariable,MonoType]) => result.mapT((sig: MonoType) => if(sig == spec._1) spec._2 else sig))
   }
 }
 
 class OpenSumConstructor(alphas: List[TypeVariable],addends: List[Tuple2[String,RecordType]],loopNode: Option[MonoType]) extends TypeConstructor(alphas) {
   protected val recurser = new OpaqueType
   protected var cases: List[Tuple2[String,RecordType]] = loopNode match {
-    case Some(loop) => addends.map(addend => (addend._1,addend._2.replace(loop,recurser)))
+    case Some(loop) => addends.map(addend => (addend._1,addend._2.mapT((sig: MonoType) => if(sig == loop) recurser else sig).asInstanceOf[RecordType]))
     case None => addends
   }
   
   def extend(addend: Tuple2[String,RecordType],loopNode: Option[MonoType]): Unit = {
-    assert(addend._2.filter(tau => tau.isInstanceOf[TypeVariable]).forall(tvar => parameters.contains(tvar)))
-    if(!cases.contains(c => c._1 == addend._1))
+    assert(addend._2.variables.forall(tvar => alphas.contains(tvar)))
+    if(!cases.contains((c: Tuple2[String,RecordType]) => c._1 == addend._1))
       cases = loopNode match {
-        case Some(loop) => (addend._1,addend._2.replace(loop,recurser)) :: cases
+        case Some(loop) => (addend._1,addend._2.mapT((sig: MonoType) => if(sig == loop) recurser else sig).asInstanceOf[RecordType]) :: cases
         case None => addend :: cases
       }
   }
@@ -86,40 +88,32 @@ class OpenSumConstructor(alphas: List[TypeVariable],addends: List[Tuple2[String,
   override def represent(params: List[MonoType]): MonoType = {
     val sum = {
       val sum = new SumType(cases)
-      if(sum.filter(tau => tau == recurser))
-        new RecursiveType(sum,Some(recurser))
-      else
+      val recursive = new RecursiveType(sum,Some(recurser))
+      if(TypeOrdering.equiv(recursive,sum))
         sum
+      else
+        recursive
     }
-    parameters.zip(params).foldLeft(sum)((result: MonoType,spec: Tuple2[TypeVariable,MonoType]) => result.replace(spec._1,spec._2))
+    parameters.zip(params).foldLeft(sum)((result: MonoType,spec: Tuple2[TypeVariable,MonoType]) => result.mapT((sig: MonoType) => if(sig == spec._1) spec._2 else sig))
   }
   
   protected def caseRepresentation(which: Int): LLVMType = {
-    val sum = 
     assert(which < cases.length)
-    if(enumeration)
+    if(cases.forall(c => TypeOrdering.equiv(c._2,EmptyRecord)))
       tagRepresentation
     else
-      new LLVMStructType(List(tagRepresentation,cases.apply(which).record.compile).toArray,true)
+      new LLVMStructType(List(tagRepresentation,cases.apply(which)._2.compile).toArray,true)
   }
   
-  override def resolve(params: List[MonoType]): LLVMType = {
-    val sum = represent(params)
-    if(sum.enumeration)
-      tagRepresentation
-    else {
-      val maxRecord = sum.cases.map(c => c.record).sortWith((x,y) => x.sizeOf >= y.sizeOf).head
-      new LLVMStructType(List(tagRepresentation,maxRecord.compile).toArray,true)
-    }
-  }
+  override def resolve(params: List[MonoType]): LLVMType = represent(params).compile
 }
 
 object ExceptionConstructor extends OpenSumConstructor(Nil,List(("AnyException",EmptyRecord)),None) {
-  new TypeDefinition(this,"Exception",StandardLibrary)
+  //new TypeDefinition(this,"Exception",StandardLibrary)
 }
 
-case class SkolemConstructor(shape: RecordType) extends TypeConstructor(shape.variables) {
-  var witnesses = new HashSet[MonoType]
+case class SkolemConstructor(shape: RecordType) extends TypeConstructor(shape.variables.toList.filter(svar => svar.isInstanceOf[TypeVariable]).map(svar => svar.asInstanceOf[TypeVariable])) {
+  var witnesses = new HashSet[MonoType]()
   
   override def compile(params: List[MonoType]): LLVMType = getSpecialization(params) match {
     case Some(op) => op
@@ -131,22 +125,26 @@ case class SkolemConstructor(shape: RecordType) extends TypeConstructor(shape.va
   }
   override def resolve(params: List[MonoType]): LLVMType = represent(params).compile
   override def represent(params: List[MonoType]): MonoType = {
-    val specialize = (spec: MonoType) => parameters.zip(params).foldLeft(spec)((result: MonoType,specs: Tuple2[TypeVariable,MonoType]) => result.replace(specs._1,specs._2))
+    val specialize = (spec: MonoType) => parameters.zip(params).foldLeft(spec)((result: MonoType,specs: Tuple2[TypeVariable,MonoType]) => result.mapT((sig: MonoType) => if(sig == specs._1) specs._2 else sig))
     witnesses.toList.sortWith((x,y) => specialize(x).sizeOf >= specialize(y).sizeOf).head
   }
-  def witness(w: MonoType): OpaqueType = {
-    assert(w.variables.forall(svar => parameters.contains(svar))
-    witnesses.put(w)
+  def witness(w: MonoType): Unit = {
+    assert(w.variables.forall(svar => parameters.contains(svar)))
+    witnesses.add(w)
   }
 }
 
-object SkolemOrdering extends PartialOrdering[Tuple2[RecordType,SkolemConstructor]] {
-  override def lt(x: Tuple2[RecordType,SkolemConstructor],y: Tuple2[RecordType,SkolemConstructor]): Boolean = x._1 < y._1
-  override def equiv(x: Tuple2[RecordType,SkolemConstructor],y: Tuple2[RecordType,SkolemConstructor]): Boolean = x._1 == y._1
-  override def gt(x: Tuple2[RecordType,SkolemConstructor],y: Tuple2[RecordType,SkolemConstructor]): Boolean = x._1 < y._1
-  override def lteq(x: Tuple2[RecordType,SkolemConstructor],y: Tuple2[RecordType,SkolemConstructor]): Boolean = x._1 <= y._1
-  override def gteq(x: Tuple2[RecordType,SkolemConstructor],y: Tuple2[RecordType,SkolemConstructor]): Boolean = x._1 >= y._1
-  override def tryCompare(x: Tuple2[RecordType,SkolemConstructor],y: Tuple2[RecordType,SkolemConstructor]): Option[Int] = {
+object TopSkolem extends SkolemConstructor(EmptyRecord)
+object BottomSkolem extends SkolemConstructor(EmptyRecord)
+
+object SkolemOrdering extends PartialOrdering[SkolemConstructor] {
+  implicit val typeOrdering = TypeOrdering
+  override def lt(x: SkolemConstructor,y: SkolemConstructor): Boolean =  x == BottomSkolem || x.shape < y.shape
+  override def equiv(x: SkolemConstructor,y: SkolemConstructor): Boolean = x.shape == y.shape
+  override def gt(x: SkolemConstructor,y: SkolemConstructor): Boolean = y == BottomSkolem || x.shape > y.shape
+  override def lteq(x: SkolemConstructor,y: SkolemConstructor): Boolean = x == BottomSkolem || x.shape <= y.shape
+  override def gteq(x: SkolemConstructor,y: SkolemConstructor): Boolean = y == BottomSkolem || x.shape >= y.shape
+  override def tryCompare(x: SkolemConstructor,y: SkolemConstructor): Option[Int] = {
     if(gt(x,y))
       Some(1)
     else if(lt(x,y))
@@ -157,18 +155,18 @@ object SkolemOrdering extends PartialOrdering[Tuple2[RecordType,SkolemConstructo
       None
   }
 }
-
-object TopSkolem extends SkolemConstructor(EmptyRecord)
-object BottomSkolem extends SkolemConstructor(EmptyRecord)
   
 object SkolemConstructors {
-  protected val skolems = new GraphLattice[Tuple2[RecordType,SkolemConstructor]](TopSkolem,BottomSkolem,SkolemOrdering)
+  implicit val skolemOrdering = SkolemOrdering
+  protected val skolems = new GraphLattice[SkolemConstructor](TopSkolem,BottomSkolem)
+  protected val shapes = new HashMap[RecordType,SkolemConstructor]()
   
-  def get(shape: RecordType): SkolemConstructor = skolems.get(shape) match {
+  def get(shape: RecordType): SkolemConstructor = shapes.get(shape) match {
     case Some(skolem) => skolem
     case None => {
       val result = new SkolemConstructor(shape)
-      skolems.put(shape,result)
+      skolems.add(result)
+      shapes.put(shape,result)
       result
     }
   }

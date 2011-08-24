@@ -1,14 +1,13 @@
 package scala.collection.mutable
 
-import scala.collection.mutable.Set
-import scala.collection.mutable.HashSet
+import scala.collection.mutable
 import scala.math.PartialOrdering
 
 protected class LatticeNode[E](v: E)(implicit po: PartialOrdering[E]) {
   val value: E = v
   protected val ordering = po
-  protected val parents: HashSet[LatticeNode[E]] = new HashSet[LatticeNode[E]]()
-  protected val children: HashSet[LatticeNode[E]] = new HashSet[LatticeNode[E]]()
+  protected val parents: mutable.HashSet[LatticeNode[E]] = new mutable.HashSet[LatticeNode[E]]()
+  protected val children: mutable.HashSet[LatticeNode[E]] = new mutable.HashSet[LatticeNode[E]]()
   
   def placeAbove(n: LatticeNode[E]): Boolean = {
     if(!parents.exists(parent => parent.placeAbove(n)) && ordering.lt(value,n.value)) {
@@ -63,7 +62,7 @@ protected class LatticeNode[E](v: E)(implicit po: PartialOrdering[E]) {
   }
 }
 
-trait Lattice[E] extends Set[E] {
+trait Lattice[E] extends mutable.Set[E] {
   val top: E
   val bottom: E
   val ordering: PartialOrdering[E]
@@ -74,8 +73,8 @@ trait Lattice[E] extends Set[E] {
 }
 
 class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends Lattice[E] {
-  protected val topNode: LatticeNode[E] = new LatticeNode[E](t,po)
-  protected val bottomNode: LatticeNode[E] = new LatticeNode[E](b,po)
+  protected val topNode: LatticeNode[E] = new LatticeNode[E](t)(po)
+  protected val bottomNode: LatticeNode[E] = new LatticeNode[E](b)(po)
   override val ordering: PartialOrdering[E] = po
   assert(po.lt(b,t))
   
@@ -85,14 +84,14 @@ class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends Lattic
   }
  
   override def iterator: Iterator[E] = {
-    val result = new HashSet[E]()
+    val result = new mutable.HashSet[E]()
     topNode.flatten(result)
     result.iterator
   }
   
   override def +(elem: E): GraphLattice[E] = {
     assert(po.lteq(elem,topNode.value))
-    val result = new GraphLattice[E](topNode.value,bottomNode.value,ordering)
+    val result = new GraphLattice[E](topNode.value,bottomNode.value)(ordering)
     foreach(value => result.add(value))
     result.add(elem)
     result
@@ -100,7 +99,7 @@ class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends Lattic
   
   override def -(elem: E): GraphLattice[E] = {
     assert(po.gteq(elem,bottomNode.value))
-    val result = new GraphLattice[E](topNode.value,bottomNode.value,ordering)
+    val result = new GraphLattice[E](topNode.value,bottomNode.value)(ordering)
     foreach(value => if(value != elem) result.add(value))
     result
   }
@@ -108,7 +107,7 @@ class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends Lattic
   protected def find(elem: E): LatticeNode[E] = topNode.find(elem) match {
     case Some(node) => node
     case None => {
-      val node = new LatticeNode(elem,ordering)
+      val node = new LatticeNode(elem)(ordering)
       topNode.placeBelow(node)
       bottomNode.placeAbove(node)
       node
