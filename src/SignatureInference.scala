@@ -70,8 +70,7 @@ class SignatureConstraints {
   def isEmpty = current.isEmpty && polyHypotheses.isEmpty
 }
 
-class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None)(implicit lat: Lattice[MonoSignature]) {
-  protected val lattice = lat
+class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None) {
   protected val constraints = new SignatureConstraints
   protected val result = subst match {
     case Some(s) => s
@@ -94,7 +93,7 @@ class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None)(im
           case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.lt(ex,ey)
           case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.lt(rx,ry)
         }
-        case PhysicalSubtypingConstraint(x,y) => TypeRelation.actuallt(x,y,true)
+        case PhysicalSubtypingConstraint(x,y) => PhysicalTypeRelation.lt(x,y)
         case EqualityConstraint(x,y) => (x,y) match {
           case (tx: MonoType,ty: MonoType) => TypeRelation.equiv(tx,ty)
           case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.equiv(ex,ey)
@@ -102,22 +101,49 @@ class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None)(im
         }
       }
       for(c <- cs.getOrElse(throw new Exception("Unsatisfiable signature constraint: " + constraint.toString))) c match {
+        case PhysicalSubtypingConstraint(vx: BoundsVariable[MonoType],vy: BoundsVariable[MonoType]) => {
+          val meets = PhysicalTypeRelation.meet(vy.signature,vx.signature)
+          val px = vx.meet(meets._1)
+          val joins = PhysicalTypeRelation.join(vy.signature,vx.signature)
+          val py = vy.join(joins._1)
+          (meets._2 ++ joins._2 + px._1 + py._1).foreach(c => constrain(c))
+          substitute(vx,px._2)
+          substitute(vy,py._2)
+        }
+        case PhysicalSubtypingConstraint(vx: BoundsVariable[MonoType],ty) => {
+          val meets = PhysicalTypeRelation.meet(vx.signature,ty)
+          val pair = vx.meet(meets._1)
+          (meets._2 + pair._1).foreach(c => constrain(c))
+          substitute(vx,pair._2)
+        }
+        case PhysicalSubtypingConstraint(tx,vy: BoundsVariable[MonoType]) => {
+          val joins = PhysicalTypeRelation.join(tx,vy.signature)
+          val pair = vy.join(joins._1)
+          (joins._2 + pair._1).foreach(c => constrain(c))
+          substitute(vy,pair._2)
+        }
+        case PhysicalSubtypingConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,false))
+        case PhysicalSubtypingConstraint(tx: MonoType,vy: TypeVariable) => substitute(vy,new BoundedTypeVariable(tx,JoinBound,false))
+        case PhysicalSubtypingConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
         case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],vy: BoundsVariable[MonoSignature]) => {
-          val px = vx.meet(lattice.meet(vy.signature,vx.signature))
-          val py = vy.join(lattice.join(vy.signature,vx.signature))
-          constrain(px._1)
-          constrain(py._1)
+          val meets = SignatureRelation.meet(vy.signature,vx.signature)
+          val px = vx.meet(meets._1)
+          val joins = SignatureRelation.join(vy.signature,vx.signature)
+          val py = vy.join(joins._1)
+          (joins._2 ++ meets._2 + px._1 + py._1).map(c => constrain(c))
           substitute(vx,px._2)
           substitute(vy,py._2)
         }
         case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],_) => {
-          val pair = vx.meet(lattice.meet(vx.signature,c.beta))
-          constrain(pair._1)
+          val meets = SignatureRelation.meet(vx.signature,c.beta)
+          val pair = vx.meet(meets._1)
+          (meets._2 + pair._1).map(c => constrain(c))
           substitute(vx,pair._2)
         }
         case SubsumptionConstraint(_,vy: BoundsVariable[MonoSignature]) => {
-          val pair = vy.join(lattice.join(c.alpha,vy.signature))
-          constrain(pair._1)
+          val joins = SignatureRelation.join(c.alpha,vy.signature)
+          val pair = vy.join(joins._1)
+          (joins._2 + pair._1).map(c => constrain(c))
           substitute(vy,pair._2)
         }
         case SubsumptionConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,false))

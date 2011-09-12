@@ -1,9 +1,8 @@
 package decac;
 
 import scala.collection.mutable.Lattice
-import scala.collection.mutable.GraphLattice
 import scala.collection.mutable.Stack
-import scala.collection.Set
+import scala.collection.immutable.Set
 import scala.math.PartialOrdering
 
 sealed abstract class InferenceConstraint {
@@ -40,22 +39,43 @@ case class EqualityConstraint(var x: MonoSignature,var y: MonoSignature) extends
 }
 
 trait InferenceOrdering[T <: MonoSignature] {
+  protected val lattice: Lattice[T]
   def lt(x: T,y: T): Option[Set[InferenceConstraint]]
   def equiv(x: T,y: T): Option[Set[InferenceConstraint]]
+  def join(x: T,y: T): (T,Set[InferenceConstraint]) = {
+    val tau = lattice.join(x,y)
+    (tau,lt(x,tau).get ++ lt(y,tau).get)
+  }
+  def meet(x: T,y: T): (T,Set[InferenceConstraint]) = {
+    val tau = lattice.meet(x,y)
+    (tau,lt(tau,x).get ++ lt(tau,y).get)
+  }
+}
+
+object SignatureRelation extends InferenceOrdering[MonoSignature] {
+  override protected val lattice = null
+  override def lt(x: MonoSignature,y: MonoSignature): Option[Set[InferenceConstraint]] = (x,y) match {
+    case (tx: MonoType,ty: MonoType) => TypeRelation.lt(tx,ty)
+    case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.lt(rx,ry)
+    case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.lt(ex,ey)
+    case _ => throw new Exception("Mismatched signatures: " + x.toString + " <: " + y.toString)
+  }
+  override def equiv(x: MonoSignature,y: MonoSignature): Option[Set[InferenceConstraint]] = (x,y) match {
+    case (tx: MonoType,ty: MonoType) => TypeRelation.equiv(tx,ty)
+    case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.equiv(rx,ry)
+    case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.equiv(ex,ey)
+    case _ => throw new Exception("Mismatched signatures: " + x.toString + " = " + y.toString)
+  }
 }
 
 object SignatureOrdering extends PartialOrdering[MonoSignature] {
-  override def lt(x: MonoSignature,y: MonoSignature): Boolean = (x,y) match {
-    case (tx: MonoType,ty: MonoType) => TypeOrdering.lt(tx,ty)
-    case (rx: MonoRegion,ry: MonoRegion) => RegionOrdering.lt(rx,ry)
-    case (ex: MonoEffect,ey: MonoEffect) => EffectOrdering.lt(ex,ey)
-    case _ => throw new Exception("Mismatched signatures: " + x.toString + " < " + y.toString)
+  override def lt(x: MonoSignature,y: MonoSignature): Boolean = SignatureRelation.lt(x,y) match {
+    case Some(constraints) => constraints.isEmpty
+    case None => false
   }
-  override def equiv(x: MonoSignature,y: MonoSignature): Boolean = (x,y) match {
-    case (tx: MonoType,ty: MonoType) => TypeOrdering.equiv(tx,ty)
-    case (rx: MonoRegion,ry: MonoRegion) => RegionOrdering.equiv(rx,ry)
-    case (ex: MonoEffect,ey: MonoEffect) => EffectOrdering.equiv(ex,ey)
-    case _ => throw new Exception("Mismatched signatures: " + x.toString + " < " + y.toString)
+  override def equiv(x: MonoSignature,y: MonoSignature): Boolean = SignatureRelation.equiv(x,y) match {
+    case Some(constraints) => constraints.isEmpty
+    case None => false
   }
   override def gt(x: MonoSignature,y: MonoSignature): Boolean = lt(y,x)
   override def lteq(x: MonoSignature,y: MonoSignature): Boolean = equiv(x,y) || lt(x,y)

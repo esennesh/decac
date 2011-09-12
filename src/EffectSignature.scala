@@ -1,6 +1,7 @@
 package decac
 
 import scala.collection.immutable.HashSet
+import scala.collection.mutable.GraphLattice
 
 class EffectVariable extends MonoEffect with SignatureVariable
 case object PureEffect extends MonoEffect {
@@ -33,10 +34,15 @@ case class SetEffect(effects: Set[MonoEffect]) extends MonoEffect {
   override def mapE(f: (MonoEffect) => MonoEffect): MonoEffect = f(SetEffect(effects.map(eff => eff.mapE(f))))
   override def variables: Set[SignatureVariable] = effects.map(effect => effect.variables).foldLeft(HashSet.empty[SignatureVariable])((accum: HashSet[SignatureVariable],y: Set[SignatureVariable]) => accum ++ y)
 }
+object TopEffect extends MonoEffect {
+  override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable]
+}
 
 object EffectRelation extends InferenceOrdering[MonoEffect] {
+  override protected val lattice = new GraphLattice(PureEffect,TopEffect)(EffectOrdering)
   def lt(x: MonoEffect,y: MonoEffect): Option[Set[InferenceConstraint]] = (x,y) match {
-    case (PureEffect,_) => Some(HashSet.empty[InferenceConstraint])
+    case (PureEffect,_) => Some(HashSet.empty)
+    case (_,TopEffect) => Some(HashSet.empty)
     case (SetEffect(ex),SetEffect(ey)) => if(ex.forall(eff => ey.contains(eff))) Some(HashSet.empty) else None
     case (_,SetEffect(effects)) => if(effects.contains(x)) Some(HashSet.empty) else None
     case (ReadEffect(rx),ReadEffect(ry)) => Some(HashSet.empty[InferenceConstraint] + SubsumptionConstraint(rx,ry))

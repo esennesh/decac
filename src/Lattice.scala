@@ -62,17 +62,24 @@ protected class LatticeNode[E](v: E)(implicit po: PartialOrdering[E]) {
   }
 }
 
-trait Lattice[E] extends mutable.Set[E] {
-  val top: E
-  val bottom: E
+trait Lattice[E] {
   val ordering: PartialOrdering[E]
-  assert(ordering.lt(bottom,top))
   
   def join(x: E,y: E): E
   def meet(x: E,y: E): E
 }
 
-class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends Lattice[E] {
+trait LatticeOrdering[E] extends Lattice[E] with PartialOrdering[E] {
+  override val ordering: PartialOrdering[E] = this
+}
+
+trait LatticeSet[E] extends Lattice[E] with mutable.Set[E] {
+  val top: E
+  val bottom: E
+  assert(ordering.lt(bottom,top))
+}
+
+class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends LatticeSet[E] {
   protected val topNode: LatticeNode[E] = new LatticeNode[E](t)(po)
   protected val bottomNode: LatticeNode[E] = new LatticeNode[E](b)(po)
   override val ordering: PartialOrdering[E] = po

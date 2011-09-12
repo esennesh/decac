@@ -3,6 +3,9 @@ package decac
 import jllvm._
 import scala.collection.mutable.Stack
 import scala.collection.immutable.HashSet
+import scala.collection.immutable.HashMap
+import scala.collection.mutable.LatticeOrdering
+import scala.collection.mutable.GraphLattice
 
 object TopType extends MonoType {
   override def compile: LLVMType = throw TypeException("Top type indicates a type-inference error.")
@@ -139,44 +142,57 @@ case class TaggedRecord(name: String,tag: Int,record: RecordType) {
   }
 }
 
+class ZippableMap[A,B](val m: Map[A,B]) {
+  def zipElements[C](that: Map[A,C]): Map[A,Tuple2[B,C]] = {
+    val xys = m.map(xs => (xs._1,xs._2,that.get(xs._1)))
+    val intersection = xys.foldRight(Nil : List[(A,(B,C))])((head: (A,B,Option[C]),rest: List[(A,(B,C))]) => head._3 match {
+      case Some(c) => (head._1,(head._2,c)) :: rest
+      case None => rest
+    })
+    HashMap.empty[A,Tuple2[B,C]] ++ intersection
+  }
+}
+
 class SumType(trs: List[Tuple2[String,RecordType]]) extends MonoType {
-  val cases = trs.zipWithIndex.map(pair => TaggedRecord(pair._1._1,pair._2,pair._1._2))
-  override def mapT(f: (MonoType) => MonoType): MonoType = f(new SumType(cases.map(tr => (tr.name,tr.record.mapT(f).asInstanceOf[RecordType]))))
-  override def mapE(f: (MonoEffect) => MonoEffect): SumType = new SumType(cases.map(tr => (tr.name,tr.record.mapE(f))))
-  override def mapR(f: (MonoRegion) => MonoRegion): SumType = new SumType(cases.map(tr => (tr.name,tr.record.mapR(f))))
+  val cases: Map[String,TaggedRecord] = HashMap.empty[String,TaggedRecord] ++ trs.zipWithIndex.map(pair => (pair._1._1,TaggedRecord(pair._1._1,pair._2,pair._1._2)))
+  implicit def zippingMap[A,B](m: Map[A,B]): ZippableMap[A,B] = new ZippableMap[A,B](m)
+  
+  override def mapT(f: (MonoType) => MonoType): MonoType = f(new SumType(cases.toList.map(tr => (tr._1,tr._2.record.mapT(f).asInstanceOf[RecordType]))))
+  override def mapE(f: (MonoEffect) => MonoEffect): SumType = new SumType(cases.toList.map(tr => (tr._1,tr._2.record.mapE(f))))
+  override def mapR(f: (MonoRegion) => MonoRegion): SumType = new SumType(cases.toList.map(tr => (tr._1,tr._2.record.mapR(f))))
   override def variables: Set[SignatureVariable] = {
     val empty: Set[SignatureVariable] = HashSet.empty
-    cases.foldLeft(empty)((result,tr) => result ++ tr.record.variables)
+    cases.foldLeft(empty)((result,tr) => result ++ tr._2.record.variables)
   }
-  def enumeration: Boolean = cases.forall(trec => trec.record.length == 0)
+  def enumeration: Boolean = cases.forall(trec => trec._2.record.length == 0)
   
   def tagRepresentation: LLVMIntegerType = {
-    val tagSize = math.floor(math.log(cases.length-1) / math.log(2)).toInt + 1
+    val tagSize = math.floor(math.log(cases.size-1) / math.log(2)).toInt + 1
     assert(tagSize > 0)
     new LLVMIntegerType(tagSize)
   }
   
   def minimalRecord: RecordType = {
-    val smallest = cases.sortWith((x,y) => x.record.length <= y.record.length).head
-    if(cases.forall(c => TypeOrdering.lteq(c.record,smallest.record)))
-      smallest.record
+    val smallest = cases.toList.sortWith((x,y) => x._2.record.length <= y._2.record.length).head
+    if(cases.forall(c => TypeOrdering.lteq(c._2.record,smallest._2.record)))
+      smallest._2.record
     else
       EmptyRecord
   }
   
   def caseRepresentation(which: Int): LLVMType = {
-    assert(which < cases.length)
+    assert(which < cases.size)
     if(enumeration)
       tagRepresentation
     else
-      new LLVMStructType(List(tagRepresentation,cases.apply(which).record.compile).toArray,true)
+      new LLVMStructType(List(tagRepresentation,cases.toList.apply(which)._2.record.compile).toArray,true)
   }
   
   override def compile: LLVMType = {
     if(enumeration)
       tagRepresentation
     else {
-      val maxRecord = cases.zipWithIndex.sortWith((x,y) => x._1.record.sizeOf >= y._1.record.sizeOf).head
+      val maxRecord = cases.toList.zipWithIndex.sortWith((x,y) => x._1._2.record.sizeOf >= y._1._2.record.sizeOf).head
       caseRepresentation(maxRecord._2)
     }
   }
@@ -187,7 +203,11 @@ class SumType(trs: List[Tuple2[String,RecordType]]) extends MonoType {
   }
 }
 
-case class ExistentialMethod(name: Option[String],domain: List[MonoType],range: MonoType,effect: MonoEffect)
+case class ExistentialMethod(name: Option[String],domain: List[MonoType],range: MonoType,effect: MonoEffect) {
+  def ==(em: ExistentialMethod): Boolean = {
+    name == em.name && (domain zip em.domain).forall(ds => TypeOrdering.equiv(ds._1,ds._2)) && TypeOrdering.equiv(range,em.range) && EffectOrdering.equiv(effect,em.effect)
+  }
+}
 
 class ExistentialObject(ms: List[ExistentialMethod],w: Option[MonoType]=None) extends MonoType {
   val methods = ms
@@ -261,27 +281,29 @@ class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean) exten
 
 object TypeRelation extends InferenceOrdering[MonoType] {
   protected val assumptions = new Stack[InferenceConstraint]()
+  
+  override protected val lattice = new GraphLattice(BottomType,TopType)(TypeOrdering)
 
-  def actuallt(x: MonoType,y: MonoType,physical: Boolean = false): Option[Set[InferenceConstraint]] = (x,y) match {
+  override def lt(x: MonoType,y: MonoType): Option[Set[InferenceConstraint]] = (x,y) match {
     case (_,TopType) => Some(HashSet.empty)
     case (BottomType,_) => Some(HashSet.empty)
     case (UnitType,UnitType) => Some(HashSet.empty)
-    case (TypeConstructorCall(cx,px),TypeConstructorCall(cy,py)) => actuallt(cx.represent(px),cy.represent(py),physical)
-    case (TypeConstructorCall(cx,px),_) => actuallt(cx.represent(px),y,physical)
-    case (_,TypeConstructorCall(cy,py)) => actuallt(x,cy.represent(py),physical)
+    case (TypeConstructorCall(cx,px),TypeConstructorCall(cy,py)) => lt(cx.represent(px),cy.represent(py))
+    case (TypeConstructorCall(cx,px),_) => lt(cx.represent(px),y)
+    case (_,TypeConstructorCall(cy,py)) => lt(x,cy.represent(py))
     case (rx: RecursiveType,ry: RecursiveType) => {
       val unfoldx = rx.unfold
       val unfoldy = ry.unfold
       assumptions.push(SubsumptionConstraint(unfoldx._1,unfoldy._1))
-      val result = actuallt(unfoldx._2,unfoldy._2,physical)
+      val result = lt(unfoldx._2,unfoldy._2)
       assumptions.pop
       result
     }
-    case (_,ry: RecursiveType) => actuallt(x,ry.innards,physical)
-    case (rx: RecursiveType,_) => actuallt(rx.innards,y,physical)
+    case (_,ry: RecursiveType) => lt(x,ry.innards)
+    case (rx: RecursiveType,_) => lt(rx.innards,y)
     case (rx: RecordType,ry: RecordType) => {
       val width = if(rx.length >= ry.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = rx.fields.zip(ry.fields).map(taus => if(physical) equiv(taus._1.tau,taus._2.tau) else actuallt(taus._1.tau,taus._2.tau,physical))
+      val depths = rx.fields.zip(ry.fields).map(taus => lt(taus._1.tau,taus._2.tau))
       depths.foldLeft(width)((res,depth) => (res,depth) match {
         case (Some(resset),Some(set)) => Some(resset union set)
         case _ => None
@@ -289,25 +311,25 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     }
     case (fx: FunctionPointer,fy: FunctionPointer) => {
       val width = if(fx.domain.length == fy.domain.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = actuallt(fx.range,fy.range) :: fx.domain.zip(fy.domain).map(taus => actuallt(taus._2,taus._1,physical))
+      val depths = lt(fx.range,fy.range) :: fx.domain.zip(fy.domain).map(taus => lt(taus._2,taus._1))
       depths.foldLeft(width)((res,depth) => (res,depth) match {
         case (Some(resset),Some(set)) => Some(resset union set)
         case _ => None
       })
     }
     case (sx: SumType,sy: SumType) => {
-      val width = if(sx.cases.length <= sy.cases.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = sx.cases.zip(sy.cases).map(cs => if(cs._1.name == cs._2.name) { if(physical) equiv(cs._1.record,cs._2.record) else actuallt(cs._1.record,cs._2.record,physical) } else None)
+      val width = if(sx.cases.size <= sy.cases.size) Some(HashSet.empty[InferenceConstraint]) else None
+      val depths = sx.cases.zip(sy.cases).map(cs => if(cs._1._1 == cs._2._1) lt(cs._1._2.record,cs._2._2.record) else None)
       depths.foldLeft(width)((res,depth) => (res,depth) match {
         case (Some(resset),Some(set)) => Some(resset union set)
         case _ => None
       })
     }
-    case (ex: ExistentialObject,ey: ExistentialObject) => actuallt(ex.shape,ey.shape,physical)
-    case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => actuallt(bx.signature,by.signature,physical)
+    case (ex: ExistentialObject,ey: ExistentialObject) => lt(ex.shape,ey.shape)
+    case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => lt(bx.signature,by.signature)
     case (vx: TypeVariable,vy: TypeVariable) => {
       val empty = HashSet.empty[InferenceConstraint]
-      val constraint: InferenceConstraint = if(physical) PhysicalSubtypingConstraint(vx,vy) else SubsumptionConstraint(vx,vy)
+      val constraint: InferenceConstraint = SubsumptionConstraint(vx,vy)
       if(vx == vy || vx.name == vy.name && vy.universal || assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(vx,vy)))
         Some(empty)
       else
@@ -315,17 +337,17 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     }
     case (vx: TypeVariable,_) => {
       val empty = HashSet.empty[InferenceConstraint]
-      Some(empty + (if(physical) PhysicalSubtypingConstraint(vx,y) else SubsumptionConstraint(vx,y)))
+      Some(empty + SubsumptionConstraint(vx,y))
     }
     case (_,vy: TypeVariable) => {
       val empty = HashSet.empty[InferenceConstraint]
       if(vy.universal)
         Some(empty)
       else
-        Some(if(physical) empty + PhysicalSubtypingConstraint(x,vy) else empty + SubsumptionConstraint(x,vy))
+        Some(empty + SubsumptionConstraint(x,vy))
     }
     case (_,_) => {
-      val constraint = if(physical) PhysicalSubtypingConstraint(x,y) else SubsumptionConstraint(x,y)
+      val constraint = SubsumptionConstraint(x,y)
       val empty = HashSet.empty[InferenceConstraint]
       if(assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(x,y)))
         Some(empty)
@@ -333,7 +355,6 @@ object TypeRelation extends InferenceOrdering[MonoType] {
         Some(HashSet(constraint))
     }
   }
-  override def lt(x: MonoType,y: MonoType): Option[Set[InferenceConstraint]] = actuallt(x,y,false)
   override def equiv(x: MonoType,y: MonoType): Option[Set[InferenceConstraint]] = (x,y) match {
     case (TopType,TopType) => Some(HashSet.empty)
     case (BottomType,BottomType) => Some(HashSet.empty)
@@ -368,8 +389,8 @@ object TypeRelation extends InferenceOrdering[MonoType] {
       })
     }
     case (sx: SumType,sy: SumType) => {
-      val width = if(sx.cases.length == sy.cases.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = sx.cases.zip(sy.cases).map(cs => if(cs._1.name == cs._2.name) equiv(cs._1.record,cs._2.record) else None)
+      val width = if(sx.cases.size == sy.cases.size) Some(HashSet.empty[InferenceConstraint]) else None
+      val depths = sx.cases.zip(sy.cases).map(cs => if(cs._1._1 == cs._2._1) equiv(cs._1._2.record,cs._2._2.record) else None)
       depths.foldLeft(width)((res,depth) => (res,depth) match {
         case (Some(resset),Some(set)) => Some(resset union set)
         case _ => None
@@ -405,12 +426,115 @@ object TypeRelation extends InferenceOrdering[MonoType] {
   }
 }
 
+object PhysicalTypeRelation extends InferenceOrdering[MonoType] {
+  protected val assumptions = new Stack[InferenceConstraint]()
+  
+  override protected val lattice = new GraphLattice(BottomType,TopType)(PhysicalTypeOrdering)
+
+  override def lt(x: MonoType,y: MonoType): Option[Set[InferenceConstraint]] = (x,y) match {
+    case (_,TopType) => Some(HashSet.empty)
+    case (BottomType,_) => Some(HashSet.empty)
+    case (UnitType,UnitType) => Some(HashSet.empty)
+    case (TypeConstructorCall(cx,px),TypeConstructorCall(cy,py)) => lt(cx.represent(px),cy.represent(py))
+    case (TypeConstructorCall(cx,px),_) => lt(cx.represent(px),y)
+    case (_,TypeConstructorCall(cy,py)) => lt(x,cy.represent(py))
+    case (rx: RecursiveType,ry: RecursiveType) => {
+      val unfoldx = rx.unfold
+      val unfoldy = ry.unfold
+      assumptions.push(SubsumptionConstraint(unfoldx._1,unfoldy._1))
+      val result = lt(unfoldx._2,unfoldy._2)
+      assumptions.pop
+      result
+    }
+    case (_,ry: RecursiveType) => lt(x,ry.innards)
+    case (rx: RecursiveType,_) => lt(rx.innards,y)
+    case (rx: RecordType,ry: RecordType) => {
+      val width = if(rx.length >= ry.length) Some(HashSet.empty[InferenceConstraint]) else None
+      val depths = rx.fields.zip(ry.fields).map(taus => equiv(taus._1.tau,taus._2.tau))
+      depths.foldLeft(width)((res,depth) => (res,depth) match {
+        case (Some(resset),Some(set)) => Some(resset union set)
+        case _ => None
+      })
+    }
+    case (fx: FunctionPointer,fy: FunctionPointer) => {
+      val width = if(fx.domain.length == fy.domain.length) Some(HashSet.empty[InferenceConstraint]) else None
+      val depths = lt(fx.range,fy.range) :: fx.domain.zip(fy.domain).map(taus => lt(taus._2,taus._1))
+      depths.foldLeft(width)((res,depth) => (res,depth) match {
+        case (Some(resset),Some(set)) => Some(resset union set)
+        case _ => None
+      })
+    }
+    case (sx: SumType,sy: SumType) => {
+      val width = if(sx.cases.size <= sy.cases.size) Some(HashSet.empty[InferenceConstraint]) else None
+      val depths = sx.cases.zip(sy.cases).map(cs => if(cs._1._1 == cs._2._1) equiv(cs._1._2.record,cs._2._2.record) else None)
+      depths.foldLeft(width)((res,depth) => (res,depth) match {
+        case (Some(resset),Some(set)) => Some(resset union set)
+        case _ => None
+      })
+    }
+    case (ex: ExistentialObject,ey: ExistentialObject) => lt(ex.shape,ey.shape)
+    case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => lt(bx.signature,by.signature)
+    case (vx: TypeVariable,vy: TypeVariable) => {
+      val empty = HashSet.empty[InferenceConstraint]
+      val constraint: InferenceConstraint = PhysicalSubtypingConstraint(vx,vy)
+      if(vx == vy || vx.name == vy.name && vy.universal || assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(vx,vy)))
+        Some(empty)
+      else
+        Some(empty + constraint)
+    }
+    case (vx: TypeVariable,_) => {
+      val empty = HashSet.empty[InferenceConstraint]
+      Some(empty + PhysicalSubtypingConstraint(vx,y))
+    }
+    case (_,vy: TypeVariable) => {
+      val empty = HashSet.empty[InferenceConstraint]
+      if(vy.universal)
+        Some(empty)
+      else
+        Some(empty + PhysicalSubtypingConstraint(x,vy))
+    }
+    case (_,_) => {
+      val constraint = PhysicalSubtypingConstraint(x,y)
+      val empty = HashSet.empty[InferenceConstraint]
+      if(assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(x,y)))
+        Some(empty)
+      else
+        Some(HashSet(constraint))
+    }
+  }
+  override def equiv(x: MonoType,y: MonoType): Option[Set[InferenceConstraint]] = TypeRelation.equiv(x,y)
+}
+
 object TypeOrdering extends PartialOrdering[MonoType] {
   override def lt(x: MonoType,y: MonoType): Boolean = TypeRelation.lt(x,y) match {
     case Some(constraints) => constraints.isEmpty
     case None => false
   }
   override def equiv(x: MonoType,y: MonoType): Boolean = TypeRelation.equiv(x,y) match {
+    case Some(constraints) => constraints.isEmpty
+    case None => false
+  }
+  override def gt(x: MonoType,y: MonoType): Boolean = lt(y,x)
+  override def lteq(x: MonoType,y: MonoType): Boolean = equiv(x,y) || lt(x,y)
+  override def gteq(x: MonoType,y: MonoType): Boolean = equiv(x,y) || gt(x,y)
+  override def tryCompare(x: MonoType,y: MonoType): Option[Int] = {
+    if(gt(x,y))
+      Some(1)
+    else if(lt(x,y))
+      Some(-1)
+    else if(equiv(x,y))
+      Some(0)
+    else
+      None
+  }
+}
+
+object PhysicalTypeOrdering extends PartialOrdering[MonoType] {
+  override def lt(x: MonoType,y: MonoType): Boolean = PhysicalTypeRelation.lt(x,y) match {
+    case Some(constraints) => constraints.isEmpty
+    case None => false
+  }
+  override def equiv(x: MonoType,y: MonoType): Boolean = PhysicalTypeRelation.equiv(x,y) match {
     case Some(constraints) => constraints.isEmpty
     case None => false
   }
