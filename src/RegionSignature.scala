@@ -1,21 +1,30 @@
 package decac
 
 import scala.collection.immutable.HashSet
+import scala.collection.mutable.GraphLattice
 
 class Scope {
   def enclosedIn(s: Scope): Boolean = s == this
 }
 class Module extends Scope
 class LexicalScope extends Scope
+object GlobalScope extends Module
 case class ScopeRegion(scope: Scope) extends MonoRegion {
   override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable]
+}
+object GlobalRegion extends ScopeRegion(GlobalScope)
+object BottomRegion extends MonoRegion {
+  override def variables: Set[SignatureVariable] = HashSet.empty
 }
 case class RegionVariable(formal: Boolean) extends MonoRegion with SignatureVariable {
   override val universal = formal
 }
 
 object RegionRelation extends InferenceOrdering[MonoRegion] {
+  override protected val lattice = new GraphLattice(BottomRegion,GlobalRegion)(RegionOrdering)
   def lt(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {
+    case (BottomRegion,_) => Some(HashSet.empty)
+    case (_,GlobalRegion) => Some(HashSet.empty)
     case (ScopeRegion(sx),ScopeRegion(sy)) => if(sx enclosedIn sy) Some(HashSet.empty) else None
     case (RegionVariable(_),RegionVariable(true)) => Some(HashSet.empty)
     case (RegionVariable(false),RegionVariable(false)) => Some(HashSet.empty[InferenceConstraint] + SubsumptionConstraint(x,y))
