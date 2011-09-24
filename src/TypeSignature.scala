@@ -25,7 +25,7 @@ object UnitType extends MonoType {
   override def toString: String = "unit"
 }
 
-case class TypeConstructorCall(constructor: TypeConstructor,params: List[MonoType]) extends MonoType {
+case class TypeConstructorCall(constructor: TypeConstructor,params: List[MonoSignature]) extends MonoType {
   override def compile: LLVMType = constructor.compile(params)
   override def toString: String = constructor.name + "<" + params.tail.foldLeft(params.head.toString)((s,p) => s + "," + p.toString) + ">"
   override def mapT(f: (MonoType) => MonoType): MonoType = f(new TypeConstructorCall(constructor,params.map(tau => tau.mapT(f))))
@@ -203,17 +203,10 @@ class SumType(trs: List[Tuple2[String,RecordType]]) extends MonoType {
   }
 }
 
-case class ExistentialMethod(name: Option[String],domain: List[MonoType],range: MonoType,effect: MonoEffect) {
-  def ==(em: ExistentialMethod): Boolean = {
-    name == em.name && (domain zip em.domain).forall(ds => TypeOrdering.equiv(ds._1,ds._2)) && TypeOrdering.equiv(range,em.range) && EffectOrdering.equiv(effect,em.effect)
-  }
-}
-
-class ExistentialObject(ms: List[ExistentialMethod],w: Option[MonoType]=None) extends MonoType {
-  val methods = ms
+class ExistentialInterface(r: RecordType,abs: MonoType,w: Option[MonoType] = None) extends MonoType {
   protected val witness = w
   val skolem = {
-    val shape = new RecordType(RecordMember(None,TopType) :: methods.map(method => RecordMember(method.name,new FunctionPointer(TopType :: method.domain,method.range,method.effect))))
+    val shape = r.replace(abs,TopType).asInstanceOf[RecordType]
     val shapeVariables = shape.variables
     if(shapeVariables.forall(tvar => tvar.universal)) {
       val constructor = SkolemConstructors.get(shape)
@@ -222,26 +215,18 @@ class ExistentialObject(ms: List[ExistentialMethod],w: Option[MonoType]=None) ex
           assert(w.variables.forall(tvar => shapeVariables.contains(tvar)))
           constructor.witness(w)
         }
-        case None => { }
+        case None => Unit
       }
-      new TypeConstructorCall(constructor,shapeVariables.map(v => v.asInstanceOf[MonoType]).toList)
+      //Remember: existential skolem-constructors have to reveal their "closed over" region and effect variables, not just their "closed over" type variables.
+      new TypeConstructorCall(constructor,shapeVariables.toList)
     }
     else
       TopType
   }
-  val shape = new RecordType(RecordMember(None,skolem) :: methods.map(method => RecordMember(method.name,new FunctionPointer(skolem :: method.domain,method.range,method.effect))))
-  override def mapT(f: (MonoType) => MonoType): MonoType = {
-    val mappedMethods = methods.map(method => ExistentialMethod(method.name,method.domain.map(tau => tau.mapT(f)),method.range.mapT(f),method.effect.mapT(f)))
-    f(new ExistentialObject(mappedMethods,witness.map(tau => tau.mapT(f))))
-  }
-  override def mapR(f: (MonoRegion) => MonoRegion): MonoType = {
-    val mappedMethods = methods.map(method => ExistentialMethod(method.name,method.domain.map(tau => tau.mapR(f)),method.range.mapR(f),method.effect.mapR(f)))
-    new ExistentialObject(mappedMethods,witness.map(tau => tau.mapR(f)))
-  }
-  override def mapE(f: (MonoEffect) => MonoEffect): MonoType = {
-    val mappedMethods = methods.map(method => ExistentialMethod(method.name,method.domain.map(tau => tau.mapE(f)),method.range.mapE(f),method.effect.mapE(f)))
-    new ExistentialObject(mappedMethods,witness.map(tau => tau.mapE(f)))
-  }
+  val shape = r.replace(abs,skolem).asInstanceOf[RecordType]
+  override def mapT(f: MonoType => MonoType) = new ExistentialInterface(shape.mapT(f).asInstanceOf[RecordType],skolem,witness.map(tau => tau.mapT(f)))
+  override def mapR(f: MonoRegion => MonoRegion) = new ExistentialInterface(shape.mapR(f),skolem,witness.map(tau => tau.mapR(f)))
+  override def mapE(f: MonoEffect => MonoEffect) = new ExistentialInterface(shape.mapE(f),skolem,witness.map(tau => tau.mapE(f)))
   override def compile: LLVMType = shape.compile
   override def variables: Set[SignatureVariable] = shape.variables
 }
@@ -325,7 +310,7 @@ object TypeRelation extends InferenceOrdering[MonoType] {
         case _ => None
       })
     }
-    case (ex: ExistentialObject,ey: ExistentialObject) => lt(ex.shape,ey.shape)
+    case (ex: ExistentialInterface,ey: ExistentialInterface) => lt(ex.shape,ey.shape)
     case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => lt(bx.signature,by.signature)
     case (vx: TypeVariable,vy: TypeVariable) => {
       val empty = HashSet.empty[InferenceConstraint]
@@ -396,7 +381,7 @@ object TypeRelation extends InferenceOrdering[MonoType] {
         case _ => None
       })
     }
-    case (ex: ExistentialObject,ey: ExistentialObject) => equiv(ex.shape,ey.shape)
+    case (ex: ExistentialInterface,ey: ExistentialInterface) => equiv(ex.shape,ey.shape)
     case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => equiv(bx.signature,bx.signature)
     case (vx: TypeVariable,vy: TypeVariable) => {
       val empty = HashSet.empty[InferenceConstraint]
@@ -472,7 +457,7 @@ object PhysicalTypeRelation extends InferenceOrdering[MonoType] {
         case _ => None
       })
     }
-    case (ex: ExistentialObject,ey: ExistentialObject) => lt(ex.shape,ey.shape)
+    case (ex: ExistentialInterface,ey: ExistentialInterface) => lt(ex.shape,ey.shape)
     case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => lt(bx.signature,by.signature)
     case (vx: TypeVariable,vy: TypeVariable) => {
       val empty = HashSet.empty[InferenceConstraint]
