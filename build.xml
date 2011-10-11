@@ -16,16 +16,16 @@
 			<arg value="--no-inline"/>
 		</exec>
 		<mkdir dir="build/"/>
-		<javac srcdir="src/decac/parser" destdir="build" includeantruntime="false"/>
-		<copy file="src/decac/parser/lexer/lexer.dat" todir="build/decac/parser/lexer"/>
-		<copy file="src/decac/parser/parser/parser.dat" todir="build/decac/parser/parser"/>
+		<javac srcdir="src/org/deca/compiler/parser" destdir="build" includeantruntime="false"/>
+		<copy file="src/org/deca/compiler/parser/lexer/lexer.dat" todir="build/org/decac/compiler/parser/lexer"/>
+		<copy file="src/org/deca/compiler/parser/parser/parser.dat" todir="build/org/decac/compiler/parser/parser"/>
 	</target>
 	<target name="build_llvm_bindings">
 		<echo message="Compiling C components of jllvm."/>
-		<exec dir="src/jllvm/llvm/" executable="make"/>
+		<exec dir="src/org/jllvm/bindings/" executable="make"/>
 		<echo message="Compiled C components of jllvm."/>
 		<mkdir dir="build/"/>
-		<javac srcdir="src/jllvm" destdir="build" includeantruntime="false"/>
+		<javac srcdir="src/org/jllvm" destdir="build" includeantruntime="false"/>
 	</target>
 	<target name="build">
 		<mkdir dir="build/"/>
@@ -36,13 +36,13 @@
 		</fsc>
 	</target>
 	<target name="clean">
-		<exec dir="src/jllvm" executable="ant">
+		<exec dir="src/org/jllvm" executable="ant">
 			<arg value="clean"/>
 		</exec>
 		<exec dir="src/" executable="fsc">
 			<arg value="-reset"/>
 		</exec>
 		<delete dir="build/"/>
-		<delete dir="src/decac/"/>
+		<delete dir="src/org/deca/compiler/parser/"/>
 	</target>
 </project>
