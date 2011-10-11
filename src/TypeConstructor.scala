@@ -112,25 +112,21 @@ object ExceptionConstructor extends OpenSumConstructor(Nil,List(("AnyException",
   //new TypeDefinition(this,"Exception",StandardLibrary)
 }
 
-case class SkolemConstructor(shape: RecordType) extends TypeConstructor(shape.variables.toList.filter(svar => svar.isInstanceOf[TypeVariable]).map(svar => svar.asInstanceOf[TypeVariable])) {
-  var witnesses = new HashSet[MonoType]()
+case class SkolemConstructor(shape: RecordType) extends TypeConstructor(shape.variables.toList) {
   
   override def compile(params: List[MonoSignature]): LLVMType = getSpecialization(params) match {
     case Some(op) => op
     case None => {
-      val result = (new OpaqueType).compile
+      //That's right, only boxed existentials are allowed now.
+      val result = LLVMIntegerType.i8
       specializations.put(params,result)
       result
     }
   }
   override def resolve(params: List[MonoSignature]): LLVMType = represent(params).compile
   override def represent(params: List[MonoSignature]): MonoType = {
-    val specialize = (spec: MonoType) => parameters.zip(params).foldLeft(spec)((result: MonoType,specs: Tuple2[SignatureVariable,MonoSignature]) => result.mapT((sig: MonoType) => if(sig == specs._1) specs._2.asInstanceOf[MonoType] else sig))
-    witnesses.toList.sortWith((x,y) => specialize(x).sizeOf >= specialize(y).sizeOf).head
-  }
-  def witness(w: MonoType): Unit = {
-    assert(w.variables.forall(svar => parameters.contains(svar)))
-    witnesses.add(w)
+    //IntegerTypes.Byte
+    UnitType
   }
 }
 
