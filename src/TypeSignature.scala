@@ -205,23 +205,22 @@ class SumType(trs: List[Tuple2[String,RecordType]]) extends MonoType {
 
 class ExistentialInterface(r: RecordType,abs: MonoType,w: Option[MonoType] = None) extends MonoType {
   protected val witness = w
+  val effects: MonoEffect = witness match {
+    case Some(wit) => {
+      var effs = HashSet.empty[MonoEffect]
+      wit.mapE(eff => {effs += eff ; eff})
+      SetEffect(effs)
+    }
+    case None => PureEffect
+  } 
   val skolem = {
     val shape = r.replace(abs,TopType).asInstanceOf[RecordType]
     val shapeVariables = shape.variables
-    if(shapeVariables.forall(tvar => tvar.universal)) {
-      val constructor = SkolemConstructors.get(shape)
-      witness match {
-        case Some(w) => {
-          assert(w.variables.forall(tvar => shapeVariables.contains(tvar)))
-          constructor.witness(w)
-        }
-        case None => Unit
-      }
-      //Remember: existential skolem-constructors have to reveal their "closed over" region and effect variables, not just their "closed over" type variables.
-      new TypeConstructorCall(constructor,shapeVariables.toList)
-    }
-    else
-      TopType
+    assert(witness match {
+      case Some(wit) => wit.variables.forall(tvar => shapeVariables.contains(tvar))
+      case None => true
+    })
+    new TypeConstructorCall(SkolemConstructors.get(shape),shapeVariables.toList)
   }
   val shape = r.replace(abs,skolem).asInstanceOf[RecordType]
   override def mapT(f: MonoType => MonoType) = new ExistentialInterface(shape.mapT(f).asInstanceOf[RecordType],skolem,witness.map(tau => tau.mapT(f)))
