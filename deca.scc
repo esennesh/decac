@@ -1,4 +1,4 @@
-Package decac.parser;
+Package org.deca.compiler.parser;
 
 Helpers
   unicode_input_character = [0..0xffff];
