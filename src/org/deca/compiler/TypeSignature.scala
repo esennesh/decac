@@ -11,22 +11,31 @@ object TopType extends MonoType {
   override def compile: LLVMType = throw TypeException("Top type indicates a type-inference error.")
   override def variables: Set[SignatureVariable] = HashSet.empty
   override def toString: String = "top"
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
 }
 
 object BottomType extends MonoType {
   override def compile: LLVMType = throw TypeException("Bottom type indicates a type-inference error.")
   override def variables: Set[SignatureVariable] = HashSet.empty
   override def toString: String = "bottom"
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
 }
 
 object UnitType extends MonoType {
   override def compile: LLVMType = new LLVMVoidType
   override def variables: Set[SignatureVariable] = HashSet.empty
   override def toString: String = "unit"
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
 }
 
 case class TypeConstructorCall(constructor: TypeConstructor,params: List[MonoSignature]) extends MonoType {
   override def compile: LLVMType = constructor.compile(params)
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = constructor.represent(params).filterT(pred)
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = constructor.represent(params).filterR(pred)
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = constructor.represent(params).filterE(pred)
   override def toString: String = constructor.name + "<" + params.tail.foldLeft(params.head.toString)((s,p) => s + "," + p.toString) + ">"
   override def mapT(f: (MonoType) => MonoType): MonoType = f(new TypeConstructorCall(constructor,params.map(tau => tau.mapT(f))))
   override def mapE(f: (MonoEffect) => MonoEffect): TypeConstructorCall = new TypeConstructorCall(constructor,params.map(tau => tau.mapE(f)))
@@ -46,6 +55,8 @@ class OpaqueType extends MonoType {
   override def mapE(f: (MonoEffect) => MonoEffect): MonoType = this
   override def mapR(f: (MonoRegion) => MonoRegion): MonoType = this
   override def variables: Set[SignatureVariable] = HashSet.empty
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
 }
 
 class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
@@ -58,6 +69,10 @@ class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
     val loop = new OpaqueType
     (loop,innards.mapT((tau: MonoType) => if(tau == this) loop else tau))
   }
+  
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = unfold._2.filterT(pred)
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = unfold._2.filterR(pred)
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = unfold._2.filterE(pred)
   
   override def mapT(f: (MonoType) => MonoType): MonoType = f(new RecursiveType(innards.mapT((tau: MonoType) => if(tau == this) tau else f(tau)),Some(this)))
   override def mapR(f: (MonoRegion) => MonoRegion): RecursiveType = {
@@ -91,6 +106,16 @@ class RecordType(f: List[RecordMember]) extends MonoType {
   val fields: List[RecordMember] = f
   val length: Int = fields.length
   
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
+    fields.map(field => field.tau.filterT(pred)).foldLeft(HashSet.empty[MonoType].asInstanceOf[Set[MonoType]])((res: Set[MonoType],ts: Set[MonoType]) => res ++ ts)
+  }
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = {
+    fields.map(field => field.tau.filterR(pred)).foldLeft(HashSet.empty[MonoRegion].asInstanceOf[Set[MonoRegion]])((res: Set[MonoRegion],ts: Set[MonoRegion]) => res ++ ts)
+  }
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = {
+    fields.map(field => field.tau.filterE(pred)).foldLeft(HashSet.empty[MonoEffect].asInstanceOf[Set[MonoEffect]])((res: Set[MonoEffect],ts: Set[MonoEffect]) => res ++ ts)
+  }
+  
   override def mapT(f: (MonoType) => MonoType): MonoType = {
     f(new RecordType(fields.map(field => RecordMember(field.name,field.tau.mapT(f)))))
   }
@@ -117,6 +142,19 @@ class FunctionPointer(d: List[MonoType],r: MonoType,e: MonoEffect) extends MonoT
   val range = r
   val effect = e
 
+
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
+    val domains = domain.map(d => d.filterT(pred)).foldLeft(Set.empty[MonoType])((res,typ) => res ++ typ)
+    domains ++ range.filterT(pred) ++ effect.filterT(pred)
+  }
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = {
+    val domains = domain.map(d => d.filterR(pred)).foldLeft(Set.empty[MonoRegion])((res,reg) => res ++ reg)
+    domains ++ range.filterR(pred) ++ effect.filterR(pred)
+  }
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = {
+    val domains = domain.map(d => d.filterE(pred)).foldLeft(Set.empty[MonoEffect])((res,eff) => res ++ eff)
+    domains ++ range.filterE(pred) ++ effect.filterE(pred)
+  }
   override def mapT(f: (MonoType) => MonoType): MonoType = {
     f(new FunctionPointer(domain.map(d => d.mapT(f)),range.mapT(f),effect))
   }
@@ -157,6 +195,18 @@ class SumType(trs: List[Tuple2[String,RecordType]]) extends MonoType {
   val cases: Map[String,TaggedRecord] = HashMap.empty[String,TaggedRecord] ++ trs.zipWithIndex.map(pair => (pair._1._1,TaggedRecord(pair._1._1,pair._2,pair._1._2)))
   implicit def zippingMap[A,B](m: Map[A,B]): ZippableMap[A,B] = new ZippableMap[A,B](m)
   
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
+    val cs = cases.values.map(tr => tr.record.filterT(pred))
+    cs.foldLeft(Set.empty[MonoType])((res,c) => res ++ c)
+  }
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = {
+    val cs = cases.values.map(tr => tr.record.filterE(pred))
+    cs.foldLeft(Set.empty[MonoEffect])((res,c) => res ++ c)
+  }
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = {
+    val cs = cases.values.map(tr => tr.record.filterR(pred))
+    cs.foldLeft(Set.empty[MonoRegion])((res,c) => res ++ c)
+  }
   override def mapT(f: (MonoType) => MonoType): MonoType = f(new SumType(cases.toList.map(tr => (tr._1,tr._2.record.mapT(f).asInstanceOf[RecordType]))))
   override def mapE(f: (MonoEffect) => MonoEffect): SumType = new SumType(cases.toList.map(tr => (tr._1,tr._2.record.mapE(f))))
   override def mapR(f: (MonoRegion) => MonoRegion): SumType = new SumType(cases.toList.map(tr => (tr._1,tr._2.record.mapR(f))))
@@ -207,12 +257,11 @@ class ExistentialInterface(r: RecordType,abs: MonoType,w: Option[MonoType] = Non
   protected val witness = w
   val effects: MonoEffect = witness match {
     case Some(wit) => {
-      var effs = HashSet.empty[MonoEffect]
-      wit.mapE(eff => {effs += eff ; eff})
+      val effs = wit.filterE(eff => true)
       SetEffect(effs)
     }
     case None => PureEffect
-  } 
+  }
   val skolem = {
     val shape = r.replace(abs,TopType).asInstanceOf[RecordType]
     val shapeVariables = shape.variables
@@ -223,6 +272,21 @@ class ExistentialInterface(r: RecordType,abs: MonoType,w: Option[MonoType] = Non
     new TypeConstructorCall(SkolemConstructors.get(shape),shapeVariables.toList)
   }
   val shape = r.replace(abs,skolem).asInstanceOf[RecordType]
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
+    shape.filterT(pred) ++ (if(pred(this)) (Set.empty[MonoType] + this) else Set.empty[MonoType])
+  }
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = {
+    shape.filterR(pred) ++ (witness match {
+      case Some(w) => w.filterR(pred)
+      case None => Set.empty
+    })
+  }
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = {
+    shape.filterE(pred) ++ (witness match {
+      case Some(w) => w.filterE(pred)
+      case None => Set.empty
+    })
+  }
   override def mapT(f: MonoType => MonoType) = new ExistentialInterface(shape.mapT(f).asInstanceOf[RecordType],skolem,witness.map(tau => tau.mapT(f)))
   override def mapR(f: MonoRegion => MonoRegion) = new ExistentialInterface(shape.mapR(f),skolem,witness.map(tau => tau.mapR(f)))
   override def mapE(f: MonoEffect => MonoEffect) = new ExistentialInterface(shape.mapE(f),skolem,witness.map(tau => tau.mapE(f)))
@@ -240,6 +304,9 @@ class TypeVariable(univ: Boolean,n: Option[String] = None) extends MonoType with
     case Some(str) => str
     case None => getClass().getName() + '@' + Integer.toHexString(hashCode())
   }
+  
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
 }
 
 class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean) extends MonoType with BoundsVariable[MonoType] {
@@ -249,6 +316,8 @@ class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean) exten
   override def compile: LLVMType = signature.compile
   override def sizeOf: Int = signature.sizeOf
   override def toString: String = signature.toString
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = signature.filterR(pred)
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = signature.filterE(pred)
   
   def join(above: MonoType): Tuple2[InferenceConstraint,BoundsVariable[MonoType]] = {
     val constraint = bound match {
