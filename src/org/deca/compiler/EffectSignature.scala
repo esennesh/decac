@@ -46,6 +46,7 @@ case class SetEffect(effects: Set[MonoEffect]) extends MonoEffect {
   assert(effects.forall(effect => !effect.isInstanceOf[SetEffect]))
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = effects.map(eff => eff.filterT(pred)).foldLeft(HashSet.empty[MonoType].asInstanceOf[Set[MonoType]])((res: Set[MonoType],ts: Set[MonoType]) => res ++ ts)
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = effects.map(eff => eff.filterR(pred)).foldLeft(HashSet.empty[MonoRegion].asInstanceOf[Set[MonoRegion]])((res: Set[MonoRegion],ts: Set[MonoRegion]) => res ++ ts)
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = effects.map(eff => eff.filterE(pred)).foldLeft(Set.empty[MonoEffect])((res,ts) => res ++ ts) ++ (if(pred(this)) Set.empty[MonoEffect] + this else Set.empty[MonoEffect])
   override def mapR(f: (MonoRegion) => MonoRegion): MonoEffect = SetEffect(effects.map(eff => eff.mapR(f)))
   override def mapT(f: (MonoType) => MonoType): MonoEffect = SetEffect(effects.map(eff => eff.mapT(f)))
   override def mapE(f: (MonoEffect) => MonoEffect): MonoEffect = f(SetEffect(effects.map(eff => eff.mapE(f))))
