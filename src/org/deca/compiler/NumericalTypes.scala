@@ -16,6 +16,8 @@ abstract class NumericalType(n: String,p: Option[NumericalType]) extends MonoTyp
   
   override def variables: Set[SignatureVariable] = HashSet.empty
   override def toString: String = name
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
 }
 
 abstract class RealType(n: String,p: Option[RealType]) extends NumericalType(n,p) {

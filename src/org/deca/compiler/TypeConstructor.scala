@@ -125,8 +125,7 @@ case class SkolemConstructor(shape: RecordType) extends TypeConstructor(shape.va
   }
   override def resolve(params: List[MonoSignature]): LLVMType = represent(params).compile
   override def represent(params: List[MonoSignature]): MonoType = {
-    //IntegerTypes.Byte
-    UnitType
+    Byte
   }
 }
 

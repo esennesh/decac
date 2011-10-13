@@ -3,32 +3,49 @@ package org.deca.compiler
 import scala.collection.immutable.HashSet
 import scala.collection.mutable.GraphLattice
 
-class EffectVariable extends MonoEffect with SignatureVariable
+class EffectVariable extends MonoEffect with SignatureVariable {
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
+}
 case object PureEffect extends MonoEffect {
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
   override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable]
 }
 case class ReadEffect(region: MonoRegion) extends MonoEffect {
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = region.filterR(pred)
   override def mapR(f: (MonoRegion) => MonoRegion): MonoEffect = ReadEffect(f(region))
   override def variables: Set[SignatureVariable] = region.variables
 }
 case class WriteEffect(region: MonoRegion) extends MonoEffect {
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = region.filterR(pred)
   override def mapR(f: (MonoRegion) => MonoRegion): MonoEffect = WriteEffect(f(region))
   override def variables: Set[SignatureVariable] = region.variables
 }
 case class DestroyEffect(region: MonoRegion) extends MonoEffect {
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = region.filterR(pred)
   override def mapR(f: (MonoRegion) => MonoRegion): MonoEffect = DestroyEffect(f(region))
   override def variables: Set[SignatureVariable] = region.variables
 }
 case class ThrowEffect(exception: MonoType) extends MonoEffect {
   assert(TypeOrdering.lteq(exception,ExceptionConstructor.represent(Nil)))
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = exception.filterT(pred)
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
   override def mapT(f: (MonoType) => MonoType): MonoEffect = ThrowEffect(f(exception))
   override def variables: Set[SignatureVariable] = exception.variables
 }
 case class CallEffect(module: Module) extends MonoEffect {
   override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable]
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
 }
 case class SetEffect(effects: Set[MonoEffect]) extends MonoEffect {
   assert(effects.forall(effect => !effect.isInstanceOf[SetEffect]))
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = effects.map(eff => eff.filterT(pred)).foldLeft(HashSet.empty[MonoType].asInstanceOf[Set[MonoType]])((res: Set[MonoType],ts: Set[MonoType]) => res ++ ts)
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = effects.map(eff => eff.filterR(pred)).foldLeft(HashSet.empty[MonoRegion].asInstanceOf[Set[MonoRegion]])((res: Set[MonoRegion],ts: Set[MonoRegion]) => res ++ ts)
   override def mapR(f: (MonoRegion) => MonoRegion): MonoEffect = SetEffect(effects.map(eff => eff.mapR(f)))
   override def mapT(f: (MonoType) => MonoType): MonoEffect = SetEffect(effects.map(eff => eff.mapT(f)))
   override def mapE(f: (MonoEffect) => MonoEffect): MonoEffect = f(SetEffect(effects.map(eff => eff.mapE(f))))
@@ -36,6 +53,8 @@ case class SetEffect(effects: Set[MonoEffect]) extends MonoEffect {
 }
 object TopEffect extends MonoEffect {
   override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable]
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
 }
 
 object EffectRelation extends InferenceOrdering[MonoEffect] {

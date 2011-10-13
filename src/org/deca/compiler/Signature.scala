@@ -8,6 +8,9 @@ trait MonoSignature {
   def mapT(f: (MonoType) => MonoType): MonoSignature
   def mapR(f: (MonoRegion) => MonoRegion): MonoSignature
   def mapE(f: (MonoEffect) => MonoEffect): MonoSignature
+  def filterT(pred: MonoType => Boolean): Set[MonoType]
+  def filterR(pred: MonoRegion => Boolean): Set[MonoRegion]
+  def filterE(pred: MonoEffect => Boolean): Set[MonoEffect]
   def replace(from: MonoSignature,to: MonoSignature): MonoSignature = from match {
     case t: MonoType => mapT((sig: MonoType) => if(sig == from) to.asInstanceOf[MonoType] else sig)
     case e: MonoEffect => mapE((sig: MonoEffect) => if(sig == from) to.asInstanceOf[MonoEffect] else sig)
@@ -35,6 +38,14 @@ trait BoundsVariable[T <: MonoSignature] extends SignatureVariable {
 }
 
 abstract class MonoRegion extends MonoSignature {
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = {
+    if(pred(this))
+      HashSet.empty[MonoRegion] + this
+    else
+      HashSet.empty[MonoRegion]
+  }
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
   override def mapE(f: (MonoEffect) => MonoEffect): MonoRegion = this
   override def mapT(f: (MonoType) => MonoType): MonoRegion = this
   override def mapR(f: (MonoRegion) => MonoRegion): MonoRegion = f(this)
@@ -46,6 +57,12 @@ abstract class MonoRegion extends MonoSignature {
 }
 
 abstract class MonoEffect extends MonoSignature {
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = {
+    if(pred(this))
+      HashSet.empty[MonoEffect] + this
+    else
+      HashSet.empty[MonoEffect]
+  }
   override def mapE(f: (MonoEffect) => MonoEffect): MonoEffect = f(this)
   override def mapR(f: (MonoRegion) => MonoRegion): MonoEffect = this
   override def mapT(f: (MonoType) => MonoType): MonoEffect = this
@@ -57,6 +74,12 @@ abstract class MonoEffect extends MonoSignature {
 }
 
 abstract class MonoType extends MonoSignature {
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
+    if(pred(this))
+      HashSet.empty[MonoType] + this
+    else
+      HashSet.empty[MonoType]
+  }
   override def mapR(f: (MonoRegion) => MonoRegion): MonoType = this
   override def mapE(f: (MonoEffect) => MonoEffect): MonoType = this
   override def mapT(f: (MonoType) => MonoType): MonoType = f(this)
