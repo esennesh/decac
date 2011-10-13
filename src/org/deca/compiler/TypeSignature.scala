@@ -408,9 +408,6 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     }
   }
   override def equiv(x: MonoType,y: MonoType): Option[Set[InferenceConstraint]] = (x,y) match {
-    case (TopType,TopType) => Some(HashSet.empty)
-    case (BottomType,BottomType) => Some(HashSet.empty)
-    case (UnitType,UnitType) => Some(HashSet.empty)
     case (TypeConstructorCall(cx,px),TypeConstructorCall(cy,py)) => equiv(cx.represent(px),cy.represent(py))
     case (TypeConstructorCall(cx,px),_) => equiv(cx.represent(px),y)
     case (_,TypeConstructorCall(cy,py)) => equiv(x,cy.represent(py))
@@ -470,7 +467,7 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     }
     case (_,_) => {
       val empty = HashSet.empty[InferenceConstraint]
-      if(assumptions.contains(EqualityConstraint(x,y)))
+      if(assumptions.contains(EqualityConstraint(x,y)) || (x eq y))
         Some(empty)
       else
         None

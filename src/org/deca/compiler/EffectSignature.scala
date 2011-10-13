@@ -44,6 +44,7 @@ case class CallEffect(module: Module) extends MonoEffect {
 }
 case class SetEffect(effects: Set[MonoEffect]) extends MonoEffect {
   assert(effects.forall(effect => !effect.isInstanceOf[SetEffect]))
+  def contains(effect: MonoEffect): Boolean = !filterE(eff => eff == effect).isEmpty
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = effects.map(eff => eff.filterT(pred)).foldLeft(HashSet.empty[MonoType].asInstanceOf[Set[MonoType]])((res: Set[MonoType],ts: Set[MonoType]) => res ++ ts)
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = effects.map(eff => eff.filterR(pred)).foldLeft(HashSet.empty[MonoRegion].asInstanceOf[Set[MonoRegion]])((res: Set[MonoRegion],ts: Set[MonoRegion]) => res ++ ts)
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = effects.map(eff => eff.filterE(pred)).foldLeft(Set.empty[MonoEffect])((res,ts) => res ++ ts) ++ (if(pred(this)) Set.empty[MonoEffect] + this else Set.empty[MonoEffect])
@@ -78,7 +79,7 @@ object EffectRelation extends InferenceOrdering[MonoEffect] {
     case (WriteEffect(rx),WriteEffect(ry)) => Some(HashSet.empty[InferenceConstraint] + EqualityConstraint(rx,ry))
     case (ThrowEffect(tx),ThrowEffect(ty)) => Some(HashSet.empty[InferenceConstraint] + EqualityConstraint(tx,ty))
     case (CallEffect(mx),CallEffect(my)) => if(mx == my) Some(HashSet.empty[InferenceConstraint]) else None
-    case (vx: EffectVariable,vy: EffectVariable) => if(vx == vy) Some(HashSet.empty[InferenceConstraint]) else None
+    case (vx: EffectVariable,vy: EffectVariable) => if(vx eq vy) Some(HashSet.empty[InferenceConstraint]) else None
     case _ => None
   }
 }
