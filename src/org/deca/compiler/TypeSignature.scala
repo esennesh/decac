@@ -100,7 +100,27 @@ class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
   }
 }
 
-case class RecordMember(name: Option[String],tau: MonoType)
+/* TODO: this simple way of tracking mutability won't allow me to lattice-unify mutability kinds.  That is, if I see:
+   r.x = f(r.x)
+   Then I generate the constraints:
+     r :: 'r
+     r.x :: 't
+     f :: 'a -> 'b
+     'r <: {var x: 't}
+     't <: 'a
+     {val x: 't} <: 'r
+     'b <: 't
+     
+     This means I'll have to say:
+       'r |-> Join('r,{val x: 't})
+       Join('r,{val x: 't}) <: {var x: 't}
+     At which point my normal type-ordering will object that immutable can't subtype mutable.
+     
+     Additional problem: if I turn the val/var into mutability types (immutable, mutable, maybe-mutable), I then generate either an =:= constraint or a <: constraint in my type relation based on what I know about the mutability... which will be subject to monotonic update by substitution, and therefore time-dependent. 
+     
+     That's not actually a problem, because when I do the subtyping, I'm not moving slots; I'm moving values only.  {var 'a} <: {var 'b} therefore only needs to generate 'a <: 'b.  I was thinking of physical-typing.
+     */
+case class RecordMember(name: Option[String],mutable: Boolean,tau: MonoType)
 
 class RecordType(f: List[RecordMember]) extends MonoType {
   val fields: List[RecordMember] = f
@@ -117,13 +137,13 @@ class RecordType(f: List[RecordMember]) extends MonoType {
   }
   
   override def mapT(f: (MonoType) => MonoType): MonoType = {
-    f(new RecordType(fields.map(field => RecordMember(field.name,field.tau.mapT(f)))))
+    f(new RecordType(fields.map(field => RecordMember(field.name,field.mutable,field.tau.mapT(f)))))
   }
   override def mapR(f: (MonoRegion) => MonoRegion): RecordType = {
-    new RecordType(fields.map(field => RecordMember(field.name,field.tau.mapR(f))))
+    new RecordType(fields.map(field => RecordMember(field.name,field.mutable,field.tau.mapR(f))))
   }
   override def mapE(f: (MonoEffect) => MonoEffect): RecordType = {
-    new RecordType(fields.map(field => RecordMember(field.name,field.tau.mapE(f))))
+    new RecordType(fields.map(field => RecordMember(field.name,field.mutable,field.tau.mapE(f))))
   }
   override def variables: Set[SignatureVariable] = fields.foldLeft(HashSet.empty[SignatureVariable])((result,field) => result ++ field.tau.variables)
 
@@ -355,7 +375,16 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     case (rx: RecursiveType,_) => lt(rx.innards,y)
     case (rx: RecordType,ry: RecordType) => {
       val width = if(rx.length >= ry.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = rx.fields.zip(ry.fields).map(taus => lt(taus._1.tau,taus._2.tau))
+      val depths = rx.fields.zip(ry.fields).map(taus => {
+        if(taus._1.name == taus._2.name) {
+          (taus._1.mutable,taus._2.mutable) match {
+            case (false,true) => None
+            case _ => lt(taus._1.tau,taus._2.tau)
+          }
+        }
+        else
+          None
+      })
       depths.foldLeft(width)((res,depth) => (res,depth) match {
         case (Some(resset),Some(set)) => Some(resset union set)
         case _ => None
@@ -499,7 +528,15 @@ object PhysicalTypeRelation extends InferenceOrdering[MonoType] {
     case (rx: RecursiveType,_) => lt(rx.innards,y)
     case (rx: RecordType,ry: RecordType) => {
       val width = if(rx.length >= ry.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = rx.fields.zip(ry.fields).map(taus => equiv(taus._1.tau,taus._2.tau))
+      val depths = rx.fields.zip(ry.fields).map(taus => {
+        if(taus._1.name == taus._2.name)
+          (taus._1.mutable,taus._2.mutable) match {
+            case (false,true) => None
+            case _ => equiv(taus._1.tau,taus._2.tau)
+          }
+        else
+          None
+      })
       depths.foldLeft(width)((res,depth) => (res,depth) match {
         case (Some(resset),Some(set)) => Some(resset union set)
         case _ => None
