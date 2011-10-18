@@ -117,15 +117,19 @@ case class SkolemConstructor(shape: RecordType) extends TypeConstructor(shape.va
   override def compile(params: List[MonoSignature]): LLVMType = getSpecialization(params) match {
     case Some(op) => op
     case None => {
-      //That's right, only boxed existentials are allowed now.
-      val result = LLVMIntegerType.i8
+      val result = (new OpaqueType).compile
       specializations.put(params,result)
       result
     }
   }
   override def resolve(params: List[MonoSignature]): LLVMType = represent(params).compile
   override def represent(params: List[MonoSignature]): MonoType = {
-    Byte
+    val specialize = (spec: MonoType) => parameters.zip(params).foldLeft(spec)((result: MonoType,specs: Tuple2[SignatureVariable,MonoSignature]) => result.mapT((sig: MonoType) => if(sig == specs._1) specs._2.asInstanceOf[MonoType] else sig))
+    witnesses.toList.sortWith((x,y) => specialize(x).sizeOf >= specialize(y).sizeOf).head
+  }
+  def witness(w: MonoType): Unit = {
+    assert(w.variables.forall(svar => parameters.contains(svar)))
+    witnesses.add(w)
   }
 }
 
