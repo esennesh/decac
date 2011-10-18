@@ -100,26 +100,7 @@ class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
   }
 }
 
-/* TODO: this simple way of tracking mutability won't allow me to lattice-unify mutability kinds.  That is, if I see:
-   r.x = f(r.x)
-   Then I generate the constraints:
-     r :: 'r
-     r.x :: 't
-     f :: 'a -> 'b
-     'r <: {var x: 't}
-     't <: 'a
-     {val x: 't} <: 'r
-     'b <: 't
-     
-     This means I'll have to say:
-       'r |-> Join('r,{val x: 't})
-       Join('r,{val x: 't}) <: {var x: 't}
-     At which point my normal type-ordering will object that immutable can't subtype mutable.
-     
-     Additional problem: if I turn the val/var into mutability types (immutable, mutable, maybe-mutable), I then generate either an =:= constraint or a <: constraint in my type relation based on what I know about the mutability... which will be subject to monotonic update by substitution, and therefore time-dependent. 
-     
-     That's not actually a problem, because when I do the subtyping, I'm not moving slots; I'm moving values only.  {var 'a} <: {var 'b} therefore only needs to generate 'a <: 'b.  I was thinking of physical-typing.
-     */
+//Switch to a proper way of doing things with mutability variables and such.
 case class RecordMember(name: Option[String],mutable: Boolean,tau: MonoType)
 
 class RecordType(f: List[RecordMember]) extends MonoType {
@@ -284,11 +265,16 @@ class ExistentialInterface(r: RecordType,abs: MonoType,w: Option[MonoType] = Non
   val skolem = {
     val shape = r.replace(abs,TopType).asInstanceOf[RecordType]
     val shapeVariables = shape.variables
-    assert(witness match {
-      case Some(wit) => wit.variables.forall(tvar => shapeVariables.contains(tvar))
-      case None => true
-    })
-    new TypeConstructorCall(SkolemConstructors.get(shape),shapeVariables.toList)
+    val constructor = SkolemConstructors.get(shape)
+    witness match {
+      case Some(w) => {
+        assert(w.variables.forall(tvar => shapeVariables.contains(tvar)))
+        constructor.witness(w)
+      }
+      case None => Unit
+    }
+    //Remember: existential skolem-constructors have to reveal their "closed over" region and effect variables, not just their "closed over" type variables.
+    new TypeConstructorCall(constructor,shapeVariables.toList)
   }
   val shape = r.replace(abs,skolem).asInstanceOf[RecordType]
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
