@@ -59,6 +59,13 @@ object TopEffect extends MonoEffect {
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
 }
 
+class BoundedEffectVariable(epsilon: MonoEffect,bnd: SignatureBound,univ: Boolean) extends BoundsVariable[MonoEffect](epsilon,bnd,univ) with MonoEffect {
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = signature.filterR(pred)
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = signature.filterT(pred)
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = if(pred(this)) signature.filterE(pred) + this else signature.filterE(pred)
+  override def clone(sig: MonoEffect,bnd: SignatureBound,univ: Boolean) = new BoundedEffectVariable(sig,bnd,univ)
+}
+
 object EffectRelation extends InferenceOrdering[MonoEffect] {
   override protected val lattice = new GraphLattice(PureEffect,TopEffect)(EffectOrdering)
   def lt(x: MonoEffect,y: MonoEffect): Option[Set[InferenceConstraint]] = (x,y) match {
