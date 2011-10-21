@@ -375,6 +375,7 @@ object TypeRelation extends InferenceOrdering[MonoType] {
       })
     }
     case (ex: ExistentialInterface,ey: ExistentialInterface) => lt(ex.shape,ey.shape)
+    case (nx: NumericalType,ny: NumericalType) => if(nx enclosedIn ny) Some(Set.empty) else None
     case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => lt(bx.signature,by.signature)
     case (vx: TypeVariable,vy: TypeVariable) => {
       val constraint: InferenceConstraint = SubsumptionConstraint(vx,vy)
@@ -388,17 +389,15 @@ object TypeRelation extends InferenceOrdering[MonoType] {
       Some(empty + SubsumptionConstraint(vx,y))
     }
     case (_,vy: TypeVariable) => {
-      val empty = HashSet.empty[InferenceConstraint]
       if(vy.universal)
-        Some(empty)
+        Some(Set.empty)
       else
-        Some(empty + SubsumptionConstraint(x,vy))
+        Some(Set.empty + SubsumptionConstraint(x,vy))
     }
     case (_,_) => {
       val constraint = SubsumptionConstraint(x,y)
-      val empty = HashSet.empty[InferenceConstraint]
-      if(assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(x,y)))
-        Some(empty)
+      if(x == y || assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(x,y)))
+        Some(Set.empty[InferenceConstraint])
       else
         Some(HashSet(constraint))
     }
@@ -458,7 +457,7 @@ object TypeRelation extends InferenceOrdering[MonoType] {
         Some(Set.empty + EqualityConstraint(x,vy))
     }
     case (_,_) => {
-      if(assumptions.contains(EqualityConstraint(x,y)) || (x eq y))
+      if(assumptions.contains(EqualityConstraint(x,y)) || (x == y))
         Some(Set.empty)
       else
         None
@@ -540,9 +539,8 @@ object PhysicalTypeRelation extends InferenceOrdering[MonoType] {
     }
     case (_,_) => {
       val constraint = PhysicalSubtypingConstraint(x,y)
-      val empty = HashSet.empty[InferenceConstraint]
-      if(assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(x,y)))
-        Some(empty)
+      if(x == y || assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(x,y)))
+        Some(Set.empty[InferenceConstraint])
       else
         Some(HashSet(constraint))
     }

@@ -32,7 +32,7 @@ Helpers
   caret = '^';
   
 Tokens
-  slot_mutability = 'val' | 'var';
+  slot_mutability = 'val' | 'var' | 'constant';
   boolean_constant = 'true' | 'false';
   asterisk = '*';
   slash = '/';
