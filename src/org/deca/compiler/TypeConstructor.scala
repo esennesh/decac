@@ -113,7 +113,7 @@ object ExceptionConstructor extends OpenSumConstructor(Nil,List(("AnyException",
 }
 
 case class SkolemConstructor(shape: RecordType) extends TypeConstructor(shape.variables.toList) {
-  
+  val witnesses = new HashSet[MonoType]
   override def compile(params: List[MonoSignature]): LLVMType = getSpecialization(params) match {
     case Some(op) => op
     case None => {

@@ -20,17 +20,32 @@ case class RegionVariable(formal: Boolean) extends MonoRegion with SignatureVari
   override val universal = formal
 }
 
+class BoundedRegionVariable(rho: MonoRegion,bnd: SignatureBound,univ: Boolean) extends BoundsVariable[MonoRegion](rho,bnd,univ) with MonoRegion {
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = if(pred(this)) signature.filterR(pred) + this else signature.filterR(pred)
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = signature.filterT(pred)
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = signature.filterE(pred)
+  override def clone(sig: MonoRegion,bnd: SignatureBound,univ: Boolean) = new BoundedRegionVariable(sig,bnd,univ)
+}
+
+/* Normally, data "flows" through the signature system from smaller elements to larger elements in the
+ * ordering.  Subtypes can be passed to supertypes, subeffects to supereffects, submutability to
+ * supermutability.  However, for two pointers P(t,r) and P(t',r'), t <: t', and r' <: r.  The intuitive
+ * ordering for regions flows contravariantly to the entire rest of the region system, and as a result bound
+ * region variables have to be inferred towards their meet-bounds rather than their join-bounds.  I've hacked
+ * around that here by just reversing the normal ordering, enabling bounds-variables to be coded as uniform
+ * over all signature elements.  This ordering is "upside-down", so that data flows up the lattice.
+ */
 object RegionRelation extends InferenceOrdering[MonoRegion] {
-  override protected val lattice = new GraphLattice(BottomRegion,GlobalRegion)(RegionOrdering)
+  override protected val lattice = new GraphLattice(GlobalRegion,BottomRegion)(RegionOrdering)
   def lt(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {
-    case (BottomRegion,_) => Some(HashSet.empty)
-    case (_,GlobalRegion) => Some(HashSet.empty)
-    case (ScopeRegion(sx),ScopeRegion(sy)) => if(sx enclosedIn sy) Some(HashSet.empty) else None
-    case (RegionVariable(_),RegionVariable(true)) => Some(HashSet.empty)
-    case (RegionVariable(false),RegionVariable(false)) => Some(HashSet.empty[InferenceConstraint] + SubsumptionConstraint(x,y))
-    case (RegionVariable(true),ScopeRegion(sy: Module)) => Some(HashSet.empty)
-    case (ScopeRegion(sx: LexicalScope),RegionVariable(false)) => Some(HashSet.empty[InferenceConstraint] + (SubsumptionConstraint(x,y)))
-    case (RegionVariable(false),ScopeRegion(sx: LexicalScope)) => Some(HashSet.empty[InferenceConstraint] + (SubsumptionConstraint(x,y)))
+    case (GlobalRegion,_) => Some(Set.empty)
+    case (_,BottomRegion) => Some(Set.empty)
+    case (ScopeRegion(sx),ScopeRegion(sy)) => if(sy enclosedIn sx) Some(Set.empty) else None
+    case (RegionVariable(true),RegionVariable(_)) => Some(Set.empty)
+    case (RegionVariable(false),RegionVariable(false)) => Some(Set.empty + SubsumptionConstraint(x,y))
+    case (ScopeRegion(sx: Module),RegionVariable(true)) => Some(Set.empty)
+    case (RegionVariable(false),ScopeRegion(sy: LexicalScope)) => Some(Set.empty + SubsumptionConstraint(x,y))
+    case (ScopeRegion(sx: LexicalScope),RegionVariable(false)) => Some(Set.empty + SubsumptionConstraint(x,y))
     case _ => None
   }
   def equiv(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {

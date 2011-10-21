@@ -28,16 +28,33 @@ sealed abstract class SignatureBound
 case object JoinBound extends SignatureBound
 case object MeetBound extends SignatureBound
 
-trait BoundsVariable[T <: MonoSignature] extends SignatureVariable {
-  val signature: T
+abstract class BoundsVariable[T <: MonoSignature](val signature: T,val bound: SignatureBound,override val universal: Boolean) extends SignatureVariable {
   assert(!signature.isInstanceOf[SignatureVariable])
-  val bound: SignatureBound
   assert(!universal || signature.variables.forall(svar => svar.universal))
-  def join(above: T): Tuple2[InferenceConstraint,BoundsVariable[T]]
-  def meet(below: T): Tuple2[InferenceConstraint,BoundsVariable[T]]
+  
+  def clone(sig: T,bnd: SignatureBound,univ: Boolean): BoundsVariable[T]
+  override def toString: String = {
+    val suffix = "(" + super.toString + "," + signature.toString + "," + universal.toString + ")"
+    bound match {
+      case JoinBound => "Join" + suffix
+      case MeetBound => "Meet" + suffix
+    }
+  }
+  
+  def join(above: T): (InferenceConstraint,BoundsVariable[T]) = {
+    val constraint = bound match {
+      case JoinBound => SubsumptionConstraint(signature,above)
+      case MeetBound => SubsumptionConstraint(above,signature)
+    }
+    (constraint,clone(above,JoinBound,universal))
+  }
+  def meet(below: T): (InferenceConstraint,BoundsVariable[T]) = bound match {
+    case JoinBound => (SubsumptionConstraint(signature,below),this)
+    case MeetBound => (SubsumptionConstraint(below,signature),clone(below,MeetBound,universal))
+  }
 }
 
-abstract class MonoRegion extends MonoSignature {
+trait MonoRegion extends MonoSignature {
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = {
     if(pred(this))
       HashSet.empty[MonoRegion] + this
@@ -56,7 +73,7 @@ abstract class MonoRegion extends MonoSignature {
   def >=(sig: MonoRegion)(implicit ordering: PartialOrdering[MonoRegion]) = ordering.gteq(this,sig)
 }
 
-abstract class MonoEffect extends MonoSignature {
+trait MonoEffect extends MonoSignature {
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = {
     if(pred(this))
       HashSet.empty[MonoEffect] + this
@@ -73,12 +90,12 @@ abstract class MonoEffect extends MonoSignature {
   def >=(sig: MonoEffect)(implicit ordering: PartialOrdering[MonoEffect]) = ordering.gteq(this,sig)
 }
 
-abstract class MonoType extends MonoSignature {
+trait MonoType extends MonoSignature {
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
     if(pred(this))
-      HashSet.empty[MonoType] + this
+      Set.empty[MonoType] + this
     else
-      HashSet.empty[MonoType]
+      Set.empty[MonoType]
   }
   override def mapR(f: (MonoRegion) => MonoRegion): MonoType = this
   override def mapE(f: (MonoEffect) => MonoEffect): MonoType = this
@@ -93,4 +110,18 @@ abstract class MonoType extends MonoSignature {
   def >(sig: MonoType)(implicit ordering: PartialOrdering[MonoType]) = ordering.gt(this,sig)
   def <=(sig: MonoType)(implicit ordering: PartialOrdering[MonoType]) = ordering.lteq(this,sig)
   def >=(sig: MonoType)(implicit ordering: PartialOrdering[MonoType]) = ordering.gteq(this,sig)
+}
+
+trait MonoMutability extends MonoSignature {
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
+  override def mapE(f: (MonoEffect) => MonoEffect): MonoMutability = this
+  override def mapT(f: (MonoType) => MonoType): MonoMutability = this
+  override def mapR(f: (MonoRegion) => MonoRegion): MonoMutability = this
+  
+  def <(sig: MonoMutability)(implicit ordering: PartialOrdering[MonoMutability]) = ordering.lt(this,sig)
+  def >(sig: MonoMutability)(implicit ordering: PartialOrdering[MonoMutability]) = ordering.gt(this,sig)
+  def <=(sig: MonoMutability)(implicit ordering: PartialOrdering[MonoMutability]) = ordering.lteq(this,sig)
+  def >=(sig: MonoMutability)(implicit ordering: PartialOrdering[MonoMutability]) = ordering.gteq(this,sig)
 }

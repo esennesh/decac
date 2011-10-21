@@ -314,27 +314,13 @@ class TypeVariable(univ: Boolean,n: Option[String] = None) extends MonoType with
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
 }
 
-class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean) extends MonoType with BoundsVariable[MonoType] {
-  override val signature = tau
-  override val bound = bnd
-  override val universal = univ
+class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean) extends BoundsVariable[MonoType](tau,bnd,univ) with MonoType {
+  override def clone(sig: MonoType,bnd: SignatureBound,univ: Boolean) = new BoundedTypeVariable(sig,bnd,univ)
   override def compile: LLVMType = signature.compile
   override def sizeOf: Int = signature.sizeOf
-  override def toString: String = signature.toString
+  override def filterT(pred: MonoType => Boolean) = if(pred(this)) signature.filterT(pred) + this else signature.filterT(pred)
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = signature.filterR(pred)
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = signature.filterE(pred)
-  
-  def join(above: MonoType): Tuple2[InferenceConstraint,BoundsVariable[MonoType]] = {
-    val constraint = bound match {
-      case JoinBound => SubsumptionConstraint(signature,above)
-      case MeetBound => SubsumptionConstraint(above,signature)
-    }
-    (constraint,new BoundedTypeVariable(above,JoinBound,universal))
-  }
-  def meet(below: MonoType): Tuple2[InferenceConstraint,BoundsVariable[MonoType]] = bound match {
-    case JoinBound => (SubsumptionConstraint(signature,below),this)
-    case MeetBound => (SubsumptionConstraint(below,signature),new BoundedTypeVariable(below,MeetBound,universal))
-  }
 }
 
 object TypeRelation extends InferenceOrdering[MonoType] {
