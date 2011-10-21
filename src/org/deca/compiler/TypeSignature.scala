@@ -346,14 +346,10 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     case (_,ry: RecursiveType) => lt(x,ry.innards)
     case (rx: RecursiveType,_) => lt(rx.innards,y)
     case (rx: RecordType,ry: RecordType) => {
-      val width = if(rx.length >= ry.length) Some(HashSet.empty[InferenceConstraint]) else None
+      val width = if(rx.length >= ry.length) Some(Set.empty[InferenceConstraint]) else None
       val depths = rx.fields.zip(ry.fields).map(taus => {
-        if(taus._1.name == taus._2.name) {
-          (taus._1.mutable,taus._2.mutable) match {
-            case (false,true) => None
-            case _ => lt(taus._1.tau,taus._2.tau)
-          }
-        }
+        if(taus._1.name == taus._2.name)
+          lt(taus._1.tau,taus._2.tau).map(s => s + SubsumptionConstraint(taus._1.mutable,taus._2.mutable))
         else
           None
       })
@@ -502,10 +498,7 @@ object PhysicalTypeRelation extends InferenceOrdering[MonoType] {
       val width = if(rx.length >= ry.length) Some(HashSet.empty[InferenceConstraint]) else None
       val depths = rx.fields.zip(ry.fields).map(taus => {
         if(taus._1.name == taus._2.name)
-          (taus._1.mutable,taus._2.mutable) match {
-            case (false,true) => None
-            case _ => equiv(taus._1.tau,taus._2.tau)
-          }
+          equiv(taus._1.tau,taus._2.tau).map(s => s + SubsumptionConstraint(taus._1.mutable,taus._2.mutable))
         else
           None
       })
