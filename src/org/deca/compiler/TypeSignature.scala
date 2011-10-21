@@ -101,7 +101,7 @@ class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
 }
 
 //Switch to a proper way of doing things with mutability variables and such.
-case class RecordMember(name: Option[String],mutable: Boolean,tau: MonoType)
+case class RecordMember(name: Option[String],mutable: MonoMutability,tau: MonoType)
 
 class RecordType(f: List[RecordMember]) extends MonoType {
   val fields: List[RecordMember] = f
