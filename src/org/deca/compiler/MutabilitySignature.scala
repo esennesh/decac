@@ -1,6 +1,7 @@
 package org.deca.compiler
 
 import scala.collection.immutable.Set
+import scala.collection.mutable.GraphLattice
 
 object ReadOnlyMutability extends MonoMutability {
   override def variables: Set[SignatureVariable] = Set.empty
@@ -11,7 +12,10 @@ object ImmutableMutability extends MonoMutability {
 object MutableMutability extends MonoMutability {
   override def variables: Set[SignatureVariable] = Set.empty
 }
-
+object BottomMutability extends MonoMutability {
+  override def variables: Set[SignatureVariable] = Set.empty
+}
+class MutabilityVariable extends SignatureVariable with MonoMutability
 class BoundedMutabilityVariable(mu: MonoMutability,bnd: SignatureBound,univ: Boolean) extends BoundsVariable[MonoMutability](mu,bnd,univ) with MonoMutability {
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = signature.filterR(pred)
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = signature.filterT(pred)
@@ -19,39 +23,34 @@ class BoundedMutabilityVariable(mu: MonoMutability,bnd: SignatureBound,univ: Boo
   override def clone(sig: MonoMutability,bnd: SignatureBound,univ: Boolean) = new BoundedMutabilityVariable(sig,bnd,univ)
 }
 
-/* object RegionRelation extends InferenceOrdering[MonoRegion] {
-  override protected val lattice = new GraphLattice(BottomRegion,GlobalRegion)(RegionOrdering)
-  def lt(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {
-    case (BottomRegion,_) => Some(HashSet.empty)
-    case (_,GlobalRegion) => Some(HashSet.empty)
-    case (ScopeRegion(sx),ScopeRegion(sy)) => if(sx enclosedIn sy) Some(HashSet.empty) else None
-    case (RegionVariable(_),RegionVariable(true)) => Some(HashSet.empty)
-    case (RegionVariable(false),RegionVariable(false)) => Some(HashSet.empty[InferenceConstraint] + SubsumptionConstraint(x,y))
-    case (RegionVariable(true),ScopeRegion(sy: Module)) => Some(HashSet.empty)
-    case (ScopeRegion(sx: LexicalScope),RegionVariable(false)) => Some(HashSet.empty[InferenceConstraint] + (SubsumptionConstraint(x,y)))
-    case (RegionVariable(false),ScopeRegion(sx: LexicalScope)) => Some(HashSet.empty[InferenceConstraint] + (SubsumptionConstraint(x,y)))
-    case _ => None
+object MutabilityRelation extends InferenceOrdering[MonoMutability] {
+  override val lattice = new GraphLattice(BottomMutability,ReadOnlyMutability)(MutabilityOrdering)
+  override def lt(x: MonoMutability,y: MonoMutability): Option[Set[InferenceConstraint]] = (x,y) match {
+    case (_,ReadOnlyMutability) => Some(Set.empty)
+    case (mx: MonoMutability,vy: MutabilityVariable) => if(vy.universal) Some(Set.empty) else Some(Set.empty + SubsumptionConstraint(mx,vy))
+    case (vx: MutabilityVariable,my: MonoMutability) => Some(Set.empty + SubsumptionConstraint(vx,my))
+    case _ => if(x == y) Some(Set.empty) else None
   }
-  def equiv(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {
-    case (ScopeRegion(sx),ScopeRegion(sy)) => if(sx == sy) Some(HashSet.empty) else None
-    case (RegionVariable(fx),RegionVariable(fy)) => if(fx == fy) Some(HashSet.empty[InferenceConstraint] + EqualityConstraint(x,y)) else None
-    case _ => None
+  override def equiv(x: MonoMutability,y: MonoMutability): Option[Set[InferenceConstraint]] = (x,y) match {
+    case (vx: MutabilityVariable,_) => Some(Set.empty + EqualityConstraint(vx,y))
+    case (_,vy: MutabilityVariable) => Some(Set.empty + EqualityConstraint(x,vy))
+    case _ => if(x == y) Some(Set.empty) else None
   }
 }
 
-object RegionOrdering extends PartialOrdering[MonoRegion] {
-  override def lt(x: MonoRegion,y: MonoRegion): Boolean = RegionRelation.lt(x,y) match {
+object MutabilityOrdering extends PartialOrdering[MonoMutability] {
+  override def lt(x: MonoMutability,y: MonoMutability): Boolean = MutabilityRelation.lt(x,y) match {
     case Some(constraints) => constraints.isEmpty
     case None => false
   }
-  override def equiv(x: MonoRegion,y: MonoRegion): Boolean = RegionRelation.equiv(x,y) match {
+  override def equiv(x: MonoMutability,y: MonoMutability): Boolean = MutabilityRelation.equiv(x,y) match {
     case Some(constraints) => constraints.isEmpty
     case None => false
   }
-  override def gt(x: MonoRegion,y: MonoRegion): Boolean = lt(y,x)
-  override def lteq(x: MonoRegion,y: MonoRegion): Boolean = lt(x,y) || equiv(x,y)
-  override def gteq(x: MonoRegion,y: MonoRegion): Boolean = gt(x,y) || equiv(x,y)
-  override def tryCompare(x: MonoRegion,y: MonoRegion): Option[Int] = {
+  override def gt(x: MonoMutability,y: MonoMutability): Boolean = lt(y,x)
+  override def lteq(x: MonoMutability,y: MonoMutability): Boolean = lt(x,y) || equiv(x,y)
+  override def gteq(x: MonoMutability,y: MonoMutability): Boolean = gt(x,y) || equiv(x,y)
+  override def tryCompare(x: MonoMutability,y: MonoMutability): Option[Int] = {
     if(gt(x,y))
       Some(1)
     else if(lt(x,y))
@@ -61,4 +60,4 @@ object RegionOrdering extends PartialOrdering[MonoRegion] {
     else
       None
   }
-}*/
+}

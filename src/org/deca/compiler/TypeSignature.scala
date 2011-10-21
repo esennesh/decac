@@ -377,12 +377,11 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     case (ex: ExistentialInterface,ey: ExistentialInterface) => lt(ex.shape,ey.shape)
     case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => lt(bx.signature,by.signature)
     case (vx: TypeVariable,vy: TypeVariable) => {
-      val empty = HashSet.empty[InferenceConstraint]
       val constraint: InferenceConstraint = SubsumptionConstraint(vx,vy)
       if(vx == vy || vx.name == vy.name && vy.universal || assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(vx,vy)))
-        Some(empty)
+        Some(Set.empty)
       else
-        Some(empty + constraint)
+        Some(Set.empty + constraint)
     }
     case (vx: TypeVariable,_) => {
       val empty = HashSet.empty[InferenceConstraint]
@@ -451,21 +450,16 @@ object TypeRelation extends InferenceOrdering[MonoType] {
       else
         Some(empty + EqualityConstraint(vx,vy))
     }
-    case (vx: TypeVariable,_) => {
-      val empty = HashSet.empty[InferenceConstraint]
-      Some(empty + EqualityConstraint(vx,y))
-    }
+    case (vx: TypeVariable,_) => Some(Set.empty + EqualityConstraint(vx,y))
     case (_,vy: TypeVariable) => {
-      val empty = HashSet.empty[InferenceConstraint]
       if(vy.universal)
-        Some(empty)
+        Some(Set.empty)
       else
-        Some(empty + EqualityConstraint(x,vy))
+        Some(Set.empty + EqualityConstraint(x,vy))
     }
     case (_,_) => {
-      val empty = HashSet.empty[InferenceConstraint]
       if(assumptions.contains(EqualityConstraint(x,y)) || (x eq y))
-        Some(empty)
+        Some(Set.empty)
       else
         None
     }

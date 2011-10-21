@@ -58,12 +58,14 @@ object SignatureRelation extends InferenceOrdering[MonoSignature] {
     case (tx: MonoType,ty: MonoType) => TypeRelation.lt(tx,ty)
     case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.lt(rx,ry)
     case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.lt(ex,ey)
+    case (mx: MonoMutability,my: MonoMutability) => MutabilityRelation.lt(mx,my)
     case _ => throw new Exception("Mismatched signatures: " + x.toString + " <: " + y.toString)
   }
   override def equiv(x: MonoSignature,y: MonoSignature): Option[Set[InferenceConstraint]] = (x,y) match {
     case (tx: MonoType,ty: MonoType) => TypeRelation.equiv(tx,ty)
     case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.equiv(rx,ry)
     case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.equiv(ex,ey)
+    case (mx: MonoMutability,my: MonoMutability) => MutabilityRelation.equiv(mx,my)
     case _ => throw new Exception("Mismatched signatures: " + x.toString + " = " + y.toString)
   }
 }
