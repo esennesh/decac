@@ -14,7 +14,11 @@ abstract class NumericalType(n: String,p: Option[NumericalType]) extends MonoTyp
   val parent: Option[NumericalType] = p
   //define(new TypeDefinition(this,name,GlobalScope))
   
-  override def variables: Set[SignatureVariable] = HashSet.empty
+  def enclosedIn(n: NumericalType): Boolean = parent match {
+    case Some(p) => p == n || (p enclosedIn n)
+    case None => false
+  }
+  override def variables: Set[SignatureVariable] = Set.empty
   override def toString: String = name
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
