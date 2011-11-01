@@ -3,12 +3,6 @@ package org.deca.compiler
 import scala.collection.immutable.HashSet
 import scala.collection.mutable.GraphLattice
 
-class Scope {
-  def enclosedIn(s: Scope): Boolean = s == this
-}
-class Module extends Scope
-class LexicalScope extends Scope
-object GlobalScope extends Module
 case class ScopeRegion(scope: Scope) extends MonoRegion {
   override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable]
 }
