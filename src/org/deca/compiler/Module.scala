@@ -10,7 +10,7 @@ class VariableDefinition(override val scope: Module,override val name: String,va
   }
   override def substitute(sub: SignatureSubstitution): Unit = Unit
   override def specialize(spec: SignatureSubstitution): VariableDefinition = this
-  val build: (Module => LLVMValue) = Memoize1(instantiation => {
+  val build: (Module => LLVMGlobalVariable) = Memoize1(instantiation => {
     val global = instantiation.compiledModule.addGlobal(variableType.compile,name)
     if(instantiation == scope)
       global.setInitializer(value.build(scope,instantiation))
