@@ -1,14 +1,12 @@
 Deca: a functional, object-oriented, generic systems programming language
-by Eli Gottlieb, copyright 2010
-
+by Eli Gottlieb, copyright 2010-2011
+November 1, 2011
 -------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------
 
 Deca is a language designed to provide the advanced features of sophisticated, high-level programming languages while still programming as close as possible to the bare metal.  It brings in the functional, object-oriented, and generic programming paradigms without requiring a garbage collector or a threading system, so programmers really only pay in performance for the features they use.
 
-Deca provides first-class functions, lambdas, lexical closures to support functional programming.  It provides an object system in the style of CLOS, with generic functions and multimethods operating on records that can inherit, and its structural typing makes tuples part of the object system.  It provides generic programming type inference (including inferring that a pointer cannot be null) while still allowing elegant, convenient type annotations, which can be used in a form of type-based pattern matching.  Region-based memory management is used in place of garbage collection to support data of dynamic lifetime, though one-time definition of regions can be used to create region-allocated data structures on the stack.
-
-Deca treats objects as first-class constructs not by making everything an object or forcing the programmer to define everything as a class, but by integrating classes into the type system as one type hierarchy among many.  Enumerated types, subranges, and exceptions can all subtype each other alongside classes, and this means that programmers can write pattern-matching expressions or even generic functions and methods that specialize on these types as well as on objects.
+Deca provides first-class functions, lambdas, lexical closures to support functional programming.  It provides an object system in the style of CLOS, with generic functions and multimethods operating on hierarchical sum types (think of classes without inheritance), and structural typing makes tuples just another kind of record.  It provides type inference while still allowing and checking type annotations.  Region-based memory management is used in place of garbage collection to support data of dynamic lifetime, and option types replace null pointers.
 
 -------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------
@@ -22,7 +20,7 @@ $ ant build_parser
 $ ant build_llvm_bindings
 $ and build
 
-The parser need only be rebuilt when deca.scc has been altered, and building the LLVM Java bindings once ever should be enough until LLVM updates their ABI/API.
+The parser need only be rebuilt when deca.scc has been altered, and building the LLVM Java bindings once for every revision of LLVM should be enough.
 
 Happy hacking!
 --Eli Gottlieb
