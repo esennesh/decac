@@ -6,11 +6,18 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.GraphLattice
 import org.jllvm._
 
-/* class TypeDefinition(cons: TypeConstructor,n: String,context: Module) extends Definition {
-  override val name = n
-  override val scope = {context.define(this) ; context }
-  val constructor = { cons.declare(name) ; cons }
-} */
+class TypeDefinition(val constructor: TypeConstructor,val name: String,override val scope: Module) extends Definition {
+  scope.define(this)
+  constructor.declare(name)
+}
+
+object BuiltInSums {
+  val BooleanSum = {
+    val result = new TypeExpressionConstructor(Nil,new SumType(List(("false",EmptyRecord),("true",EmptyRecord))))
+    new TypeDefinition(result,"boolean",GlobalScope)
+    result
+  }
+}
 
 abstract class TypeConstructor(alphas: List[SignatureVariable]) {
   protected var strName: Option[String] = None
