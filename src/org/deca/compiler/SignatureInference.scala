@@ -26,8 +26,21 @@ class SignatureSubstitution {
       }
       case _ => sigprime
     })
-    //Build up effectBounded and regionBounded
-    typeBounded
+    val effectBounded = typeBounded.mapE((sigprime: MonoEffect) => sigprime match {
+      case bounded: BoundsVariable[MonoEffect] => {
+        assert(!bounded.universal)
+        bounded.signature
+      }
+      case _ => sigprime
+    })
+    val regionBounded = effectBounded.mapR((sigprime: MonoRegion) => sigprime match {
+      case bounded: BoundsVariable[MonoRegion] => {
+        assert(!bounded.universal)
+        bounded.signature
+      }
+      case _ => sigprime
+    })
+    regionBounded
   }
 }
 
