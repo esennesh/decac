@@ -3,7 +3,7 @@ package org.deca.compiler
 import org.jllvm._
 
 case class ExpressionEffect(positive: MonoEffect,negative: MonoEffect) {
-  def safe(previous: MonoEffect): Boolean = !SetEffect(Set.empty + negative + previous).contains(positive) && positive != PureEffect
+  def safe(previous: MonoEffect): Boolean = !SetEffect(Set.empty + negative + previous).contains(positive) || positive == PureEffect
 }
 
 trait Expression {
@@ -21,6 +21,10 @@ trait Expression {
    * When !(scope enclosedIn instantiation), this expression was imported, and references to outside
    * variables and functions will need to be emitted into instantiation.compiledModule as externals. */
   def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue
+}
+
+trait WritableExpression extends Expression {
+  def store(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module,value: LLVMValue): LLVMValue
 }
 
 trait ConstantExpression extends Expression {
