@@ -2,6 +2,7 @@ package org.deca.compiler
 
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
+import scala.util.Memoize1
 import org.jllvm.LLVMInstructionBuilder
 import org.jllvm.LLVMArgument
 import org.jllvm.LLVMValue
@@ -13,6 +14,7 @@ trait Scopeable {
 
 trait Definition extends Scopeable {
   override val scope: Module
+  val build: Memoize1[Module,LLVMValue]
 }
 
 trait VariableBinding extends Scopeable {

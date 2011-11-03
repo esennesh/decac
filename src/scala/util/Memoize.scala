@@ -1,4 +1,5 @@
 package scala.util
+
 import scala.collection.mutable.Map
 
 class Memoize1[T, R](f: T => R) extends (T => R) {

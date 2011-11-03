@@ -10,7 +10,7 @@ class VariableDefinition(override val scope: Module,override val name: String,va
   }
   override def substitute(sub: SignatureSubstitution): Unit = Unit
   override def specialize(spec: SignatureSubstitution): VariableDefinition = this
-  val build: (Module => LLVMGlobalVariable) = Memoize1(instantiation => {
+  val build: Memoize1[Module,LLVMValue] = Memoize1(instantiation => {
     val global = instantiation.compiledModule.addGlobal(variableType.compile,name)
     if(instantiation == scope)
       global.setInitializer(value.build(scope,instantiation))
@@ -42,22 +42,19 @@ class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) {
   override def lookup(name: String): Definition = typedLookup[Definition](name)
   override def lookup(name: List[String]): Definition = typedLookup[Definition](name)
   
-  def compile: LLVMModule = {
-    if(!compiled) {
-      for(definition <- symbols.values) definition match {
-        /* case function: FunctionDefinition => function.specialized.foreach(func => func.compile)
-        case defin: TypeDefinition => defin.getSpecializations.foreach(tau => compiledModule.addTypeName(name,tau.compile)) */
-        case global: VariableDefinition => global.build(this)
-        //TODO: Add code for constant expressions, and use it to set the initializer on global variables.
-        //Modules defined in this namespace may not be child modules, but possibly imports.
-        case module: Module => if(module.parent == Some(this)) module.compile
-      }
-      compiled = true
+  def build: LLVMModule = {
+    for(definition <- symbols.values) definition match {
+      /* case function: FunctionDefinition => function.specialized.foreach(func => func.compile)
+      case defin: TypeDefinition => defin.getSpecializations.foreach(tau => compiledModule.addTypeName(name,tau.compile)) */
+      case global: VariableDefinition => global.build(this)
+      //TODO: Add code for constant expressions, and use it to set the initializer on global variables.
+      //Modules defined in this namespace may not be child modules, but possibly imports.
+      case module: Module => if(module.parent == Some(this)) module.build
     }
     compiledModule
   }
   
-  def writeBitcode: Unit = (new LLVMBitWriter(compile)).writeBitcodeToFile(path + name + ".bc")
+  def writeBitcode: Unit = (new LLVMBitWriter(build)).writeBitcodeToFile(path + name + ".bc")
 }
 
 class LexicalScope(parent: Scope) extends Scope(Some(parent))
