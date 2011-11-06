@@ -1,7 +1,8 @@
-package org.deca.compiler
+package org.deca.compiler.signature
 
 import scala.collection.immutable.HashSet
 import scala.collection.mutable.GraphLattice
+import org.deca.compiler.definition._
 
 class EffectVariable extends MonoEffect with SignatureVariable {
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty

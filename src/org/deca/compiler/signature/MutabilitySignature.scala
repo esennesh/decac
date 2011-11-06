@@ -1,7 +1,8 @@
-package org.deca.compiler
+package org.deca.compiler.signature
 
 import scala.collection.immutable.Set
 import scala.collection.mutable.GraphLattice
+import org.deca.compiler.definition._
 
 object ReadOnlyMutability extends MonoMutability {
   override def variables: Set[SignatureVariable] = Set.empty

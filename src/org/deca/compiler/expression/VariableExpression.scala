@@ -1,10 +1,8 @@
-package org.deca.compiler
+package org.deca.compiler.expression
 
-import org.jllvm.LLVMValue
-import org.jllvm.LLVMBasicBlock
-import org.jllvm.LLVMFunction
-import org.jllvm.LLVMInstructionBuilder
-import org.jllvm.LLVMLoadInstruction
+import org.jllvm._
+import org.deca.compiler.definition._
+import org.deca.compiler.signature._
 
 class VariableExpression(val name: List[String],val scope: Scope) extends WritableExpression {
   val binding = scope.typedLookup[VariableBinding](name)

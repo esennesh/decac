@@ -1,4 +1,4 @@
-package org.deca.compiler;
+package org.deca.compiler.signature
 
 import scala.collection.mutable.Lattice
 import scala.collection.mutable.Stack

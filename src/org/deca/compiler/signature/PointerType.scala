@@ -1,7 +1,7 @@
-package org.deca.compiler
+package org.deca.compiler.signature
 
-import org.jllvm.LLVMType
-import org.jllvm.LLVMPointerType
+import org.jllvm.{LLVMType,LLVMPointerType}
+import org.deca.compiler.definition._
 
 class PointerType(val target: MonoType,val region: MonoRegion) extends MonoType {
   override def compile: LLVMType = new LLVMPointerType(target.compile,0)

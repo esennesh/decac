@@ -1,7 +1,8 @@
-package org.deca.compiler
+package org.deca.compiler.signature
 
 import scala.collection.immutable.HashSet
 import scala.collection.mutable.GraphLattice
+import org.deca.compiler.definition._
 
 case class ScopeRegion(scope: Scope) extends MonoRegion {
   override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable]

@@ -1,6 +1,8 @@
-package org.deca.compiler
+package org.deca.compiler.expression
 
 import org.jllvm.LLVMConstantBoolean
+import org.deca.compiler.definition._
+import org.deca.compiler.signature._
 
 class BooleanLiteralExpression(val value: Boolean) extends ConstantExpression {
   expType = BuiltInSums.BooleanSum.represent(Nil)

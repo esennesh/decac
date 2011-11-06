@@ -1,6 +1,8 @@
-package org.deca.compiler
+package org.deca.compiler.expression
 
 import org.jllvm._
+import org.deca.compiler.signature._
+import org.deca.compiler.definition._
 
 case class ExpressionEffect(positive: MonoEffect,negative: MonoEffect) {
   def safe(previous: MonoEffect): Boolean = !SetEffect(Set.empty + negative + previous).contains(positive) || positive == PureEffect

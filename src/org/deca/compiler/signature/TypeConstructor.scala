@@ -1,14 +1,23 @@
-package org.deca.compiler
+package org.deca.compiler.signature
 
 import scala.collection.mutable.Set
+import scala.collection.immutable
 import scala.collection.mutable.HashSet
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.GraphLattice
+import scala.util.Memoize1
 import org.jllvm._
+import org.deca.compiler.definition._
 
 class TypeDefinition(val constructor: TypeConstructor,val name: String,override val scope: Module) extends Definition {
   scope.define(this)
   constructor.declare(name)
+  override val build: Memoize1[Module,immutable.Set[LLVMValue]] = Memoize1((instantiation: Module) => {
+    val result = constructor.allSpecializations.toSet
+    for(spec <- result)
+      instantiation.compiledModule.addTypeName(constructor.name,spec)
+    immutable.Set.empty[LLVMValue]
+  })
 }
 
 object BuiltInSums {

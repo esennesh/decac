@@ -1,12 +1,9 @@
-package org.deca.compiler
+package org.deca.compiler.signature
 
 import scala.collection.immutable.HashSet
 import scala.math
-import org.jllvm.LLVMType
-import org.jllvm.LLVMIntegerType
-import org.jllvm.LLVMFP128Type
-import org.jllvm.LLVMDoubleType
-import org.jllvm.LLVMFloatType
+import org.jllvm._
+import org.deca.compiler.definition._
 
 abstract class NumericalType(n: String,p: Option[NumericalType]) extends MonoType {
   def signed: Boolean
