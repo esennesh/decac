@@ -5,6 +5,7 @@ import scala.collection.mutable.Map
 class Memoize1[T, R](f: T => R) extends (T => R) {
   private var vals = Map.empty[T, R]
 
+  def values = vals.values
   def apply(x: T): R = {
     if (vals.contains(x)) {
       vals(x)

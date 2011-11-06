@@ -1,16 +1,22 @@
-package org.deca.compiler
+package org.deca.compiler.definition
 
+import scala.collection.immutable.Set
 import scala.util.Memoize1
 import org.jllvm._
 import org.jllvm.bindings._
+import org.deca.compiler.signature._
+import org.deca.compiler.expression.{Expression,ConstantExpression}
 
-class VariableDefinition(override val scope: Module,override val name: String,val value: ConstantExpression,override val mutability: MonoMutability) extends Definition with VariableBinding {
-  {
-    variableType = value.expType
-  }
+trait Definition extends Scopeable {
+  override val scope: Module
+  val build: Memoize1[Module,Set[LLVMValue]]
+}
+
+class VariableDefinition(override val scope: Module,override val name: String,val value: ConstantExpression,override var mutability: MonoMutability) extends Definition with VariableBinding {
+  override var variableType: MonoType = value.expType
   override def substitute(sub: SignatureSubstitution): Unit = Unit
   override def specialize(spec: SignatureSubstitution): VariableDefinition = this
-  val build: Memoize1[Module,LLVMValue] = Memoize1(instantiation => {
+  val declare: Memoize1[Module,LLVMValue] = Memoize1(instantiation => {
     val global = instantiation.compiledModule.addGlobal(variableType.compile,name)
     if(instantiation == scope)
       global.setInitializer(value.build(scope,instantiation))
@@ -20,11 +26,13 @@ class VariableDefinition(override val scope: Module,override val name: String,va
     global.setConstant(mutability != MutableMutability)
     global
   })
-  override def compile(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = build(instantiation)
+  override val build = Memoize1((instantiation: Module) => Set.empty + declare(instantiation))
+  override def compile(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue =
+    declare(instantiation)
   override def load(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = 
-    new LLVMLoadInstruction(builder,build(instantiation),"load")
+    new LLVMLoadInstruction(builder,declare(instantiation),"load")
   override def store(builder: LLVMInstructionBuilder,value: LLVMValue,instantiation: Module): LLVMValue =
-    new LLVMStoreInstruction(builder,value,build(instantiation))
+    new LLVMStoreInstruction(builder,value,declare(instantiation))
 }
 
 class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) {

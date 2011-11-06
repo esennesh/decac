@@ -1,4 +1,4 @@
-package org.deca.compiler
+package org.deca.compiler.signature
 
 import org.jllvm._
 import scala.collection.mutable.Stack

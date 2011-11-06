@@ -1,7 +1,10 @@
-package org.deca.compiler
+package org.deca.compiler.expression
 
 import org.jllvm._
 import org.jllvm.bindings._
+
+import org.deca.compiler.definition._
+import org.deca.compiler.signature._
 
 class ImplicitUpcast(val expression: Expression,upcast: MonoType) extends Expression {
   expType = upcast

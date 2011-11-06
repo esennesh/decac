@@ -1,4 +1,4 @@
-package org.deca.compiler
+package org.deca.compiler.definition
 
 import scala.collection.mutable.Map
 import scala.collection.mutable.HashMap
@@ -6,20 +6,16 @@ import scala.util.Memoize1
 import org.jllvm.LLVMInstructionBuilder
 import org.jllvm.LLVMArgument
 import org.jllvm.LLVMValue
+import org.deca.compiler.signature._
 
 trait Scopeable {
   val name: String
   val scope: Scope
 }
 
-trait Definition extends Scopeable {
-  override val scope: Module
-  val build: Memoize1[Module,LLVMValue]
-}
-
 trait VariableBinding extends Scopeable {
-  var variableType: MonoType = BottomType
-  val mutability: MonoMutability
+  var variableType: MonoType
+  var mutability: MonoMutability
   def compile(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue
   def load(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue
   def store(builder: LLVMInstructionBuilder,value: LLVMValue,instantiation: Module): LLVMValue

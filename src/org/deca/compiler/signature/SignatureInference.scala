@@ -1,8 +1,9 @@
-package org.deca.compiler;
+package org.deca.compiler.signature
 
 import scala.collection.mutable.Queue
 import scala.collection.mutable.Stack
 import scala.collection.mutable.Lattice
+import org.deca.compiler.definition._
 
 class SignatureSubstitution {
   protected val queue: Queue[Tuple2[SignatureVariable,MonoSignature]] = new Queue[Tuple2[SignatureVariable,MonoSignature]]
@@ -13,33 +14,33 @@ class SignatureSubstitution {
   }
   def isEmpty: Boolean = queue.isEmpty
   
-  def solve(sig: MonoSignature): MonoSignature = {
-    val substituted = queue.foldLeft(sig)((result: MonoSignature,sub: Tuple2[SignatureVariable,MonoSignature]) => sub._1 match {
-      case t: MonoType => sig.mapT((st: MonoType) => if(st == sub._1) sub._2.asInstanceOf[MonoType] else st)
-      case e: MonoEffect => sig.mapE((se: MonoEffect) => if(se == sub._1) sub._2.asInstanceOf[MonoEffect] else se)
-      case r: MonoRegion => sig.mapR((sr: MonoRegion) => if(sr == sub._1) sub._2.asInstanceOf[MonoRegion] else sr)
+  def solve[T <: MonoSignature](sig: T): T = {
+    val substituted: T = queue.foldLeft(sig)((result: MonoSignature,sub: Tuple2[SignatureVariable,MonoSignature]) => sub._1 match {
+      case t: MonoType => sig.mapT((st: MonoType) => if(st == sub._1) sub._2.asInstanceOf[MonoType] else st).asInstanceOf[T]
+      case e: MonoEffect => sig.mapE((se: MonoEffect) => if(se == sub._1) sub._2.asInstanceOf[MonoEffect] else se).asInstanceOf[T]
+      case r: MonoRegion => sig.mapR((sr: MonoRegion) => if(sr == sub._1) sub._2.asInstanceOf[MonoRegion] else sr).asInstanceOf[T]
     })
-    val typeBounded = substituted.mapT((sigprime: MonoType) => sigprime match {
+    val typeBounded: T = substituted.mapT((sigprime: MonoType) => sigprime match {
       case bounded: BoundsVariable[MonoType] => {
         assert(!bounded.universal)
         bounded.signature
       }
       case _ => sigprime
-    })
-    val effectBounded = typeBounded.mapE((sigprime: MonoEffect) => sigprime match {
+    }).asInstanceOf[T]
+    val effectBounded: T = typeBounded.mapE((sigprime: MonoEffect) => sigprime match {
       case bounded: BoundsVariable[MonoEffect] => {
         assert(!bounded.universal)
         bounded.signature
       }
       case _ => sigprime
-    })
-    val regionBounded = effectBounded.mapR((sigprime: MonoRegion) => sigprime match {
+    }).asInstanceOf[T]
+    val regionBounded: T = effectBounded.mapR((sigprime: MonoRegion) => sigprime match {
       case bounded: BoundsVariable[MonoRegion] => {
         assert(!bounded.universal)
         bounded.signature
       }
       case _ => sigprime
-    })
+    }).asInstanceOf[T]
     regionBounded
   }
 }
