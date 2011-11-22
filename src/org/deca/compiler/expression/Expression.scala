@@ -4,13 +4,13 @@ import org.jllvm._
 import org.deca.compiler.signature._
 import org.deca.compiler.definition._
 
-case class ExpressionEffect(positive: MonoEffect,negative: MonoEffect) {
+case class EffectPair(positive: MonoEffect,negative: MonoEffect) {
   def safe(previous: MonoEffect): Boolean = !SetEffect(Set.empty + negative + previous).contains(positive) || positive == PureEffect
 }
 
 trait Expression {
   var expType: MonoType = BottomType
-  var expEffect: ExpressionEffect = ExpressionEffect(PureEffect,PureEffect)
+  var expEffect: EffectPair = EffectPair(PureEffect,PureEffect)
   val writable: Boolean = false
   val children: List[Expression]
   

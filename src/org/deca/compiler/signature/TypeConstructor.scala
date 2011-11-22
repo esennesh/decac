@@ -57,7 +57,7 @@ abstract class TypeConstructor(alphas: List[SignatureVariable]) {
   def allSpecializations: Iterable[LLVMType] = specializations.values
 }
 
-class TypeExpressionConstructor(alphas: List[TypeVariable],t: MonoType) extends TypeConstructor(alphas) {
+class TypeExpressionConstructor(alphas: List[SignatureVariable],t: MonoType) extends TypeConstructor(alphas) {
   assert(t.variables.forall(tvar => alphas.contains(tvar)))
   protected val tau: MonoType = t
   

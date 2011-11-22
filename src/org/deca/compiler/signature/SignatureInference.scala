@@ -85,7 +85,7 @@ class SignatureConstraints {
 }
 
 class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None) {
-  protected val constraints = new SignatureConstraints
+  val constraints = new SignatureConstraints
   protected val result = subst match {
     case Some(s) => s
     case None => new SignatureSubstitution
