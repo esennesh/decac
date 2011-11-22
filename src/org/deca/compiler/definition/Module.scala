@@ -65,7 +65,6 @@ class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) {
   def writeBitcode: Unit = (new LLVMBitWriter(build)).writeBitcodeToFile(path + name + ".bc")
 }
 
-class LexicalScope(parent: Scope) extends Scope(Some(parent))
 object GlobalScope extends Module("") {
   override val parent: Option[Module] = None
   override val region = GlobalRegion

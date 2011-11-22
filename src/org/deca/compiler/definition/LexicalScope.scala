@@ -5,6 +5,8 @@ import org.jllvm.bindings._
 import org.deca.compiler.signature._
 import org.deca.compiler.expression._
 
+import scala.collection.mutable.{Map,HashMap}
+
 abstract class LexicalBinding(override val name: String,
                               override val scope: LexicalScope,
                               tau: MonoType,
@@ -67,4 +69,23 @@ class LetBinding(name: String,scope: LexicalScope,var initializer: Expression,mu
     initializer.compile(builder,scope.parent.get,instantiation)
   override def specialize(spec: SignatureSubstitution): LetBinding = 
     new LetBinding(name,scope,initializer.specialize(spec),mutability)
+}
+
+sealed trait FreshBinding
+case class FreshLet(initializer: Expression) extends FreshBinding
+case class FreshArgument(tau: MonoType) extends FreshBinding
+
+class LexicalScope(par: Scope,bnds: List[(String,MonoMutability,FreshBinding)]) extends Scope(Some(par)) {
+  val bindings = bnds.map(bnd => bnd._3 match {
+    case FreshLet(init) => new LetBinding(bnd._1,this,init,bnd._2)
+    case FreshArgument(tau) => new ArgumentBinding(bnd._1,this,tau,bnd._2)
+  })
+  bindings.foreach(declare(_))
+  def arguments(args: Map[String,LLVMArgument]): Unit =
+    for(binding <- bindings) binding match {
+      case arg: ArgumentBinding => arg.setArgument(args(arg.name))
+      case _ => Unit
+    }
+  def compile(builder: LLVMInstructionBuilder,instantiation: Module): List[LLVMValue] =
+    bindings.map(_.compile(builder,instantiation))
 }
