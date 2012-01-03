@@ -376,6 +376,8 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     case (ex: ExistentialInterface,ey: ExistentialInterface) => lt(ex.shape,ey.shape)
     case (nx: NumericalType,ny: NumericalType) => if(nx enclosedIn ny) Some(Set.empty) else None
     case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => lt(bx.signature,by.signature)
+    case (bx: BoundedTypeVariable,_) => lt(bx.signature,y)
+    case (_,by: BoundedTypeVariable) => lt(x,by.signature)
     case (vx: TypeVariable,vy: TypeVariable) => {
       val constraint: InferenceConstraint = SubsumptionConstraint(vx,vy)
       if(vx == vy || vx.name == vy.name && vy.universal || assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(vx,vy)))

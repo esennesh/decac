@@ -4,6 +4,7 @@
 	<path id="scala.classpath">
 		<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
 		<pathelement location="${scala.lib.dir}/scala-library.jar"/>
+		<pathelement location="src/org/jllvm/build"/>
 		<pathelement location="build/"/>
 	</path>
 	<taskdef resource="scala/tools/ant/antlib.xml">
@@ -21,11 +22,11 @@
 		<copy file="src/org/deca/compiler/parser/parser/parser.dat" todir="build/org/decac/compiler/parser/parser"/>
 	</target>
 	<target name="build_llvm_bindings">
-		<echo message="Compiling C components of jllvm."/>
-		<exec dir="src/org/jllvm/bindings/" executable="make"/>
-		<echo message="Compiled C components of jllvm."/>
-		<mkdir dir="build/"/>
-		<javac srcdir="src/org/jllvm" destdir="build" includeantruntime="false"/>
+		<echo message="Building jllvm."/>
+		<mkdir dir="src/org/jllvm/build/"/>
+		<exec dir="src/org/jllvm/" executable="ant">
+			<arg value="build"/>
+		</exec>
 	</target>
 	<target name="build">
 		<mkdir dir="build/"/>
@@ -39,6 +40,7 @@
 		<exec dir="src/org/jllvm" executable="ant">
 			<arg value="clean"/>
 		</exec>
+		<delete dir="src/org/jllvm/build/"/>
 		<exec dir="src/" executable="fsc">
 			<arg value="-reset"/>
 		</exec>

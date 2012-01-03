@@ -5,14 +5,12 @@ import scala.math
 import org.jllvm._
 import org.deca.compiler.definition._
 
-abstract class NumericalType(n: String,p: Option[NumericalType]) extends MonoType {
+abstract class NumericalType(val name: String,val parent: Option[NumericalType]) extends MonoType {
   def signed: Boolean
-  val name: String = n
-  val parent: Option[NumericalType] = p
   //define(new TypeDefinition(this,name,GlobalScope))
   
   def enclosedIn(n: NumericalType): Boolean = parent match {
-    case Some(p) => p == n || (p enclosedIn n)
+    case Some(p) => parent == n || (parent enclosedIn n)
     case None => false
   }
   override def variables: Set[SignatureVariable] = Set.empty
