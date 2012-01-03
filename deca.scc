@@ -151,7 +151,7 @@ Productions
     
   variant_case =
     {simple} unqualified_identifier variant_case_parameters? |
-    {complex} unqualified_identifier [parameters]:variant_case_parameters lbracket [members]:member_declaration+ rbracket;
+    {complex} unqualified_identifier lparen [parameters]:argument_list rparen lbracket [members]:member_declaration+ rbracket;
     
   interface_component_form = 
     {named} unqualified_identifier colon firstclass_function_form |
@@ -165,7 +165,7 @@ Productions
     {function} function_type_form |
     {variant} final? variant extension_clause? lbracket variant_case+ rbracket |
     {pointer} pointer_type_form |
-    {interface} interface lbracket interface_component_form+ rbracket |
+    {interface} interface labracket [argument]:unqualified_identifier rabracket lbracket tuple_component+ rbracket |
     {exception} exception variant_case_parameters [extension]:extension_clause? |
     {others} lower_type_form;
     
@@ -193,7 +193,7 @@ Productions
   
   lower_type_form =
     {tuple} lsbracket tuple_component_list rsbracket |
-    {array} basic_type_form lsbracket integer_constant? rsbracket |
+    {array} basic_type_form lsbracket slot_mutability? integer_constant? rsbracket |
     {others} basic_type_form;
     
   basic_type_form =
