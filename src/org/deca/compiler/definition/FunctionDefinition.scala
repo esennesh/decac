@@ -28,6 +28,7 @@ class FunctionDefinition(val name: String,
     val solvedArrow = substitution.solve(arrow)
     val result = new TypeExpressionConstructor(solvedArrow.variables.toList,solvedArrow)
     body.substitute(substitution)
+    assert(body.bodyEffect.safe(PureEffect))
     result
   }
   val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMFunction]] = Memoize1(sigvars => {
