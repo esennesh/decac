@@ -11,7 +11,7 @@ import org.deca.compiler.signature._
 
 class BlockExpression(val steps: List[Expression]) extends Expression {
   expType = steps.last.expType
-  expEffect = EffectPair(new EffectVariable,new EffectVariable)
+  expEffect = EffectPair(new EffectVariable(false),new EffectVariable(false))
   override val children = steps
   
   override def constrain(scs: SignatureConstraints): Unit =
@@ -24,10 +24,10 @@ class BlockExpression(val steps: List[Expression]) extends Expression {
     for(step <- steps)
       step.substitute(sub)
     expType = sub.solve(expType).asInstanceOf[MonoType]
-    expEffect = EffectPair(sub.solve(expEffect.positive).asInstanceOf[MonoEffect],sub.solve(expEffect.negative).asInstanceOf[MonoEffect])
+    expEffect = EffectPair(sub.solve[MonoEffect](expEffect.positive),sub.solve[MonoEffect](expEffect.negative))
   }
-  override def specialize(spec: SignatureSubstitution): Expression =
-    new BlockExpression(steps.map(_.specialize(spec)))
+  override def specialize(spec: SignatureSubstitution,specScope: Scope): Expression =
+    new BlockExpression(steps.map(_.specialize(spec,specScope)))
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = 
     steps.map(_.compile(builder,scope,instantiation)).last
 }

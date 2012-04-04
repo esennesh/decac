@@ -1,15 +1,36 @@
 package org.deca.compiler.definition
 
-import scala.collection.immutable.Set
+import scala.collection.immutable.{Set,HashMap,Map}
 import scala.util.Memoize1
 import org.jllvm._
 import org.jllvm.bindings._
 import org.deca.compiler.signature._
-import org.deca.compiler.expression.Expression
+import org.deca.compiler.expression.{EffectPair,Expression}
 
-trait FunctionDefinition extends Definition {
-  val funcType: TypeConstructor
-  val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMValue]] = Memoize1(sigvars => {
+trait FunctionBody {
+  val scope: LexicalScope
+  def bodyType: MonoType
+  def bodyEffect: EffectPair
+  
+  def infer: SignatureSubstitution
+  def substitute(substitution: SignatureSubstitution): Unit
+  def specialize(spec: SignatureSubstitution): FunctionBody
+  def compile(instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue
+}
+
+class FunctionDefinition(val name: String,
+                         val scope: Module,
+                         val arguments: List[(String,MonoType)],
+                         val body: FunctionBody) extends Definition {
+  val funcType: TypeConstructor = {
+    val substitution = body.infer
+    val arrow = substitution.solve[MonoType](new FunctionPointer(arguments.map(_._2),body.bodyType,body.bodyEffect.positive,body.bodyEffect.negative))
+    val solvedArrow = substitution.solve(arrow)
+    val result = new TypeExpressionConstructor(solvedArrow.variables.toList,solvedArrow)
+    body.substitute(substitution)
+    result
+  }
+  val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMFunction]] = Memoize1(sigvars => {
     val signature = funcType.represent(sigvars).asInstanceOf[FunctionPointer]
     Memoize1(instantiation => {
       val func = new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile)
@@ -22,7 +43,7 @@ trait FunctionDefinition extends Definition {
         val entry = func.appendBasicBlock("entry")
         val builder = new LLVMInstructionBuilder
         builder.positionBuilderAtEnd(entry)
-        new LLVMReturnInstruction(builder,compile(specialization,instantiation,builder))
+        new LLVMReturnInstruction(builder,body.specialize(specialization).compile(instantiation,builder))
         func
       }
       else
@@ -36,29 +57,35 @@ trait FunctionDefinition extends Definition {
       result += specialization(instantiation)
     result
   })
-  def compile(spec: SignatureSubstitution,instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue
 }
 
-class ExpressionFunction(override val name: String,
-                         override val scope: Module,
-                         val arguments: List[(String,MonoMutability,MonoType)],
-                         mkBody: LexicalScope => Expression) extends FunctionDefinition {
-  val bodyScope: LexicalScope = new LexicalScope(scope,arguments.map(arg => (arg._1,arg._2,FreshArgument(arg._3))))
-  val body: Expression = {
-    val expression = mkBody(bodyScope)
+class ExpressionBody(arguments: List[(String,MonoType)],
+                     parent: Module,
+                     mkBody: LexicalScope => Expression) extends FunctionBody {
+  override val scope = new LexicalScope(parent,arguments)
+  val body: Expression = mkBody(scope)
+  override def bodyType: MonoType = body.expType
+  override def bodyEffect: EffectPair = body.expEffect
+  override def infer: SignatureSubstitution = {
     val inference = new LatticeUnificationInstance
-    expression.constrain(inference.constraints)
+    body.constrain(inference.constraints)
     inference.solve
-    expression.check(inference.constraints)
+    body.check(inference.constraints)
     val substitution = inference.solve
-    expression.substitute(substitution)
-    bodyScope.bindings.map(_.substitute(substitution))
-    expression
+    substitution
   }
-  override val funcType = {
-    val arrow = new FunctionPointer(arguments.map(_._3),body.expType,body.expEffect.positive,body.expEffect.negative)
-    new TypeExpressionConstructor(arrow.variables.toList,arrow)
+  override def substitute(substitution: SignatureSubstitution): Unit = {
+    scope.substitute(substitution)
+    body.substitute(substitution)
   }
-  override def compile(spec: SignatureSubstitution,instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue =
-    body.specialize(spec).compile(builder,bodyScope,instantiation)
+  override def specialize(spec: SignatureSubstitution): ExpressionBody = {
+    val args = arguments.map(arg => (arg._1,spec.solve(arg._2)))
+    val bod = (lexi: LexicalScope) => body.specialize(spec,lexi)
+    new ExpressionBody(args,parent,bod)
+  }
+  override def compile(instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue = {
+    val llvmArguments = new HashMap ++ builder.getInsertBlock.getParent.getParameters.toList.map(arg => (arg.getValueName,arg))
+    scope.setArguments(llvmArguments)
+    body.compile(builder,scope,instantiation)
+  }
 }

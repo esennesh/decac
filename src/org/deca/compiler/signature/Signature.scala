@@ -88,6 +88,11 @@ trait MonoEffect extends MonoSignature {
   def >(sig: MonoEffect)(implicit ordering: PartialOrdering[MonoEffect]) = ordering.gt(this,sig)
   def <=(sig: MonoEffect)(implicit ordering: PartialOrdering[MonoEffect]) = ordering.lteq(this,sig)
   def >=(sig: MonoEffect)(implicit ordering: PartialOrdering[MonoEffect]) = ordering.gteq(this,sig)
+  
+  def ++(eff: MonoEffect): SetEffect = eff match {
+    case SetEffect(effects) => SetEffect(effects + this)
+    case _ => SetEffect(HashSet.empty[MonoEffect] + this + eff)
+  }
 }
 
 trait MonoType extends MonoSignature {

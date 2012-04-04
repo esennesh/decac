@@ -14,9 +14,8 @@ class VariableExpression(val name: List[String],val scope: Scope) extends Writab
     expType = sub.solve(expType).asInstanceOf[MonoType]
     expEffect = EffectPair(sub.solve(expEffect.positive).asInstanceOf[MonoEffect],sub.solve(expEffect.negative).asInstanceOf[MonoEffect])
   }
-  override def specialize(spec: SignatureSubstitution): VariableExpression =
-    //TODO: Figure out how to perform type-specialization on scope
-    new VariableExpression(name,scope)
+  override def specialize(spec: SignatureSubstitution,specScope: Scope): VariableExpression =
+    new VariableExpression(name,specScope)
   override def constrain(scs: SignatureConstraints): Unit = Unit
   override def check(scs: SignatureConstraints): Unit = Unit
 
