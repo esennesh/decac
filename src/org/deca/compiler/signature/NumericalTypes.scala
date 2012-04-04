@@ -10,7 +10,7 @@ abstract class NumericalType(val name: String,val parent: Option[NumericalType])
   //define(new TypeDefinition(this,name,GlobalScope))
   
   def enclosedIn(n: NumericalType): Boolean = parent match {
-    case Some(p) => parent == n || (parent enclosedIn n)
+    case Some(p) => p == n || (p enclosedIn n)
     case None => false
   }
   override def variables: Set[SignatureVariable] = Set.empty

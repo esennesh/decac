@@ -1,10 +1,11 @@
 package org.deca.compiler.signature
 
 import scala.collection.immutable.HashSet
+import scala.collection.immutable.Set
 import scala.collection.mutable.GraphLattice
 import org.deca.compiler.definition._
 
-class EffectVariable extends MonoEffect with SignatureVariable {
+class EffectVariable(override val universal: Boolean) extends MonoEffect with SignatureVariable {
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
 }

@@ -295,6 +295,7 @@ Productions
     {sizeof} sizeof lparen type_form rparen |
     {literal} literal_expression |
     {tuple} lsbracket expression_list rsbracket |
+    {record} lsbracket member_assignment_list rsbracket |
     {lambda} lambda_expression |
     {interface} interface lbracket interface_component+ rbracket |
     {call} function_call_expression |

@@ -103,8 +103,7 @@ class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
 //Switch to a proper way of doing things with mutability variables and such.
 case class RecordMember(name: Option[String],mutable: MonoMutability,tau: MonoType)
 
-class RecordType(f: List[RecordMember]) extends MonoType {
-  val fields: List[RecordMember] = f
+class RecordType(val fields: List[RecordMember]) extends MonoType {
   val length: Int = fields.length
   
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
@@ -170,12 +169,16 @@ class FunctionPointer(val domain: List[MonoType],
   override def toString: String = "(" + domain.tail.foldLeft(domain.head.toString)((x: String,y: MonoType) => x + "," + y.toString) + ") @->" + range.toString
 }
 
-case class TaggedRecord(name: String,tag: Int,record: RecordType) {
+case class TaggedRecord(name: String,tag: Any,record: RecordType) {
+  def tagCode: Int = tag match {
+    case i: Int => i
+    case ref: AnyRef => tag.hashCode
+  }
   def compileTag: LLVMConstantInteger = {
-    val tagSize = math.floor(math.log(tag) / math.log(2)).toInt + 1
+    val tagSize = math.floor(math.log(tagCode) / math.log(2)).toInt + 1
     assert(tagSize > 0)
     val tagType = new LLVMIntegerType(tagSize)
-    LLVMConstantInteger.constantInteger(tagType,tag,false)
+    LLVMConstantInteger.constantInteger(tagType,tagCode,false)
   }
 }
 
@@ -190,8 +193,8 @@ class ZippableMap[A,B](val m: Map[A,B]) {
   }
 }
 
-class SumType(trs: List[Tuple2[String,RecordType]]) extends MonoType {
-  val cases: Map[String,TaggedRecord] = HashMap.empty[String,TaggedRecord] ++ trs.zipWithIndex.map(pair => (pair._1._1,TaggedRecord(pair._1._1,pair._2,pair._1._2)))
+class SumType(trs: Iterable[TaggedRecord]) extends MonoType {
+  val cases: Map[String,TaggedRecord] = HashMap.empty[String,TaggedRecord] ++ trs.map(tr => (tr.name,tr))
   implicit def zippingMap[A,B](m: Map[A,B]): ZippableMap[A,B] = new ZippableMap[A,B](m)
   
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
@@ -206,9 +209,9 @@ class SumType(trs: List[Tuple2[String,RecordType]]) extends MonoType {
     val cs = cases.values.map(tr => tr.record.filterR(pred))
     cs.foldLeft(Set.empty[MonoRegion])((res,c) => res ++ c)
   }
-  override def mapT(f: (MonoType) => MonoType): MonoType = f(new SumType(cases.toList.map(tr => (tr._1,tr._2.record.mapT(f).asInstanceOf[RecordType]))))
-  override def mapE(f: (MonoEffect) => MonoEffect): SumType = new SumType(cases.toList.map(tr => (tr._1,tr._2.record.mapE(f))))
-  override def mapR(f: (MonoRegion) => MonoRegion): SumType = new SumType(cases.toList.map(tr => (tr._1,tr._2.record.mapR(f))))
+  override def mapT(f: MonoType => MonoType): MonoType = f(new SumType(cases.values.map(tr => TaggedRecord(tr.name,tr.tag,tr.record.mapT(f).asInstanceOf[RecordType]))))
+  override def mapE(f: (MonoEffect) => MonoEffect): SumType = new SumType(cases.values.map(tr => TaggedRecord(tr.name,tr.tag,tr.record.mapE(f))))
+  override def mapR(f: (MonoRegion) => MonoRegion): SumType = new SumType(cases.values.map(tr => TaggedRecord(tr.name,tr.tag,tr.record.mapR(f))))
   override def variables: Set[SignatureVariable] = {
     val empty: Set[SignatureVariable] = HashSet.empty
     cases.foldLeft(empty)((result,tr) => result ++ tr._2.record.variables)
@@ -298,10 +301,7 @@ class ExistentialInterface(r: RecordType,abs: MonoType,w: Option[MonoType] = Non
   override def variables: Set[SignatureVariable] = shape.variables
 }
 
-class TypeVariable(univ: Boolean,n: Option[String] = None) extends MonoType with SignatureVariable {
-  override val universal = univ
-  val name = n
-  
+class TypeVariable(override val universal: Boolean,val name: Option[String] = None) extends MonoType with SignatureVariable {
   override def compile: LLVMType = throw new TypeException("Cannot compile type variable " + name.toString + ".")
   override def sizeOf: Int = 1
   override def toString: String = name match {

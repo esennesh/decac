@@ -22,13 +22,13 @@ class TypeDefinition(val constructor: TypeConstructor,val name: String,override 
 
 object BuiltInSums {
   val BooleanSum = {
-    val result = new TypeExpressionConstructor(Nil,new SumType(List(("false",EmptyRecord),("true",EmptyRecord))))
+    val result = new TypeExpressionConstructor(Nil,new SumType(List(TaggedRecord("false",0,EmptyRecord),TaggedRecord("true",1,EmptyRecord))))
     new TypeDefinition(result,"boolean",GlobalScope)
     result
   }
 }
 
-abstract class TypeConstructor(alphas: List[SignatureVariable]) {
+abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
   protected var strName: Option[String] = None
   def declare(str: String): String = strName match {
     case Some(n) => n
@@ -41,13 +41,17 @@ abstract class TypeConstructor(alphas: List[SignatureVariable]) {
     case Some(n) => n
     case None => getClass().getName() + '@' + Integer.toHexString(hashCode())
   }
-  val parameters: List[SignatureVariable] = alphas
   assert(parameters.forall(param => param.universal))
   protected val specializations = new HashMap[List[MonoSignature],LLVMType]()
   
   def compile(params: List[MonoSignature]): LLVMType
   def resolve(params: List[MonoSignature]): LLVMType
   def represent(params: List[MonoSignature]): MonoType
+  def freshlyRepresent: MonoType = represent(parameters.map(param => param match {
+    case tau: MonoType => new TypeVariable(false,None)
+    case rho: MonoRegion => new RegionVariable(false)
+    case epsilon: MonoEffect => new EffectVariable(false)
+  }))
   protected def getSpecialization(params: List[MonoSignature]): Option[LLVMType] = {
     for((specialization,llvmType) <- specializations)
       if(specialization.zip(params).forall(p => p._1 == p._2))
@@ -75,18 +79,20 @@ class TypeExpressionConstructor(alphas: List[SignatureVariable],t: MonoType) ext
   }
 }
 
-class OpenSumConstructor(alphas: List[TypeVariable],addends: List[Tuple2[String,RecordType]],loopNode: Option[MonoType]) extends TypeConstructor(alphas) {
+class OpenSumConstructor(alphas: List[TypeVariable],addends: List[TaggedRecord],loopNode: Option[MonoType]) extends TypeConstructor(alphas) {
   protected val recurser = new OpaqueType
-  protected var cases: List[Tuple2[String,RecordType]] = loopNode match {
-    case Some(loop) => addends.map(addend => (addend._1,addend._2.mapT((sig: MonoType) => if(sig == loop) recurser else sig).asInstanceOf[RecordType]))
+  protected var cases: List[TaggedRecord] = loopNode match {
+    case Some(loop) =>
+      for(addend <- addends)
+        yield TaggedRecord(addend.name,addend.tag,addend.record.mapT(sig => if(sig == loop) recurser else sig).asInstanceOf[RecordType])
     case None => addends
   }
   
-  def extend(addend: Tuple2[String,RecordType],loopNode: Option[MonoType]): Unit = {
-    assert(addend._2.variables.forall(tvar => alphas.contains(tvar)))
-    if(!cases.contains((c: Tuple2[String,RecordType]) => c._1 == addend._1))
+  def extend(addend: TaggedRecord,loopNode: Option[MonoType]): Unit = {
+    assert(addend.record.variables.forall(tvar => alphas.contains(tvar)))
+    if(!cases.contains((c: TaggedRecord) => c.name == addend.name))
       cases = loopNode match {
-        case Some(loop) => (addend._1,addend._2.mapT((sig: MonoType) => if(sig == loop) recurser else sig).asInstanceOf[RecordType]) :: cases
+        case Some(loop) => TaggedRecord(addend.name,addend.tag,addend.record.mapT(sig => if(sig == loop) recurser else sig).asInstanceOf[RecordType]) :: cases
         case None => addend :: cases
       }
   }
@@ -115,16 +121,16 @@ class OpenSumConstructor(alphas: List[TypeVariable],addends: List[Tuple2[String,
   
   protected def caseRepresentation(which: Int): LLVMType = {
     assert(which < cases.length)
-    if(cases.forall(c => TypeOrdering.equiv(c._2,EmptyRecord)))
+    if(cases.forall(c => TypeOrdering.equiv(c.record,EmptyRecord)))
       tagRepresentation
     else
-      new LLVMStructType(List(tagRepresentation,cases.apply(which)._2.compile).toArray,true)
+      new LLVMStructType(List(tagRepresentation,cases.apply(which).record.compile).toArray,true)
   }
   
   override def resolve(params: List[MonoSignature]): LLVMType = represent(params).compile
 }
 
-object ExceptionConstructor extends OpenSumConstructor(Nil,List(("AnyException",EmptyRecord)),None) {
+object ExceptionConstructor extends OpenSumConstructor(Nil,List(TaggedRecord("AnyException","AnyException",EmptyRecord)),None) {
   //new TypeDefinition(this,"Exception",StandardLibrary)
 }
 
