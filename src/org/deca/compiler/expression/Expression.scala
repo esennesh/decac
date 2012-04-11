@@ -28,6 +28,8 @@ trait Expression {
 }
 
 trait WritableExpression extends Expression {
+  override val writable: Boolean = true
+  def specialize(spec: SignatureSubstitution,specScope: Scope): WritableExpression
   def store(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module,value: LLVMValue): LLVMValue
 }
 
