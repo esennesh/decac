@@ -61,9 +61,8 @@ abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
   def allSpecializations: Iterable[LLVMType] = specializations.values
 }
 
-class TypeExpressionConstructor(alphas: List[SignatureVariable],t: MonoType) extends TypeConstructor(alphas) {
-  assert(t.variables.forall(tvar => alphas.contains(tvar)))
-  protected val tau: MonoType = t
+class TypeExpressionConstructor(alphas: List[SignatureVariable],protected val tau: MonoType) extends TypeConstructor(alphas) {
+  assert(tau.variables.forall(tvar => alphas.contains(tvar)))
   
   override def compile(params: List[MonoSignature]): LLVMType = specializations.get(params) match {
     case Some(t) => t

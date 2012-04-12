@@ -17,6 +17,34 @@ abstract class ArithmeticExpression extends Expression {
   def specialize(spec: SignatureSubstitution,specScope: Scope): ArithmeticExpression
 }
 
+class IntegerLiteralExpression(val value: Int) extends ConstantExpression {
+  override val children = Nil
+  val intType: IntegerType =
+    if(value >= 0) {
+      if(value <= IntegerConstants.max_byte)
+        Byte
+      else if(value <= IntegerConstants.max_snat)
+        SNat
+      else if(value <= IntegerConstants.max_nat)
+        Nat
+      else
+        LongNat
+    }
+    else {
+      if(value >= IntegerConstants.min_octet)
+        Octet
+      else if(value >= IntegerConstants.min_sInt)
+        SInt
+      else if(value >= IntegerConstants.min_Int)
+        Int
+      else
+        LongInt
+    }
+  expType = intType
+  def build(scope: Scope,instantiation: Module): LLVMConstant =
+    LLVMConstantInteger.constantInteger(intType.compile,value,true)
+}
+
 class ArithmeticOperatorExpression(val operator: Char,val left: Expression,val right: Expression) extends ArithmeticExpression {
   override val children = List(left, right)
   override def specialize(spec: SignatureSubstitution,specScope: Scope): ArithmeticOperatorExpression =

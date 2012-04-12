@@ -5,9 +5,33 @@ import scala.math
 import org.jllvm._
 import org.deca.compiler.definition._
 
+object IntegerConstants {
+  def raise(n: Int,pow: Int): Long = {
+    if(pow == 1)
+      n
+    else
+      n * raise(n,pow-1)
+  }
+  val max_longnat = raise(2,64) - 1
+  val max_longInt = raise(2,63) - 1
+  val min_longInt = -raise(2,63)
+  val max_nat = raise(2,32) - 1
+  val max_Int = raise(2,31) - 1
+  val min_Int = -raise(2,31)
+  val max_snat = raise(2,16) - 1
+  val max_sInt = raise(2,15) - 1
+  val min_sInt = -raise(2,15)
+  val max_byte = raise(2,8) - 1
+  val max_octet = raise(2,7) - 1
+  val min_octet = -raise(2,7)
+  val min_unsigned = 0
+}
+
+
+
 abstract class NumericalType(val name: String,val parent: Option[NumericalType]) extends MonoType {
   def signed: Boolean
-  //define(new TypeDefinition(this,name,GlobalScope))
+  new TypeDefinition(new TypeExpressionConstructor(Nil,this),name,GlobalScope)
   
   def enclosedIn(n: NumericalType): Boolean = parent match {
     case Some(p) => p == n || (p enclosedIn n)
