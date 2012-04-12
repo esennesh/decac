@@ -234,7 +234,7 @@ object ASTProcessor {
   }
   
   def processLiteral(exp: PLiteralExpression,scope: LexicalScope): Expression = exp match {
-    case integer: AIntegerLiteralExpression => new IntegerExpression(integer.getIntegerConstant.getText.toInt)
+    case integer: AIntegerLiteralExpression => new IntegerLiteralExpression(integer.getIntegerConstant.getText.toInt)
     case bool: ABooleanLiteralExpression => new BooleanLiteralExpression(bool.getBooleanConstant.getText == "true")
   }
   
@@ -245,7 +245,7 @@ object ASTProcessor {
       val arguments = if(named.getArguments != null) processExpressionList(named.getArguments,scope) else Nil
       scope.lookup(name) match {
         case func: FunctionDefinition => new UninferredDefinitionCall(func,arguments)
-        case binding: UninferredLexicalBinding => new ExpressionCall(new UninferredVariable(name,scope),arguments)
+        case binding: UninferredLexicalBinding => new ExpressionCall(new VariableExpression(name,scope),arguments)
       }
     }
     case expr: AParensFunctionCallExpression => {
@@ -325,7 +325,7 @@ object ASTProcessor {
     }
   }*/
   def processExp1(exp: PExp1,scope: LexicalScope): Expression = exp match {
-    case variable: AIdentifierExp1 => new UninferredVariable(processQualifiedIdentifier(variable.getQualifiedIdentifier),scope)
+    case variable: AIdentifierExp1 => new VariableExpression(processQualifiedIdentifier(variable.getQualifiedIdentifier),scope)
     case literal: ALiteralExp1 => processLiteral(literal.getLiteralExpression,scope)
     case parens: AParentheticalExp1 => processExpression(parens.getParentheticalExpression.asInstanceOf[AParentheticalExpression].getExpression,scope)
     case call: ACallExp1 => processCallExpression(call.getFunctionCallExpression,scope)
@@ -340,7 +340,7 @@ object ASTProcessor {
         tscope = tscope.parent.get
       val tau = processTypeForm(cast.getTypeForm,new TypeDefinitionScope(Nil,tscope.asInstanceOf[Module]))
       val expr = processExpression(cast.getExpression,scope)
-      new UninferredBitcast(expr,tau)
+      new BitcastExpression(expr,tau)
     }
   }
   def processExp2(exp: PExp2,scope: LexicalScope): Expression = exp match {
