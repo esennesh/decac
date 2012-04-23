@@ -341,17 +341,17 @@ object ASTProcessor {
     }
   }
   def processExp2(exp: PExp2,scope: LexicalScope): Expression = exp match {
-    //case minus: AMinusExp2 => new UninferredOperator(new UninferredInteger(0),processExp2(minus.getExp2,scope),Subtract)
+    case minus: AMinusExp2 => new ArithmeticOperatorExpression('-',new IntegerLiteralExpression(0),processExp2(minus.getExp2,scope))
     case others: AOthersExp2 => processExp1(others.getExp1,scope)
   }
   def processExp3(exp: PExp3,scope: LexicalScope): Expression = exp match {
-    /*case mult: AMultiplyExp3 => new UninferredOperator(processExp3(mult.getExp1,scope),processExp2(mult.getExp2,scope),Multiply)
-    case divide: ADivisionExp3 => new UninferredOperator(processExp3(divide.getExp1,scope),processExp2(divide.getExp2,scope),Divide)*/
+    case mult: AMultiplyExp3 => new ArithmeticOperatorExpression('*',processExp3(mult.getExp1,scope),processExp2(mult.getExp2,scope))
+    case divide: ADivisionExp3 => new ArithmeticOperatorExpression('/',processExp3(divide.getExp1,scope),processExp2(divide.getExp2,scope))
     case others: AOthersExp3 => processExp2(others.getExp2,scope)
   }
   def processExp4(exp: PExp4,scope: LexicalScope): Expression = exp match {
-    /*case add: APlusExp4 => new UninferredOperator(processExp4(add.getExp1,scope),processExp3(add.getExp2,scope),Add)
-    case sub: AMinusExp4 => new UninferredOperator(processExp4(sub.getExp1,scope),processExp3(sub.getExp2,scope),Subtract)*/
+    case add: APlusExp4 => new ArithmeticOperatorExpression('+',processExp4(add.getExp1,scope),processExp3(add.getExp2,scope))
+    case sub: AMinusExp4 => new ArithmeticOperatorExpression('-',processExp4(sub.getExp1,scope),processExp3(sub.getExp2,scope))
     case others: AOthersExp4 => processExp3(others.getExp3,scope)
   }
   def processExp5(exp: PExp5,scope: LexicalScope): Expression = exp match {
