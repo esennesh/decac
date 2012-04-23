@@ -13,7 +13,7 @@ abstract class ArithmeticExpression extends Expression {
       scs.push(new SubsumptionConstraint(child.expType,expType))
     }
   }
-  override def check(scs: SignatureConstraints): Unit = for(child <- children) child.check(scs)
+  override def check(lui: LatticeUnificationInstance): Unit = for(child <- children) child.check(lui)
   def specialize(spec: SignatureSubstitution,specScope: Scope): ArithmeticExpression
 }
 

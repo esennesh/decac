@@ -61,7 +61,7 @@ object ASTProcessor {
     case one: AOneTupleComponentList => processTupleComponent(one.getTupleComponent,scope) :: Nil
     case many: AManyTupleComponentList => processTupleComponents(many.getTupleComponentList,scope) ++ (processTupleComponent(many.getTupleComponent,scope) :: Nil)
   }
-  def processSlotDeclaration(decl:PSlotDeclaration,scope: TypeDefinitionScope): (String,MonoType,MonoMutability) = {
+  def processSlotDeclaration(decl: PSlotDeclaration,scope: TypeDefinitionScope): (String,MonoType,MonoMutability) = {
     val adecl = decl.asInstanceOf[ASlotDeclaration]
     val name = adecl.getUnqualifiedIdentifier.getText
     val tau = if(adecl.getTypeAnnotation != null)
@@ -212,9 +212,6 @@ object ASTProcessor {
       val components: List[VariantCase] = processVariantComponents(convertList(variant.getVariantCase),scope)
       new SumType(components.map(comp => TaggedRecord(comp.name,comp,comp.taggedRecord.record)))
     }
-    //case aclass: AClassTypeForm
-    //case subrange: ASubrangeTypeForm
-    //case enum: AEnumTypeForm
     //case exception: AExceptionTypeForm
     case lower: AOthersTypeForm => processLowerTypeForm(lower.getLowerTypeForm,scope)
   }
@@ -238,8 +235,8 @@ object ASTProcessor {
     case bool: ABooleanLiteralExpression => new BooleanLiteralExpression(bool.getBooleanConstant.getText == "true")
   }
   
-  /*
-  def processCallExpression(call: PFunctionCallExpression,scope: LexicalScope): UninferredCall = call match {
+  
+  /*def processCallExpression(call: PFunctionCallExpression,scope: LexicalScope): UninferredCall = call match {
     case named: AVariableFunctionCallExpression => {
       val name = processQualifiedIdentifier(named.getFunction)
       val arguments = if(named.getArguments != null) processExpressionList(named.getArguments,scope) else Nil
@@ -286,14 +283,14 @@ object ASTProcessor {
     case blockexp: ABlockexpExpressionWithElse => processBlock(blockexp.getBlockExpression,scope)
     case exp5: AOthersExpressionWithElse => processExp5(exp5.getExp5,scope)
     case ifelse: AIfwithelseexpExpressionWithElse => processIfElseWithElseWithElse(ifelse,scope)
-  }
+  }*/
   
   def processExpressionList(exprs: PExpressionList,scope: LexicalScope): List[Expression] = exprs match {
     case one: AOneExpressionList => processExpression(one.getExpression,scope) :: Nil
     case many: AManyExpressionList => processExpressionList(many.getExpressionList,scope) ++ (processExpression(many.getExpression,scope) :: Nil)
   }
   
-  def processFunctionDefinition(func: PFunctionDefinition,scope: Module): Definition = func match {
+  /*def processFunctionDefinition(func: PFunctionDefinition,scope: Module): Definition = func match {
     case normal: AFunctionFunctionDefinition => {
       val name = normal.getName.getText
       val tscope = new TypeDefinitionScope(scope)
@@ -329,8 +326,8 @@ object ASTProcessor {
     case literal: ALiteralExp1 => processLiteral(literal.getLiteralExpression,scope)
     case parens: AParentheticalExp1 => processExpression(parens.getParentheticalExpression.asInstanceOf[AParentheticalExpression].getExpression,scope)
     case call: ACallExp1 => processCallExpression(call.getFunctionCallExpression,scope)
-    case tuple: ATupleExp1 => new UninferredTuple(processExpressionList(tuple.getExpressionList,scope))
-    case field: AFieldExp1 => new UninferredMember(processExp1(field.getExp1,scope),field.getMemberSelector match {
+    case tuple: ATupleExp1 => new TupleExpression(processExpressionList(tuple.getExpressionList,scope))
+    case field: AFieldExp1 => new MemberExpression(processExp1(field.getExp1,scope),field.getMemberSelector match {
       case name: ANameMemberSelector => NameSelector(name.getUnqualifiedIdentifier.getText)
       case index: AIndexMemberSelector => IndexSelector(index.getIntegerConstant.getText.toInt)
     })
@@ -407,7 +404,9 @@ object ASTProcessor {
       new TypeDefinition(new TypeExpressionConstructor(params.map(_._2).toList,mu),name,scope)
     }
     case avardef: AGlobaldefDefinition => {
-      null
+      val slot = processSlotDeclaration(avardef.getSlotDeclaration,new TypeDefinitionScope(Nil,scope))
+      val initializer = processExpression(avardef.getExpression,new LexicalScope(scope,Nil)).asInstanceOf[ConstantExpression]
+      new VariableDefinition(scope,slot._1,initializer,slot._2,slot._3)
     }
   }
 }
