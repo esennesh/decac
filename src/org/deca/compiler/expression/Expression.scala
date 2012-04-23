@@ -12,12 +12,12 @@ case class EffectPair(positive: MonoEffect,negative: MonoEffect) {
 
 trait Expression {
   var expType: MonoType = BottomType
-  var expEffect: EffectPair = EffectPair(PureEffect,PureEffect)
   val writable: Boolean = false
   val children: List[Expression]
+  var expEffect: EffectPair = children.foldLeft(EffectPair(PureEffect,PureEffect))((ep: EffectPair,child: Expression) => ep ++ child.expEffect)
   
   def constrain(scs: SignatureConstraints): Unit
-  def check(scs: SignatureConstraints): Unit
+  def check(lui: LatticeUnificationInstance): Unit
   
   def substitute(sub: SignatureSubstitution): Unit
   def specialize(spec: SignatureSubstitution,specScope: Scope): Expression
@@ -35,7 +35,7 @@ trait WritableExpression extends Expression {
 
 trait ConstantExpression extends Expression {
   override def constrain(scs: SignatureConstraints): Unit = Unit
-  override def check(scs: SignatureConstraints): Unit = Unit
+  override def check(lui: LatticeUnificationInstance): Unit = Unit
   override def substitute(substitution: SignatureSubstitution): Unit = Unit
   override def specialize(spec: SignatureSubstitution,specScope: Scope): ConstantExpression = this
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMConstant = build(scope,instantiation)
