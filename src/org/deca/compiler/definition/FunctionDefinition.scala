@@ -71,7 +71,7 @@ class ExpressionBody(arguments: List[(String,MonoType)],
     val inference = new LatticeUnificationInstance
     body.constrain(inference.constraints)
     inference.solve
-    body.check(inference.constraints)
+    body.check(inference)
     val substitution = inference.solve
     substitution
   }

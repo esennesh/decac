@@ -4,6 +4,7 @@
 			<arg value="."/>
 		</exec>
 		<exec dir="bindings" executable="make"/>
+		<mkdir dir="build/"/>
 		<javac srcdir="." destdir="build/" includeantruntime="false"/>
 	</target>
 	<target name="clean">

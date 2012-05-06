@@ -74,6 +74,7 @@ Tokens
   greatereq = '>=';
   lessereq = '<=';
   function = 'function';
+  let = 'let';
   while = 'while';
   do = 'do';
   for = 'for';
@@ -247,7 +248,7 @@ Productions
 
   expression =
     {assignmentexp} exp1 assignment_operator expression |
-    {letexp} implicit_annotation? slot_declaration assignment_operator expression |
+    {letexp} let implicit_annotation? slot_declaration assignment_operator expression |
     {matchexp} match_expression |
     {tryexp} try_expression |
     {finalexp} finally [finalizer]:expression |
@@ -261,7 +262,7 @@ Productions
     
   expression_with_else =
     {assignmentexp} exp1 assignment_operator expression_with_else |
-    {letexp} implicit_annotation? slot_declaration assignment_operator expression_with_else |
+    {letexp} let implicit_annotation? slot_declaration assignment_operator expression_with_else |
     {matchexp} match_expression |
     {tryexp} try_expression_with_else |
     {finalexp} finally [finalizer]:expression_with_else |
