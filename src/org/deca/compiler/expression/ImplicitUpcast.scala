@@ -14,8 +14,8 @@ class ImplicitUpcast(val expression: Expression,upcast: MonoType) extends Expres
   
   override def substitute(sub: SignatureSubstitution): Unit =
     expType = sub.solve(expType).asInstanceOf[MonoType]
-  override def specialize(spec: SignatureSubstitution): Expression =
-    new ImplicitUpcast(expression.specialize(spec),spec.solve(upcast).asInstanceOf[MonoType])
+  override def specialize(spec: SignatureSubstitution,specScope: Scope): Expression =
+    new ImplicitUpcast(expression.specialize(spec,specScope),spec.solve(upcast).asInstanceOf[MonoType])
   override val children: List[Expression] = (expression :: Nil)
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = if(TypeOrdering.lt(expression.expType,expType)) {
     val child = expression.compile(builder,scope,instantiation)

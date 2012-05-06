@@ -250,40 +250,40 @@ object ASTProcessor {
       val func = processExpression(expr.getFunction.asInstanceOf[AParentheticalExpression].getExpression,scope)
       new ExpressionCall(func,arguments)
     }
-  }
-  def processIfThen(ifthen: AIfwithoutelseexpExpression,scope: LexicalScope): UninferredIf = {
+  }*/
+  def processIfThen(ifthen: AIfwithoutelseexpExpression,scope: LexicalScope): IfExpression = {
     val condition = processExpression(ifthen.getCondition,scope)
     val body = processExpression(ifthen.getThenbody,scope)
-    new UninferredIf(condition,body,None)
+    new IfExpression(condition,body,None)
   }
-  def processIfElse(ifelse: AIfwithelseexpExpression,scope: LexicalScope): UninferredIf = {
+  def processIfElse(ifelse: AIfwithelseexpExpression,scope: LexicalScope): IfExpression = {
     val condition = processExpression(ifelse.getCondition,scope)
     val body = processExpressionWithElse(ifelse.getThenbody,scope)
     val otherwise = processExpression(ifelse.getElseClause.asInstanceOf[AElseClause].getElseBody,scope)
-    new UninferredIf(condition,body,Some(otherwise))
+    new IfExpression(condition,body,Some(otherwise))
   }
-  def processIfElseWithElse(ifelse: AIfwithelseexpExpression,scope: LexicalScope): UninferredIf = {
+  def processIfElseWithElse(ifelse: AIfwithelseexpExpression,scope: LexicalScope): IfExpression = {
     val condition = processExpression(ifelse.getCondition,scope)
     val body = processExpressionWithElse(ifelse.getThenbody,scope)
     val otherwise = processExpression(ifelse.getElseClause.asInstanceOf[AElseClause].getElseBody,scope)
-    new UninferredIf(condition,body,Some(otherwise))
+    new IfExpression(condition,body,Some(otherwise))
   }
-  def processIfElseWithElseWithElse(ifelse: AIfwithelseexpExpressionWithElse,scope: LexicalScope): UninferredIf = {
+  def processIfElseWithElseWithElse(ifelse: AIfwithelseexpExpressionWithElse,scope: LexicalScope): IfExpression = {
     val condition = processExpression(ifelse.getCondition,scope)
     val body = processExpressionWithElse(ifelse.getThenbody,scope)
     val otherwise = processExpressionWithElse(ifelse.getElsebody,scope)
-    new UninferredIf(condition,body,Some(otherwise))
+    new IfExpression(condition,body,Some(otherwise))
   }
   def processExpressionWithElse(expression: PExpressionWithElse,scope: LexicalScope): Expression = expression match {
     case assignment: AAssignmentexpExpressionWithElse => {
-      val left = processExp1(assignment.getExp1,scope)
+      val left: WritableExpression = processExp1(assignment.getExp1,scope).asInstanceOf[WritableExpression]
       val right = processExpressionWithElse(assignment.getExpressionWithElse,scope)
-      new UninferredAssignment(left,right)
+      new AssignmentExpression(left,right)
     }
     case blockexp: ABlockexpExpressionWithElse => processBlock(blockexp.getBlockExpression,scope)
     case exp5: AOthersExpressionWithElse => processExp5(exp5.getExp5,scope)
     case ifelse: AIfwithelseexpExpressionWithElse => processIfElseWithElseWithElse(ifelse,scope)
-  }*/
+  }
   
   def processExpressionList(exprs: PExpressionList,scope: LexicalScope): List[Expression] = exprs match {
     case one: AOneExpressionList => processExpression(one.getExpression,scope) :: Nil

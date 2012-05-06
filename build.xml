@@ -18,8 +18,8 @@
 		</exec>
 		<mkdir dir="build/"/>
 		<javac srcdir="src/org/deca/compiler/parser" destdir="build" includeantruntime="false"/>
-		<copy file="src/org/deca/compiler/parser/lexer/lexer.dat" todir="build/org/decac/compiler/parser/lexer"/>
-		<copy file="src/org/deca/compiler/parser/parser/parser.dat" todir="build/org/decac/compiler/parser/parser"/>
+		<copy file="src/org/deca/compiler/parser/lexer/lexer.dat" todir="build/org/deca/compiler/parser/lexer"/>
+		<copy file="src/org/deca/compiler/parser/parser/parser.dat" todir="build/org/deca/compiler/parser/parser"/>
 	</target>
 	<target name="build_llvm_bindings">
 		<echo message="Building jllvm."/>
