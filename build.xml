@@ -1,6 +1,6 @@
 <project name="decac">
 	<property environment="env"/>
-	<property name="scala.lib.dir" location="${env.SCALA_HOME}/lib"/>
+	<property name="scala.lib.dir" location="${env.SCALA_HOME}"/>
 	<path id="scala.classpath">
 		<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
 		<pathelement location="${scala.lib.dir}/scala-library.jar"/>
