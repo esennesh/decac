@@ -98,7 +98,8 @@ Tokens
   cast = 'cast';
   interface = 'interface';
   abstract = 'abstract';
-  effect_name = '!read' | '!write' | '!destroy' | '!throw' | '!call';
+  regional_effect_name = '!read' | '!write' | '!destroy' | '!call';
+  exceptional_effect_name = '!throw';
   expression_end = eol | ';';
   
   blank = eol | tab | ' ';
@@ -140,7 +141,9 @@ Productions
     
   effect_region = lparen unqualified_identifier rparen;
     
-  effect_form = effect_name effect_region;
+  effect_form = 
+    {regional} regional_effect_name effect_region |
+    {exceptional} exceptional_effect_name type_form;
   
   effect_form_list =
     {one} effect_form |
