@@ -30,11 +30,11 @@
 	</target>
 	<target name="build">
 		<mkdir dir="build/"/>
-		<fsc sourcepath="" srcdir="src/" unchecked="true" destdir="build" classpathref="scala.classpath" deprecation="yes">
+		<scalac sourcepath="" srcdir="src/" unchecked="true" destdir="build" classpathref="scala.classpath" deprecation="yes">
 			<include name="**/*.scala"/>
 			<exclude name="**/jllvm"/>
 			<exclude name="**/decasyntax"/>
-		</fsc>
+		</scalac>
 	</target>
 	<target name="clean">
 		<exec dir="src/org/jllvm" executable="ant">

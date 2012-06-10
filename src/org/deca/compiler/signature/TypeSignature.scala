@@ -153,12 +153,14 @@ class FunctionPointer(val domain: List[MonoType],
     val domains = domain.map(d => d.filterE(pred)).foldLeft(Set.empty[MonoEffect])((res,eff) => res ++ eff)
     domains ++ range.filterE(pred) ++ positive.filterE(pred) ++ negative.filterE(pred)
   }
-  override def mapT(f: (MonoType) => MonoType): MonoType = {
+  override def mapT(f: (MonoType) => MonoType): MonoType =
     f(new FunctionPointer(domain.map(d => d.mapT(f)),range.mapT(f),positive,negative))
-  }
-  override def mapE(f: (MonoEffect) => MonoEffect): FunctionPointer = new FunctionPointer(domain.map(d => d.mapE(f)),range.mapE(f),positive.mapE(f),negative.mapE(f))
-  override def mapR(f: (MonoRegion) => MonoRegion): FunctionPointer = new FunctionPointer(domain.map(d => d.mapR(f)),range.mapR(f),negative.mapR(f),negative.mapR(f))
-  override def variables: Set[SignatureVariable] = domain.foldLeft(HashSet.empty[SignatureVariable])((result,tau) => result ++ tau.variables) ++ range.variables ++ positive.variables ++ negative.variables
+  override def mapE(f: (MonoEffect) => MonoEffect): FunctionPointer =
+    new FunctionPointer(domain.map(d => d.mapE(f)),range.mapE(f),positive.mapE(f),negative.mapE(f))
+  override def mapR(f: (MonoRegion) => MonoRegion): FunctionPointer =
+    new FunctionPointer(domain.map(d => d.mapR(f)),range.mapR(f),negative.mapR(f),negative.mapR(f))
+  override def variables: Set[SignatureVariable] =
+    domain.foldLeft(Set.empty[SignatureVariable])((result,tau) => result ++ tau.variables) ++ range.variables ++ positive.variables ++ negative.variables
 
   override def compile: LLVMFunctionType = {
     val compiledRange = range.compile

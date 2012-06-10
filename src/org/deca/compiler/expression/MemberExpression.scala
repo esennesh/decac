@@ -8,7 +8,6 @@ sealed abstract class MemberSelector
 case class NameSelector(name: String) extends MemberSelector
 case class IndexSelector(index: Int) extends MemberSelector
 
-//TODO: Do I need structure to be a WritableExpression?
 class MemberExpression(val structure: Expression,
                        val selector: MemberSelector) extends WritableExpression {
   expType = new TypeVariable(false,None)
@@ -43,7 +42,10 @@ class MemberExpression(val structure: Expression,
     lui.constrain(EqualityConstraint(member._1,substitution.solve(expType)))
   }
   
-  override def substitute(sub: SignatureSubstitution): Unit = structure.substitute(sub)
+  override def substitute(sub: SignatureSubstitution): Unit = {
+    super.substitute(sub)
+    structure.substitute(sub)
+  }
   override def specialize(spec: SignatureSubstitution,specScope: Scope): MemberExpression =
     new MemberExpression(structure.specialize(spec,specScope),selector)
   
@@ -58,8 +60,27 @@ class MemberExpression(val structure: Expression,
         val casted = new LLVMLoadInstruction(builder,new LLVMBitCast(builder,p,new LLVMPointerType(sum.minimalRecord.compile,0),"pointer_cast"),"bit_casted")
         new LLVMExtractValueInstruction(builder,casted,checkedSelector.get,"extract")
       }
-      case _ => throw new Exception("Why does a member expression have a base other than a variant or a record?")
+      case _ => throw new Exception("How to evaluate a member expression having a base other than a variant or a record?")
     }
   }
-  override def store(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module,value: LLVMValue): LLVMValue
+  
+  override def pointer(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
+    val original = structure match {
+      case writable: WritableExpression => writable.pointer(builder,scope,instantiation)
+      case _ => {
+        val original = structure.compile(builder,scope,instantiation)
+        val temp = new LLVMStackAllocation(builder,original.typeOf,LLVMConstantInteger.constantInteger(Nat.compile,1,false),"temporary_variable")
+        new LLVMStoreInstruction(builder,temp,original)
+        temp
+      }
+    }
+    val struct = structure.expType match {
+      case record: RecordType => original
+      case sum: SumType => {
+        val contents = new LLVMGetElementPointerInstruction(builder,original,List(LLVMConstantInteger.constantInteger(Nat.compile,1,false)).toArray,"sum_internal_gep")
+        new LLVMBitCast(builder,contents,new LLVMPointerType(sum.minimalRecord.compile,0),"sum_internal_cast")
+      }
+    }
+    new LLVMGetElementPointerInstruction(builder,struct,List(LLVMConstantInteger.constantInteger(Nat.compile,checkedSelector.get,false)).toArray,"member_element_gep")
+  }
 }

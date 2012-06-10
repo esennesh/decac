@@ -19,7 +19,10 @@ trait Expression {
   def constrain(scs: SignatureConstraints): Unit
   def check(lui: LatticeUnificationInstance): Unit
   
-  def substitute(sub: SignatureSubstitution): Unit
+  def substitute(sub: SignatureSubstitution): Unit = {
+    expType = sub.solve(expType)
+    expEffect = EffectPair(sub.solve(expEffect.positive),sub.solve(expEffect.negative))
+  }
   def specialize(spec: SignatureSubstitution,specScope: Scope): Expression
   /* When scope enclosedIn instantiation, this expression is being built in the same module that defines it.
    * When !(scope enclosedIn instantiation), this expression was imported, and references to outside
@@ -30,7 +33,7 @@ trait Expression {
 trait WritableExpression extends Expression {
   override val writable: Boolean = true
   def specialize(spec: SignatureSubstitution,specScope: Scope): WritableExpression
-  def store(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module,value: LLVMValue): LLVMValue
+  def pointer(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue
 }
 
 trait ConstantExpression extends Expression {

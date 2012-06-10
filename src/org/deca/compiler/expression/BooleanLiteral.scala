@@ -9,5 +9,5 @@ class BooleanLiteralExpression(val value: Boolean) extends ConstantExpression {
   override val children: List[ConstantExpression] = Nil
   override val writable = false
   override def build(scope: Scope,instantiation: Module) = new LLVMConstantBoolean(value)
-  override def check(scs: SignatureConstraints): Unit = Unit
+  override def check(lui: LatticeUnificationInstance): Unit = Unit
 }

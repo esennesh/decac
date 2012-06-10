@@ -47,11 +47,12 @@ abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
   def compile(params: List[MonoSignature]): LLVMType
   def resolve(params: List[MonoSignature]): LLVMType
   def represent(params: List[MonoSignature]): MonoType
-  def freshlyRepresent: MonoType = represent(parameters.map(param => param match {
+  def freshlySpecialize: List[SignatureVariable] = parameters.map(_ match {
     case tau: TypeVariable => new TypeVariable(false,None)
     case rho: RegionVariable => new RegionVariable(false)
     case epsilon: EffectVariable => new EffectVariable(false)
-  }))
+  })
+  def freshlyRepresent: MonoType = represent(freshlySpecialize)
   protected def getSpecialization(params: List[MonoSignature]): Option[LLVMType] = {
     for((specialization,llvmType) <- specializations)
       if(specialization.zip(params).forall(p => p._1 == p._2))
