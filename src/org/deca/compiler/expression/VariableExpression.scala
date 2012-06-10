@@ -17,10 +17,10 @@ class VariableExpression(val name: List[String],val scope: Scope) extends Writab
   override def specialize(spec: SignatureSubstitution,specScope: Scope): VariableExpression =
     new VariableExpression(name,specScope)
   override def constrain(scs: SignatureConstraints): Unit = Unit
-  override def check(scs: SignatureConstraints): Unit = Unit
+  override def check(lui: LatticeUnificationInstance): Unit = Unit
 
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue =
     binding.load(builder,instantiation)
-  override def store(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module,value: LLVMValue): LLVMValue =
-    binding.store(builder,value,instantiation)
+  override def pointer(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue =
+    binding.pointer(builder,instantiation)
 }

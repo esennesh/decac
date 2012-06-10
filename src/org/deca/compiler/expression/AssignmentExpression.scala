@@ -2,6 +2,7 @@ package org.deca.compiler.expression
 
 import org.jllvm.LLVMValue
 import org.jllvm.LLVMInstructionBuilder
+import org.jllvm.LLVMStoreInstruction
 import org.deca.compiler.definition._
 import org.deca.compiler.signature._
 
@@ -15,12 +16,13 @@ class AssignmentExpression(val slot: WritableExpression,val value: Expression) e
     value.constrain(scs)
     scs.push(new SubsumptionConstraint(value.expType,slot.expType))
   }
-  def check(scs: SignatureConstraints): Unit = {
-    slot.constrain(scs)
-    value.constrain(scs)
+  override def check(lui: LatticeUnificationInstance): Unit = {
+    slot.check(lui)
+    value.check(lui)
   }
   
-  def substitute(sub: SignatureSubstitution): Unit = {
+  override def substitute(sub: SignatureSubstitution): Unit = {
+    super.substitute(sub)
     slot.substitute(sub)
     value.substitute(sub)
   }
@@ -30,5 +32,5 @@ class AssignmentExpression(val slot: WritableExpression,val value: Expression) e
    * When !(scope enclosedIn instantiation), this expression was imported, and references to outside
    * variables and functions will need to be emitted into instantiation.compiledModule as externals. */
   def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue =
-    slot.store(builder,scope,instantiation,value.compile(builder,scope,instantiation))
+    new LLVMStoreInstruction(builder,value.compile(builder,scope,instantiation),slot.pointer(builder,scope,instantiation))
 }

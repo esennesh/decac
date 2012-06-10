@@ -343,7 +343,7 @@ Productions
     
   actual_implicit_list = 
     {one} actual_implicit |
-    {many} actual_implicit_list comma actual_implicit;
+    {many} actual_implicit comma actual_implicit_list;
     
   actual_implicit_parameters = lparen actual_implicit_list rparen;
     

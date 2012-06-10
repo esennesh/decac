@@ -47,6 +47,11 @@ class IntegerLiteralExpression(val value: Int) extends ConstantExpression {
 
 class ArithmeticOperatorExpression(val operator: Char,val left: Expression,val right: Expression) extends ArithmeticExpression {
   override val children = List(left, right)
+  override def substitute(sub: SignatureSubstitution): Unit = {
+    super.substitute(sub)
+    left.substitute(sub)
+    right.substitute(sub)
+  }
   override def specialize(spec: SignatureSubstitution,specScope: Scope): ArithmeticOperatorExpression =
     new ArithmeticOperatorExpression(operator,left.specialize(spec,specScope),right.specialize(spec,specScope))
   

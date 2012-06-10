@@ -19,14 +19,14 @@ class BlockExpression(val steps: List[Expression]) extends Expression {
       scs.push(new SubsumptionConstraint(step.expEffect.positive,expEffect.positive))
       scs.push(new SubsumptionConstraint(step.expEffect.negative,expEffect.negative))
     }
-  override def check(scs: SignatureConstraints): Unit = assert(expEffect.safe(PureEffect))
+  override def check(lui: LatticeUnificationInstance): Unit = assert(expEffect.safe(PureEffect))
   override def substitute(sub: SignatureSubstitution): Unit = {
     for(step <- steps)
       step.substitute(sub)
     expType = sub.solve(expType).asInstanceOf[MonoType]
     expEffect = EffectPair(sub.solve[MonoEffect](expEffect.positive),sub.solve[MonoEffect](expEffect.negative))
   }
-  override def specialize(spec: SignatureSubstitution,specScope: Scope): Expression =
+  override def specialize(spec: SignatureSubstitution,specScope: Scope): BlockExpression =
     new BlockExpression(steps.map(_.specialize(spec,specScope)))
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = 
     steps.map(_.compile(builder,scope,instantiation)).last

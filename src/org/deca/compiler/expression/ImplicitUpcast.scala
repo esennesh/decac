@@ -10,7 +10,7 @@ class ImplicitUpcast(val expression: Expression,upcast: MonoType) extends Expres
   expType = upcast
   assert(TypeOrdering.lteq(expression.expType,expType))
   override def constrain(scs: SignatureConstraints): Unit = Unit
-  override def check(scs: SignatureConstraints): Unit = Unit
+  override def check(lui: LatticeUnificationInstance): Unit = Unit
   
   override def substitute(sub: SignatureSubstitution): Unit =
     expType = sub.solve(expType).asInstanceOf[MonoType]

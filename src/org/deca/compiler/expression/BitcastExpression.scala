@@ -11,9 +11,9 @@ class BitcastExpression(val expression: Expression,val tau: MonoType) extends Ex
   def constrain(scs: SignatureConstraints): Unit = expression.constrain(scs)
   def check(lui: LatticeUnificationInstance): Unit = expression.check(lui)
   
-  def substitute(sub: SignatureSubstitution): Unit = {
+  override def substitute(sub: SignatureSubstitution): Unit = {
+    super.substitute(sub)
     expression.substitute(sub)
-    expType = sub.solve(expType)
   }
   def specialize(spec: SignatureSubstitution,specScope: Scope): BitcastExpression =
     new BitcastExpression(expression.specialize(spec,specScope),spec.solve(expType))

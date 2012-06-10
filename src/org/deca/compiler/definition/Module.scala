@@ -31,8 +31,7 @@ class VariableDefinition(override val scope: Module,override val name: String,va
     declare(instantiation)
   override def load(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = 
     new LLVMLoadInstruction(builder,declare(instantiation),"load")
-  override def store(builder: LLVMInstructionBuilder,value: LLVMValue,instantiation: Module): LLVMValue =
-    new LLVMStoreInstruction(builder,value,declare(instantiation))
+  override def pointer(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = declare(instantiation)
 }
 
 class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) with Definition {

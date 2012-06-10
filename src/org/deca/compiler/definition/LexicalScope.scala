@@ -51,9 +51,9 @@ abstract class LexicalBinding(override val name: String,
     else
       compile(builder,instantiation)
   }
-  def store(builder: LLVMInstructionBuilder,value: LLVMValue,instantiation: Module): LLVMValue = {
+  override def pointer(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = {
     assert(mutability == MutableMutability)
-    new LLVMStoreInstruction(builder,value,compile(builder,instantiation))
+    compile(builder,instantiation)
   }
 }
 
