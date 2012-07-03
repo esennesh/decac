@@ -21,34 +21,46 @@ trait FunctionBody {
 class FunctionDefinition(val name: String,
                          val scope: Module,
                          val arguments: List[(String,MonoType)],
-                         val body: FunctionBody) extends Definition {
+                         val body: Either[FunctionBody,(MonoType,EffectPair)]) extends Definition {
   val funcType: TypeConstructor = {
-    val substitution = body.infer
-    val arrow = substitution.solve[MonoType](new FunctionPointer(arguments.map(_._2),body.bodyType,body.bodyEffect.positive,body.bodyEffect.negative))
+    val substitution = body match {
+      case Left(fBody) => fBody.infer
+      case Right(_) => new SignatureSubstitution
+    }
+    val arrow = substitution.solve[MonoType](body match {
+      case Left(fBody) => new FunctionPointer(arguments.map(_._2),fBody.bodyType,fBody.bodyEffect.positive,fBody.bodyEffect.negative)
+      case Right((tau,epsilons)) => new FunctionPointer(arguments.map(_._2),tau,epsilons.positive,epsilons.negative)
+    })
     val solvedArrow = substitution.solve(arrow)
     val result = new TypeExpressionConstructor(solvedArrow.variables.toList,solvedArrow)
-    body.substitute(substitution)
-    assert(body.bodyEffect.safe(PureEffect))
+    body match {
+      case Left(fBody) => {
+        fBody.substitute(substitution)
+        assert(fBody.bodyEffect.safe(PureEffect))
+      }
+      case Right((_,epsilons)) => assert(epsilons.safe(PureEffect))
+    }
     result
   }
   val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMFunction]] = Memoize1(sigvars => {
     val signature = funcType.represent(sigvars).asInstanceOf[FunctionPointer]
     Memoize1(instantiation => {
       val func = new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile)
-      if(funcType.parameters != Nil || instantiation == scope) {
-        if(funcType.parameters != Nil)
-          func.setLinkage(LLVMLinkage.LLVMWeakODRLinkage)
-        val specialization = new SignatureSubstitution
-        for(spec <- (funcType.parameters zip sigvars))
-          specialization.substitute(spec._1,spec._2)
-        val entry = func.appendBasicBlock("entry")
-        val builder = new LLVMInstructionBuilder
-        builder.positionBuilderAtEnd(entry)
-        new LLVMReturnInstruction(builder,body.specialize(specialization).compile(instantiation,builder))
-        func
+      body match {
+        case Left(fBody) if funcType.parameters != Nil || instantiation == scope => {
+          if(funcType.parameters != Nil)
+            func.setLinkage(LLVMLinkage.LLVMWeakODRLinkage)
+          val specialization = new SignatureSubstitution
+          for(spec <- (funcType.parameters zip sigvars))
+            specialization.substitute(spec._1,spec._2)
+          val entry = func.appendBasicBlock("entry")
+          val builder = new LLVMInstructionBuilder
+          builder.positionBuilderAtEnd(entry)
+          new LLVMReturnInstruction(builder,fBody.specialize(specialization).compile(instantiation,builder))
+          func
+        }
+        case _ => func.setLinkage(LLVMLinkage.LLVMExternalLinkage)
       }
-      else
-        func.setLinkage(LLVMLinkage.LLVMExternalLinkage)
       func
     })
   })
