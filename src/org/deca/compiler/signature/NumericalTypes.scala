@@ -27,8 +27,6 @@ object IntegerConstants {
   val min_unsigned = 0
 }
 
-
-
 abstract class NumericalType(val name: String,val parent: Option[NumericalType]) extends MonoType {
   def signed: Boolean
   new TypeDefinition(new TypeExpressionConstructor(Nil,this),name,GlobalScope)

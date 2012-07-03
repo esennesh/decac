@@ -8,6 +8,7 @@ case class EffectPair(positive: MonoEffect,negative: MonoEffect) {
   def safe(previous: MonoEffect): Boolean =
     positive == PureEffect || !SetEffect(Set.empty + negative + previous).contains(positive)
   def ++(pair: EffectPair) = EffectPair(positive ++ pair.positive,negative ++ pair.negative)
+  def map(f: MonoEffect => MonoEffect): EffectPair = EffectPair(f(positive),f(negative))
 }
 
 trait Expression {
@@ -37,6 +38,7 @@ trait WritableExpression extends Expression {
 }
 
 trait ConstantExpression extends Expression {
+  override val writable: Boolean = false
   override def constrain(scs: SignatureConstraints): Unit = Unit
   override def check(lui: LatticeUnificationInstance): Unit = Unit
   override def substitute(substitution: SignatureSubstitution): Unit = Unit
