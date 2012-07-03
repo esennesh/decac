@@ -35,6 +35,12 @@
 			<exclude name="**/jllvm"/>
 			<exclude name="**/decasyntax"/>
 		</scalac>
+		<mkdir dir="jars/"/>
+		<jar destfile="jars/decac.jar" basedir="build/">
+			<manifest>
+				<attribute name="Main-Class" value="org.deca.compiler.Decac" />
+			</manifest>
+		</jar>
 	</target>
 	<target name="clean">
 		<exec dir="src/org/jllvm" executable="ant">

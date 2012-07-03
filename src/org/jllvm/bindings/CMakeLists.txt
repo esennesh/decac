@@ -5,7 +5,7 @@ install(TARGETS jllvm DESTINATION lib/)
 add_definitions( -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS )
 
 # A convenience variable:
-set(LLVM_ROOT "/usr" CACHE /usr/ "Root of LLVM install.")
+set(LLVM_ROOT "/usr" CACHE /usr "Root of LLVM install.")
 set(CMAKE_INSTALL_PREFIX "/usr")
 # A bit of a sanity check:
 if( NOT EXISTS ${LLVM_ROOT}/include/llvm )
