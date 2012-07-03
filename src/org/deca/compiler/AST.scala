@@ -133,19 +133,18 @@ object ASTProcessor {
     case one: AOneTypeFormList => processTypeForm(one.getTypeForm,scope) :: Nil
     case many: AManyTypeFormList => processTypeForms(many.getTypeFormList,scope) ++ (processTypeForm(many.getTypeForm,scope) :: Nil)
   }
-  def processEffectForm(form: PEffectForm,scope: TypeDefinitionScope): MonoEffect = {
-    val effect = form.asInstanceOf[AEffectForm]
-    val module: Module = scope.typedLookup[Module](effect.getEffectRegion.asInstanceOf[AEffectRegion].getUnqualifiedIdentifier.getText)
-    effect.getEffectName.getText match {
-      case "!read" => ReadEffect(module.region)
-      case "!write" => WriteEffect(module.region)
-      case "!destroy" => DestroyEffect(module.region)
-      //TODO: Alter the grammar so I can specify an exception type.
-      //case "!throw" => ThrowEffect(region)
-      case "!call" => CallEffect(module)
+  def processEffectForm(form: PEffectForm,scope: TypeDefinitionScope): MonoEffect = form match {
+    case regional: ARegionalEffectForm => {
+      val module: Module = scope.typedLookup[Module](regional.getEffectRegion.asInstanceOf[AEffectRegion].getUnqualifiedIdentifier.getText)
+      regional.getRegionalEffectName.getText match {
+        case "!read" => ReadEffect(module.region)
+        case "!write" => WriteEffect(module.region)
+        case "!destroy" => DestroyEffect(module.region)
+        case "!call" => CallEffect(module)
+      }
     }
+    case exceptional: AExceptionalEffectForm => ThrowEffect(processTypeForm(exceptional.getTypeForm,scope))
   }
-    
   def processEffectForms(forms: PEffectFormList,scope: TypeDefinitionScope): List[MonoEffect] = forms match {
     case null => Nil
     case one: AOneEffectFormList => processEffectForm(one.getEffectForm,scope) :: Nil

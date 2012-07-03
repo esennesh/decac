@@ -6,6 +6,7 @@
 		<exec dir="bindings" executable="make"/>
 		<mkdir dir="build/"/>
 		<javac srcdir="." destdir="build/" includeantruntime="false"/>
+		<jar destfile="jllvm.jar" basedir="build/" />
 	</target>
 	<target name="clean">
 		<delete dir="build/org/jllvm"/>
