@@ -43,7 +43,7 @@ case class DataConstructor(override val name: String,arguments: List[RecordMembe
       MemberConstructor(arg._2,arg._1.mutable,arg._1.tau,initializer)
     })
     val args = arguments.zip(argNames).map(arg => (arg._2,arg._1.tau))
-    new FunctionDefinition(name,scope,args,Left(new RecordConstructorBody(name,args,scope,tagCode,members)))
+    new FunctionDefinition(name,scope,Left(new RecordConstructorBody(name,args,scope,tagCode,members)))
   }
 }
 
@@ -54,7 +54,7 @@ class RecordConstructor(override val name: String,
   val body = new RecordConstructorBody(name,arguments,scope.owner,tagCode,mems)
   val members = body.members
   override def defineSelf(scope: Module): Unit = {
-    new FunctionDefinition(name,scope,arguments,Left(body))
+    new FunctionDefinition(name,scope,Left(body))
   }
   override protected def record: RecordType = 
     new RecordType(members.map(member => RecordMember(Some(member.name),member.mu,member.tau)))
@@ -64,10 +64,12 @@ case class MemberConstructor(name: String,mu: MonoMutability,tau: MonoType,initi
 case class MemberInitializer(name: String,var mu: MonoMutability,var tau: MonoType,val initializer: Expression)
 
 class RecordConstructorBody(val name: String,
-                            val arguments: List[(String,MonoType)],
+                            override val arguments: List[(String,MonoType)],
                             val parent: Module,
                             val tag: Int,
                             mems: List[MemberConstructor]) extends FunctionBody {
+  //TODO: Enable implicit parameters for data constructors
+  override val implicits: List[(String,MonoType)] = Nil
   override val scope: LexicalScope = new LexicalScope(parent,arguments.map(arg => (arg._1,arg._2)))
   val members: List[MemberInitializer] = mems.map(mem => MemberInitializer(mem.name,mem.mu,mem.tau,mem.initializer(scope))) 
   override def infer: SignatureSubstitution = {

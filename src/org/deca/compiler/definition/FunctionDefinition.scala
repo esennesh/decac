@@ -9,6 +9,8 @@ import org.deca.compiler.expression.{EffectPair,Expression}
 
 trait FunctionBody {
   val scope: LexicalScope
+  val arguments: List[(String,MonoType)]
+  val implicits: List[(String,MonoType)]
   def bodyType: MonoType
   def bodyEffect: EffectPair
   
@@ -18,18 +20,32 @@ trait FunctionBody {
   def compile(instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue
 }
 
+case class ExternalFunctionSignature(arguments: List[(String,MonoType)],
+                                     implicits: List[(String,MonoType)],
+                                     result: MonoType,
+                                     effect: EffectPair)
+
 class FunctionDefinition(val name: String,
                          val scope: Module,
-                         val arguments: List[(String,MonoType)],
-                         val body: Either[FunctionBody,(MonoType,EffectPair)]) extends Definition {
+                         val body: Either[FunctionBody,ExternalFunctionSignature]) extends Definition {
+  val arguments = body match {
+    case Left(fBody) => fBody.arguments
+    case Right(sig) => sig.arguments
+  }
+  val implicits = body match {
+    case Left(fBody) => fBody.implicits
+    case Right(sig) => sig.implicits
+  }
   val funcType: TypeConstructor = {
     val substitution = body match {
       case Left(fBody) => fBody.infer
       case Right(_) => new SignatureSubstitution
     }
+    val args = arguments.map(_._2) ++ implicits.map(_._2)
     val arrow = substitution.solve[MonoType](body match {
-      case Left(fBody) => new FunctionPointer(arguments.map(_._2),fBody.bodyType,fBody.bodyEffect.positive,fBody.bodyEffect.negative)
-      case Right((tau,epsilons)) => new FunctionPointer(arguments.map(_._2),tau,epsilons.positive,epsilons.negative)
+      case Left(fBody) => new FunctionPointer(args,fBody.bodyType,fBody.bodyEffect.positive,fBody.bodyEffect.negative)
+      case Right(ExternalFunctionSignature(_,_,tau,epsilons)) =>
+        new FunctionPointer(args,tau,epsilons.positive,epsilons.negative)
     })
     val solvedArrow = substitution.solve(arrow)
     val result = new TypeExpressionConstructor(solvedArrow.variables.toList,solvedArrow)
@@ -38,7 +54,7 @@ class FunctionDefinition(val name: String,
         fBody.substitute(substitution)
         assert(fBody.bodyEffect.safe(PureEffect))
       }
-      case Right((_,epsilons)) => assert(epsilons.safe(PureEffect))
+      case Right(ExternalFunctionSignature(_,_,_,epsilons)) => assert(epsilons.safe(PureEffect))
     }
     result
   }
@@ -72,7 +88,8 @@ class FunctionDefinition(val name: String,
   })
 }
 
-class ExpressionBody(arguments: List[(String,MonoType)],
+class ExpressionBody(override val arguments: List[(String,MonoType)],
+                     override val implicits: List[(String,MonoType)],
                      parent: Module,
                      mkBody: LexicalScope => Expression) extends FunctionBody {
   override val scope = new LexicalScope(parent,arguments)
@@ -93,8 +110,9 @@ class ExpressionBody(arguments: List[(String,MonoType)],
   }
   override def specialize(spec: SignatureSubstitution): ExpressionBody = {
     val args = arguments.map(arg => (arg._1,spec.solve(arg._2)))
+    val impls = implicits.map(arg => (arg._1,spec.solve(arg._2)))
     val bod = (lexi: LexicalScope) => body.specialize(spec,lexi)
-    new ExpressionBody(args,parent,bod)
+    new ExpressionBody(args,impls,parent,bod)
   }
   override def compile(instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue = {
     val llvmArguments = new HashMap ++ builder.getInsertBlock.getParent.getParameters.toList.map(arg => (arg.getValueName,arg))

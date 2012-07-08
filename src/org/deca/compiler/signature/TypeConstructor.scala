@@ -47,6 +47,12 @@ abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
   def compile(params: List[MonoSignature]): LLVMType
   def resolve(params: List[MonoSignature]): LLVMType
   def represent(params: List[MonoSignature]): MonoType
+  def substitution(params: List[MonoSignature]): SignatureSubstitution = {
+    val result = new SignatureSubstitution
+    for(param <- parameters zip params)
+      result.substitute(param._1,param._2)
+    result
+  }
   def freshlySpecialize: List[SignatureVariable] = parameters.map(_ match {
     case tau: TypeVariable => new TypeVariable(false,None)
     case rho: RegionVariable => new RegionVariable(false)
