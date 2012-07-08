@@ -24,7 +24,8 @@ trait VariableBinding extends Scopeable {
 }
 
 abstract class Scope(val parent: Option[Scope]) {
-  val symbols: Map[String,Scopeable] = new HashMap[String,Scopeable]()
+  val symbols: Map[String,Scopeable] = new HashMap[String,Scopeable]
+  val implicits: Map[MonoType,VariableBinding] = new HashMap[MonoType,VariableBinding]
   val region = ScopeRegion(this)
 
   def lookup(name: String): Scopeable = symbols.get(name) match {
@@ -55,6 +56,9 @@ abstract class Scope(val parent: Option[Scope]) {
     }
   }
   
+  def implicitLookup(tau: MonoType): VariableBinding =
+    implicits.get(tau) getOrElse parent.getOrElse(throw new UndeclaredImplicitException(tau)).implicitLookup(tau)
+  
   protected def declare(obj: Scopeable) = {
     symbols.put(obj.name,obj)
   }
@@ -68,3 +72,5 @@ abstract class Scope(val parent: Option[Scope]) {
 }
 
 class UndeclaredIdentifierException(name: String) extends Exception("Undeclared identifier exception: " + name)
+
+class UndeclaredImplicitException(tau: MonoType) extends Exception("Undefined implicit: " + tau.toString)

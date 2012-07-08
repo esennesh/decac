@@ -7,7 +7,8 @@ import org.jllvm.{LLVMCallInstruction,LLVMExtractValueInstruction}
 import org.deca.compiler.definition._
 import org.deca.compiler.signature._
 
-abstract class CallExpression(val arguments: List[Expression]) extends Expression {
+abstract class CallExpression extends Expression {
+  val arguments: List[Expression]
   var arrow: FunctionPointer
   expType = arrow.range
   expEffect = EffectPair(arrow.positive,arrow.negative)
@@ -37,16 +38,28 @@ abstract class CallExpression(val arguments: List[Expression]) extends Expressio
   def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue
 }
 
+
 class DefinitionCall(val definition: FunctionDefinition,
                      args: List[Expression],
-                     spec: Option[List[MonoSignature]] = None) extends CallExpression(args) {
+                     val implicits: (List[Option[Expression]],Scope),
+                     spec: Option[List[MonoSignature]] = None) extends CallExpression {
   val specialization: List[MonoSignature] = spec getOrElse definition.funcType.freshlySpecialize
+  override val arguments: List[Expression] = {
+    val specializeSubstitution = definition.funcType.substitution(specialization)
+    val specializedImplicits = definition.implicits.map(impl => (impl._1,specializeSubstitution.solve(impl._2)))
+    val actualImplicits = implicits._1.zip(specializedImplicits).map(impl =>
+      impl._1 getOrElse new ImplicitResolutionExpression(impl._2._2,implicits._2))
+    args ++ actualImplicits
+  }
+  assert(definition.arguments.length == args.length)
+  assert(definition.implicits.length == implicits._1.length)
   var arrow: FunctionPointer = definition.funcType.represent(specialization).asInstanceOf[FunctionPointer]
   
   override def specialize(spec: SignatureSubstitution,specScope: Scope): DefinitionCall = {
-    val newArguments = arguments.map(_.specialize(spec,specScope))
+    val newArguments = args.map(_.specialize(spec,specScope))
+    val newImplicits = implicits._1.map(impl => impl.map(_.specialize(spec,specScope)))
     val newSpecialization = specialization.map(sigma => spec.solve(sigma))
-    new DefinitionCall(definition,newArguments,Some(newSpecialization))
+    new DefinitionCall(definition,newArguments,(newImplicits,specScope),Some(newSpecialization))
   }
     
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
@@ -55,9 +68,9 @@ class DefinitionCall(val definition: FunctionDefinition,
   }
 }
 
-class ExpressionCall(val expression: Expression,args: List[Expression]) extends CallExpression(args) {
+class ExpressionCall(val expression: Expression,override val arguments: List[Expression]) extends CallExpression {
   override val children: List[Expression] = expression :: arguments
-  var arrow: FunctionPointer = new FunctionPointer(args.map(arg => new TypeVariable(false,None)),new TypeVariable(false,None),new EffectVariable(false),new EffectVariable(false))
+  var arrow: FunctionPointer = new FunctionPointer(arguments.map(arg => new TypeVariable(false,None)),new TypeVariable(false,None),new EffectVariable(false),new EffectVariable(false))
   val closureType = {
     val tau = new OpaqueType
     //It might be completely wrong to create a new region variable here.  The region of the environment has to be the region in which the closure itself is stored.

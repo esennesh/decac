@@ -244,37 +244,35 @@ object ASTProcessor {
   def processCallExpression(call: PFunctionCallExpression,scope: LexicalScope): CallExpression = call match {
     case named: ANamedFunctionCallExpression => {
       val name = processQualifiedIdentifier(named.getFunction)
-      val arguments = if(named.getActualParameters != null) {
+      val actualParameters = if(named.getActualParameters != null) {
         val actuals = named.getActualParameters.asInstanceOf[AActualParameters]
-        val params = if(actuals.getArguments != null) processExpressionList(actuals.getArguments,scope) else Nil
-        val implicits: List[Option[Expression]] = if(actuals.getActualImplicitParameters != null)
-          processActualImplicitList(actuals.getActualImplicitParameters.asInstanceOf[AActualImplicitParameters].getActualImplicitList,scope)
-        else
-          Nil
-        //CallArguments(params,implicits)
-        params
+        val arguments = if(actuals.getArguments != null) Some(actuals.getArguments) else None
+        val implicits = if(actuals.getActualImplicitParameters != null) Some(actuals.getActualImplicitParameters.asInstanceOf[AActualImplicitParameters].getActualImplicitList) else None
+        (arguments,implicits)
       }
       else
-        //CallArguments(Nil,Nil)
-        Nil
+        (None,None)
+      val arguments = actualParameters._1 match {
+        case Some(args) => processExpressionList(args,scope)
+        case None => Nil
+      }
       scope.lookup(name) match {
-        case func: FunctionDefinition => new DefinitionCall(func,arguments)
+        case func: FunctionDefinition => {
+          val implicits: List[Option[Expression]] = actualParameters._2 match {
+            case Some(impls) => processActualImplicitList(impls,scope)
+            case None => func.implicits.map(impl => None)
+          }
+          new DefinitionCall(func,arguments,(implicits,scope))
+        }
         case binding: LexicalBinding => new ExpressionCall(new VariableExpression(name,scope),arguments)
       }
     }
     case expr: AExprFunctionCallExpression => {
       val arguments = if(expr.getActualParameters != null) {
         val actuals = expr.getActualParameters.asInstanceOf[AActualParameters]
-        val params = if(actuals.getArguments != null) processExpressionList(actuals.getArguments,scope) else Nil
-        val implicits: List[Option[Expression]] = if(actuals.getActualImplicitParameters != null)
-          processActualImplicitList(actuals.getActualImplicitParameters.asInstanceOf[AActualImplicitParameters].getActualImplicitList,scope)
-        else
-          Nil
-        //CallArguments(params,implicits)
-        Nil
+        if(actuals.getArguments != null) processExpressionList(actuals.getArguments,scope) else Nil
       }
       else
-        //CallArguments(Nil,Nil)
         Nil
       val func = processExpression(expr.getFunction.asInstanceOf[AParentheticalExpression].getExpression,scope)
       new ExpressionCall(func,arguments)
