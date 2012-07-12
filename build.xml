@@ -4,7 +4,7 @@
 	<path id="scala.classpath">
 		<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
 		<pathelement location="${scala.lib.dir}/scala-library.jar"/>
-		<pathelement location="src/org/jllvm/build"/>
+		<pathelement location="libs/"/>
 		<pathelement location="build/"/>
 	</path>
 	<taskdef resource="scala/tools/ant/antlib.xml">
@@ -21,32 +21,20 @@
 		<copy file="src/org/deca/compiler/parser/lexer/lexer.dat" todir="build/org/deca/compiler/parser/lexer"/>
 		<copy file="src/org/deca/compiler/parser/parser/parser.dat" todir="build/org/deca/compiler/parser/parser"/>
 	</target>
-	<target name="build_llvm_bindings">
-		<echo message="Building jllvm."/>
-		<mkdir dir="src/org/jllvm/build/"/>
-		<exec dir="src/org/jllvm/" executable="ant">
-			<arg value="build"/>
-		</exec>
-	</target>
 	<target name="build">
 		<mkdir dir="build/"/>
-		<scalac sourcepath="" srcdir="src/" unchecked="true" destdir="build" classpathref="scala.classpath" deprecation="yes">
+		<scalac sourcepath="" srcdir="src/" unchecked="false" destdir="build" classpathref="scala.classpath" deprecation="yes">
 			<include name="**/*.scala"/>
 			<exclude name="**/jllvm"/>
 			<exclude name="**/decasyntax"/>
 		</scalac>
-		<mkdir dir="jars/"/>
-		<jar destfile="jars/decac.jar" basedir="build/">
+		<jar destfile="decac.jar" basedir="build/">
 			<manifest>
 				<attribute name="Main-Class" value="org.deca.compiler.Decac" />
 			</manifest>
 		</jar>
 	</target>
 	<target name="clean">
-		<exec dir="src/org/jllvm" executable="ant">
-			<arg value="clean"/>
-		</exec>
-		<delete dir="src/org/jllvm/build/"/>
 		<exec dir="src/" executable="fsc">
 			<arg value="-reset"/>
 		</exec>
