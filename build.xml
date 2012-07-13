@@ -4,7 +4,9 @@
 	<path id="scala.classpath">
 		<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
 		<pathelement location="${scala.lib.dir}/scala-library.jar"/>
-		<pathelement location="libs/"/>
+		<fileset dir="lib/">
+			<include name="**/*.jar"/>
+		</fileset>
 		<pathelement location="build/"/>
 	</path>
 	<taskdef resource="scala/tools/ant/antlib.xml">
@@ -31,6 +33,7 @@
 		<jar destfile="decac.jar" basedir="build/">
 			<manifest>
 				<attribute name="Main-Class" value="org.deca.compiler.Decac" />
+				<attribute name="Class-Path" value=${scala.classpath} />
 			</manifest>
 		</jar>
 	</target>
@@ -38,6 +41,7 @@
 		<exec dir="src/" executable="fsc">
 			<arg value="-reset"/>
 		</exec>
+		<delete file="decac.jar" />
 		<delete dir="build/"/>
 		<delete dir="src/org/deca/compiler/parser/"/>
 	</target>
