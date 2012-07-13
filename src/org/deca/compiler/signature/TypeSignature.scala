@@ -47,9 +47,7 @@ case class TypeConstructorCall(constructor: TypeConstructor,params: List[MonoSig
 
 case class TypeException(error: String) extends Exception("Type error: " + error)
 
-class OpaqueType extends MonoType {
-  protected val compiled: LLVMOpaqueType = new LLVMOpaqueType
-  override def compile: LLVMType = compiled
+class OpaqueType(context: LLVMContext = LLVMContext.getGlobalContext) extends MonoType {
   override def toString: String = getClass().getName() + '@' + Integer.toHexString(hashCode())
   override def mapT(f: (MonoType) => MonoType): MonoType = f(this)
   override def mapE(f: (MonoEffect) => MonoEffect): MonoType = this
@@ -57,6 +55,12 @@ class OpaqueType extends MonoType {
   override def variables: Set[SignatureVariable] = HashSet.empty
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
+  
+  override val compile: LLVMIdentifiedStructType = new LLVMIdentifiedStructType(context)
+  def resolve(body: List[MonoType]): LLVMIdentifiedStructType = {
+    compile.setBody(body.map(_.compile).toArray,true)
+    compile
+  }
 }
 
 class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
@@ -65,7 +69,7 @@ class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
     case Some(alpha) => tau.mapT((sig: MonoType) => if(sig == alpha) this else sig)
   }
   
-  def unfold: Tuple2[OpaqueType,MonoType] = {
+  def unfold: (OpaqueType,MonoType) = {
     val loop = new OpaqueType
     (loop,innards.mapT((tau: MonoType) => if(tau == this) loop else tau))
   }
@@ -86,12 +90,9 @@ class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
   
   override def variables: Set[SignatureVariable] = unfold._2.variables
   
-  override def compile: LLVMType = {
+  override def compile: LLVMIdentifiedStructType = {
     val opaque = new OpaqueType
-    val bodyType = innards.mapT((tau: MonoType) => if(tau == this) opaque else tau).compile
-    val bodyHandle = new LLVMTypeHandle(bodyType)
-    LLVMTypeHandle.refineType(opaque.compile,bodyType)
-    bodyHandle.resolve
+    opaque.resolve(List(innards.mapT((tau: MonoType) => if(tau == this) opaque else tau)))
   }
   
   override def toString: String = {
@@ -100,7 +101,6 @@ class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
   }
 }
 
-//Switch to a proper way of doing things with mutability variables and such.
 case class RecordMember(name: Option[String],mutable: MonoMutability,tau: MonoType)
 
 class RecordType(val fields: List[RecordMember]) extends MonoType {
