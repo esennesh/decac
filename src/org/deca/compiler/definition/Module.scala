@@ -1,5 +1,7 @@
 package org.deca.compiler.definition
 
+import scala.collection.mutable.Map
+import scala.collection.mutable.HashMap
 import scala.collection.immutable.Set
 import scala.util.Memoize1
 import org.jllvm._
@@ -48,13 +50,13 @@ class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) wi
   }
   
   def define(d: Definition) = declare(d)
-  override def lookup(name: String): Definition = typedLookup[Definition](name)
-  override def lookup(name: List[String]): Definition = typedLookup[Definition](name)
+  override def lookup(name: String): Definition = super.lookup(name).asInstanceOf[Definition]
+  override def lookup(name: List[String]): Definition = super.lookup(name).asInstanceOf[Definition]
   
   def compile: LLVMModule = {
     for(definition <- symbols.values) definition match {
-      /* case function: FunctionDefinition => function.specialized.foreach(func => func.compile)
-      case defin: TypeDefinition => defin.getSpecializations.foreach(tau => compiledModule.addTypeName(name,tau.compile)) */
+      case function: FunctionDefinition => function.build(this)
+      //case defin: TypeDefinition => defin.getSpecializations.foreach(tau => compiledModule.addTypeName(name,tau.compile))
       case global: VariableDefinition => global.build(this)
       //TODO: Add code for constant expressions, and use it to set the initializer on global variables.
       //Modules defined in this namespace may not be child modules, but possibly imports.
@@ -70,3 +72,5 @@ object GlobalScope extends Module("") {
   override val parent: Option[Module] = None
   override val region = GlobalRegion
 }
+
+object StandardLibrary extends Module("std",GlobalScope)

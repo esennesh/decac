@@ -327,7 +327,7 @@ class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean) exten
 object TypeRelation extends InferenceOrdering[MonoType] {
   protected val assumptions = new Stack[InferenceConstraint]()
   
-  override protected val lattice = new GraphLattice(BottomType,TopType)(TypeOrdering)
+  override protected val lattice = new GraphLattice(TopType,BottomType)(TypeOrdering)
 
   override def lt(x: MonoType,y: MonoType): Option[Set[InferenceConstraint]] = (x,y) match {
     case (_,TopType) => Some(HashSet.empty)

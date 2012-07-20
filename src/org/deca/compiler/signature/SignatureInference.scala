@@ -106,12 +106,14 @@ class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None) {
           case (tx: MonoType,ty: MonoType) => TypeRelation.lt(tx,ty)
           case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.lt(ex,ey)
           case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.lt(rx,ry)
+          case (mx: MonoMutability,my: MonoMutability) => MutabilityRelation.lt(mx,my)
         }
         case PhysicalSubtypingConstraint(x,y) => PhysicalTypeRelation.lt(x,y)
         case EqualityConstraint(x,y) => (x,y) match {
           case (tx: MonoType,ty: MonoType) => TypeRelation.equiv(tx,ty)
           case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.equiv(ex,ey)
           case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.equiv(rx,ry)
+          case (mx: MonoMutability,my: MonoMutability) => MutabilityRelation.equiv(mx,my)
         }
       }
       for(c <- cs.getOrElse(throw new Exception("Unsatisfiable signature constraint: " + constraint.toString))) c match {

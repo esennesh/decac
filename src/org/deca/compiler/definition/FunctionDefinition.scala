@@ -47,7 +47,10 @@ class FunctionDefinition(val name: String,
       case Right(ExternalFunctionSignature(_,_,tau,epsilons)) =>
         new FunctionPointer(args,tau,epsilons.positive,epsilons.negative)
     })
-    val solvedArrow = substitution.solve(arrow)
+    //Substitute away solved type variables, and then replace what remains with universal variables.
+    val solvedArrow = MonoSignature.universalize[MonoType](substitution.solve(arrow))
+    //Replace the remaining variables in solvedArrow with universal variables
+    solvedArrow
     val result = new TypeExpressionConstructor(solvedArrow.variables.toList,solvedArrow)
     body match {
       case Left(fBody) => {
@@ -80,25 +83,27 @@ class FunctionDefinition(val name: String,
       func
     })
   })
-  override val build: Memoize1[Module,Set[LLVMValue]] = Memoize1(instantiation => {
-    var result = Set.empty[LLVMValue]
-    for(specialization <- specialize.values)
-      result += specialization(instantiation)
-    result
-  })
+  override val build: Memoize1[Module,Set[LLVMValue]] = Memoize1(instantiation =>
+    specialize.values.foldLeft(Set.empty[LLVMValue])((set,specialization) => set + specialization(instantiation))
+  )
 }
 
 class ExpressionBody(override val arguments: List[(String,MonoType)],
                      override val implicits: List[(String,MonoType)],
+                     val result: Option[MonoType],
                      parent: Module,
                      mkBody: LexicalScope => Expression) extends FunctionBody {
   override val scope = new LexicalScope(parent,arguments)
   val body: Expression = mkBody(scope)
-  override def bodyType: MonoType = body.expType
+  override def bodyType: MonoType = result getOrElse body.expType
   override def bodyEffect: EffectPair = body.expEffect
   override def infer: SignatureSubstitution = {
     val inference = new LatticeUnificationInstance
     body.constrain(inference.constraints)
+    result match {
+      case Some(tau) => inference.constrain(new SubsumptionConstraint(body.expType,tau))
+      case None => Unit
+    }
     inference.solve
     body.check(inference)
     val substitution = inference.solve
@@ -112,7 +117,7 @@ class ExpressionBody(override val arguments: List[(String,MonoType)],
     val args = arguments.map(arg => (arg._1,spec.solve(arg._2)))
     val impls = implicits.map(arg => (arg._1,spec.solve(arg._2)))
     val bod = (lexi: LexicalScope) => body.specialize(spec,lexi)
-    new ExpressionBody(args,impls,parent,bod)
+    new ExpressionBody(args,impls,result.map(spec.solve(_)),parent,bod)
   }
   override def compile(instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue = {
     val llvmArguments = new HashMap ++ builder.getInsertBlock.getParent.getParameters.toList.map(arg => (arg.getValueName,arg))

@@ -76,14 +76,14 @@ trait LatticeOrdering[E] extends Lattice[E] with PartialOrdering[E] {
 trait LatticeSet[E] extends Lattice[E] with mutable.Set[E] {
   val top: E
   val bottom: E
-  assert(ordering.lt(bottom,top))
 }
 
-class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends LatticeSet[E] {
-  protected val topNode: LatticeNode[E] = new LatticeNode[E](t)(po)
-  protected val bottomNode: LatticeNode[E] = new LatticeNode[E](b)(po)
-  override val ordering: PartialOrdering[E] = po
-  assert(po.lt(b,t))
+class GraphLattice[E](t: E,b: E)(implicit override val ordering: PartialOrdering[E]) extends LatticeSet[E] {
+  protected val topNode: LatticeNode[E] = new LatticeNode[E](t)(ordering)
+  protected val bottomNode: LatticeNode[E] = new LatticeNode[E](b)(ordering)
+  override val top: E = topNode.value
+  override val bottom: E = bottomNode.value
+  assert(ordering.lt(bottom,top))
   
   override def contains(key: E): Boolean = topNode.find(key) match {
     case Some(node) => true
@@ -97,7 +97,7 @@ class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends Lattic
   }
   
   override def +(elem: E): GraphLattice[E] = {
-    assert(po.lteq(elem,topNode.value))
+    assert(ordering.lteq(elem,topNode.value))
     val result = new GraphLattice[E](topNode.value,bottomNode.value)(ordering)
     foreach(value => result.add(value))
     result.add(elem)
@@ -105,7 +105,7 @@ class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends Lattic
   }
   
   override def -(elem: E): GraphLattice[E] = {
-    assert(po.gteq(elem,bottomNode.value))
+    assert(ordering.gteq(elem,bottomNode.value))
     val result = new GraphLattice[E](topNode.value,bottomNode.value)(ordering)
     foreach(value => if(value != elem) result.add(value))
     result
@@ -166,7 +166,4 @@ class GraphLattice[E](t: E,b: E)(implicit po: PartialOrdering[E]) extends Lattic
       attempts.toList.sortWith((a: LatticeNode[E],b: LatticeNode[E]) => ordering.gt(a.value,b.value)).head.value
     }
   }
-  
-  override val top: E = topNode.value
-  override val bottom: E = bottomNode.value
 }

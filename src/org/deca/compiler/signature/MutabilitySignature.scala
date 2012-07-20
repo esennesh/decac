@@ -25,7 +25,7 @@ class BoundedMutabilityVariable(mu: MonoMutability,bnd: SignatureBound,univ: Boo
 }
 
 object MutabilityRelation extends InferenceOrdering[MonoMutability] {
-  override val lattice = new GraphLattice(BottomMutability,ReadOnlyMutability)(MutabilityOrdering)
+  override val lattice = new GraphLattice(ReadOnlyMutability,BottomMutability)(MutabilityOrdering)
   override def lt(x: MonoMutability,y: MonoMutability): Option[Set[InferenceConstraint]] = (x,y) match {
     case (_,ReadOnlyMutability) => Some(Set.empty)
     case (mx: MonoMutability,vy: MutabilityVariable) => if(vy.universal) Some(Set.empty) else Some(Set.empty + SubsumptionConstraint(mx,vy))

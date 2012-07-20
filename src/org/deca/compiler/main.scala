@@ -51,8 +51,22 @@ object Decac {
     FP128Type;
     DoubleType;
     FloatType;
-    val modules = args.map(arg => compile(arg))
-    for(module <- modules)
-      module.writeBitcode
+    if(args.length == 0 || args(0) == "--help" || args(0) == "--version")
+      System.err.println("Deca compiler version 0.2.1")
+    if(args.length == 0 || args(0) == "--help") {
+      System.err.println("Possible arguments: ")
+      System.err.println("  --help => display this screen")
+      System.err.println("  --version => show the compiler version")
+      System.err.println("  _ => compile the given Deca source files")
+    }
+    else try {
+      
+      val modules = args.map(arg => compile(arg))
+      for(module <- modules)
+        module.writeBitcode
+    }
+    catch {
+      case init: ExceptionInInitializerError => throw init.getCause
+    }
   }
 }

@@ -27,19 +27,9 @@ object ASTProcessor {
     case imp: AImportDeclaration => where.define(where.lookup(processQualifiedIdentifier(imp.getName())))
   }
   
-  def processTypeParameters(parameters: PIdentifierList): Map[String,TypeVariable] = parameters match {
-    case one: AOneIdentifierList => {
-      val result = new HashMap[String,TypeVariable]()
-      val name = one.getUnqualifiedIdentifier.getText
-      result.put(name,new TypeVariable(true,Some(name)))
-      result
-    }
-    case many: AManyIdentifierList => {
-      val result = processTypeParameters(many.getIdentifierList)
-      val name = many.getUnqualifiedIdentifier.getText
-      result.put(name,new TypeVariable(true,Some(name)))
-      result
-    }
+  def processTypeParameters(parameters: PIdentifierList): List[String] = parameters match {
+    case one: AOneIdentifierList => one.getUnqualifiedIdentifier.getText :: Nil
+    case many: AManyIdentifierList => many.getUnqualifiedIdentifier.getText :: processTypeParameters(many.getIdentifierList)
   }
   def processSlotMutability(mutability: TSlotMutability): MonoMutability = mutability.getText match {
     case "val" => ReadOnlyMutability
@@ -223,7 +213,7 @@ object ASTProcessor {
     }
     (name,argType)
   }
-  def processArguments(args: PArgumentList,scope: TypeDefinitionScope): List[Tuple2[String,MonoType]] = args match {
+  def processArguments(args: PArgumentList,scope: TypeDefinitionScope): List[(String,MonoType)] = args match {
     case null => Nil
     case one: AOneArgumentList => processArgument(one.getArgument.asInstanceOf[AArgument],scope) :: Nil
     case many: AManyArgumentList => processArgument(many.getArgument.asInstanceOf[AArgument],scope) :: processArguments(many.getArgumentList,scope)
@@ -317,24 +307,22 @@ object ASTProcessor {
     case many: AManyExpressionList => processExpressionList(many.getExpressionList,scope) ++ (processExpression(many.getExpression,scope) :: Nil)
   }
   
-  /*def processFunctionDefinition(func: PFunctionDefinition,scope: Module): Definition = func match {
+  def processFunctionDefinition(func: PFunctionDefinition,scope: Module): Definition = func match {
     case normal: AFunctionFunctionDefinition => {
       val name = normal.getName.getText
-      val tscope = new TypeDefinitionScope(scope)
-      if(normal.getTypeFormArguments != null) {
-       val params = processTypeParameters(normal.getTypeFormArguments.asInstanceOf[ATypeFormArguments].getArguments)
-        for((argName,tau) <- params)
-          new TypeBinding(tau,argName,tscope)
-      }
-      val arguments = processArguments(normal.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},tscope).map(arg => (arg._1,UninferredArgument(arg._2)))
+      val typeParameters: List[String] = if(normal.getTypeFormArguments != null)
+        processTypeParameters(normal.getTypeFormArguments.asInstanceOf[ATypeFormArguments].getArguments)
+      else
+        Nil
+      val tscope = new TypeDefinitionScope(typeParameters,scope)
+      val arguments: List[(String,MonoType)] = processArguments(normal.getFunctionArguments.asInstanceOf[AFunctionArguments].getArguments,tscope)
       val resultType = if(normal.getType != null) Some(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) else None
-      val function = new ExpressionFunction(tscope,name,arguments,resultType,lexical => processBlock(normal.getBody,lexical))
-      function.infer
-      function
+      //TODO: Modify ExpressionBody to include specifying resultType
+      new FunctionDefinition(name,scope,Left(new ExpressionBody(arguments,Nil,resultType,scope,lexical => processBlock(normal.getBody,lexical))))
     }
     case method: AMethodFunctionDefinition => null
     case over: AOverrideFunctionDefinition => null
-    case external: AExternalFunctionDefinition => {
+    /*case external: AExternalFunctionDefinition => {
       val name = external.getName.getText
       val tscope = new TypeDefinitionScope(scope)
       val arguments = processArguments(external.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},tscope).map(arg => (arg._1,arg._2.asInstanceOf[GammaType]))
@@ -346,8 +334,8 @@ object ASTProcessor {
       val resultType = processTypeForm(external.getType.asInstanceOf[ATypeAnnotation].getType,tscope).asInstanceOf[GammaType]
       val function = new ExternalFunction(tscope,name,arguments,resultType)
       function
-    }
-  }*/
+    }*/
+  }
   def processExp1(exp: PExp1,scope: LexicalScope): Expression = exp match {
     case variable: AIdentifierExp1 => new VariableExpression(processQualifiedIdentifier(variable.getQualifiedIdentifier),scope)
     case literal: ALiteralExp1 => processLiteral(literal.getLiteralExpression,scope)
@@ -418,17 +406,20 @@ object ASTProcessor {
       convertList(moddef.getDefinitions).foreach(definition => processDefinition(definition,result))
       result
     }
-    //case afuncdef: AFundefDefinition => processFunctionDefinition(afuncdef.getFunctionDefinition(),scope)
+    case afuncdef: AFundefDefinition => processFunctionDefinition(afuncdef.getFunctionDefinition(),scope)
     case atypedef: ATypedefDefinition => {
       val name = atypedef.getUnqualifiedIdentifier.getText
-      val tscope = new TypeDefinitionScope(Nil,scope)
-      val params = if(atypedef.getParameters != null) processTypeParameters(atypedef.getParameters.asInstanceOf[ATypeFormArguments].getArguments) else new HashMap[String,TypeVariable]()
-      params.toList.foreach(p => tscope.bind(p._1,Some(p._2)))
-      val alpha = new TypeVariable(false,None)
+      val params = if(atypedef.getParameters != null)
+        processTypeParameters(atypedef.getParameters.asInstanceOf[ATypeFormArguments].getArguments)
+      else
+        Nil
+      val tscope = new TypeDefinitionScope(params,scope)
+      val tparams = tscope.bindings.map(_.tau.asInstanceOf[TypeVariable]).toList
+      val alpha = new TypeVariable(false,Some(name))
       tscope.bind(name,Some(alpha))
       val sigma = processTypeForm(atypedef.getTypeForm,tscope)
       val mu = if(sigma.filterT(tau => tau == alpha) != Nil) new RecursiveType(sigma,Some(alpha)) else sigma
-      new TypeDefinition(new TypeExpressionConstructor(params.map(_._2).toList,mu),name,scope)
+      new TypeDefinition(new TypeExpressionConstructor(tparams,mu),name,scope)
     }
     case avardef: AGlobaldefDefinition => {
       val slot = processSlotDeclaration(avardef.getSlotDeclaration,new TypeDefinitionScope(Nil,scope))
