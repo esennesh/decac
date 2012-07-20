@@ -37,9 +37,9 @@ class EnumerationValue(val enum: String,val tag: Int) extends ConstantExpression
 case class DataConstructor(override val name: String,arguments: List[RecordMember]) extends VariantCase {
   override protected def record: RecordType = new RecordType(arguments)
   override def defineSelf(scope: Module): Unit = {
-    val argNames = arguments.zipWithIndex.map(arg => arg._1.name getOrElse ('#' + arg._2.toString))
+    val argNames: List[String] = arguments.zipWithIndex.map(arg => arg._1.name getOrElse ('#' + arg._2.toString))
     val members = arguments.zip(argNames).map(arg => {
-      val initializer = (lexical: LexicalScope) => new VariableExpression(List(name),lexical)
+      val initializer = (lexical: LexicalScope) => new VariableExpression(List(arg._2),lexical)
       MemberConstructor(arg._2,arg._1.mutable,arg._1.tau,initializer)
     })
     val args = arguments.zip(argNames).map(arg => (arg._2,arg._1.tau))

@@ -9,6 +9,9 @@
 		</fileset>
 		<pathelement location="build/"/>
 	</path>
+	<manifestclasspath property="manifest.classpath" jarfile="decac.jar" maxParentLevels="13">
+		<classpath refid="scala.classpath" />
+	</manifestclasspath>
 	<taskdef resource="scala/tools/ant/antlib.xml">
 		<classpath refid="scala.classpath"/>
 	</taskdef>
@@ -33,7 +36,7 @@
 		<jar destfile="decac.jar" basedir="build/">
 			<manifest>
 				<attribute name="Main-Class" value="org.deca.compiler.Decac" />
-				<attribute name="Class-Path" value=${scala.classpath} />
+				<attribute name="Class-Path" value="${manifest.classpath}" />
 			</manifest>
 		</jar>
 	</target>

@@ -9,8 +9,9 @@ Helpers
   lf = 10;
   tab = 9;
   eol = cr | lf | cr lf;
-  input_character = [unicode_input_character - [cr + lf]];
-  nondigit = [input_character - digit];
+  blank = eol | tab | ' ';
+  input_character = [unicode_input_character - [lf + cr]];
+  nondigit = '_' | '?' | '!' | letter;
   not_cr_lf = [all - [cr + lf]];
   not_star = [all - '*'];
   not_star_slash = [not_star - '/'];
@@ -100,7 +101,7 @@ Tokens
   abstract = 'abstract';
   regional_effect_name = '!read' | '!write' | '!destroy' | '!call';
   exceptional_effect_name = '!throw';
-  expression_end = eol | ';';
+  expression_end = ';';
   
   blank = eol | tab | ' ';
   tabspace = [tab + ' '];
@@ -117,7 +118,7 @@ Ignored Tokens
   
 Productions
   module_definition = 
-    unsafe? module [name]:unqualified_identifier [imports]:import_declaration* [definitions]:definition+ end;
+    unsafe? module [name]:unqualified_identifier [imports]:import_declaration* [definitions]:definition* end;
 
   qualified_identifier = 
     {simple} unqualified_identifier |

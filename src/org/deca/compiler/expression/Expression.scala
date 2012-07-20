@@ -15,7 +15,8 @@ trait Expression {
   var expType: MonoType = BottomType
   val writable: Boolean = false
   val children: List[Expression]
-  var expEffect: EffectPair = children.foldLeft(EffectPair(PureEffect,PureEffect))((ep: EffectPair,child: Expression) => ep ++ child.expEffect)
+  var expEffect: EffectPair = EffectPair(PureEffect,PureEffect)
+  //var expEffect: EffectPair = children.foldLeft(EffectPair(PureEffect,PureEffect))((ep: EffectPair,child: Expression) => ep ++ child.expEffect)
   
   def constrain(scs: SignatureConstraints): Unit
   def check(lui: LatticeUnificationInstance): Unit

@@ -14,8 +14,8 @@ class TypeDefinition(val constructor: TypeConstructor,val name: String,override 
   constructor.declare(name)
   override val build: Memoize1[Module,immutable.Set[LLVMValue]] = Memoize1((instantiation: Module) => {
     val result = constructor.allSpecializations.toSet
-    for(spec <- result)
-      instantiation.compiledModule.addTypeName(constructor.name,spec)
+    //for(spec <- result)
+    //  instantiation.compiledModule.addTypeName(constructor.name,spec)
     immutable.Set.empty[LLVMValue]
   })
 }
@@ -108,7 +108,8 @@ class OpenSumConstructor(alphas: List[TypeVariable],addends: List[TaggedRecord],
   override def compile(params: List[MonoSignature]): LLVMType = getSpecialization(params) match {
     case Some(t) => t
     case None => {
-      val temporary = new LLVMStructType(List(tagRepresentation,new LLVMOpaqueType).toArray,true)
+      //TODO: The identified struct here is probably not actually appropriate.  What I want is a type the linker will resolve later.
+      val temporary = new LLVMStructType(List(tagRepresentation,new LLVMIdentifiedStructType(name + "contents")).toArray,true)
       specializations.put(params,temporary)
       temporary
     }
@@ -137,7 +138,7 @@ class OpenSumConstructor(alphas: List[TypeVariable],addends: List[TaggedRecord],
 }
 
 object ExceptionConstructor extends OpenSumConstructor(Nil,List(TaggedRecord("AnyException","AnyException",EmptyRecord)),None) {
-  //new TypeDefinition(this,"Exception",StandardLibrary)
+  new TypeDefinition(this,"Exception",StandardLibrary)
 }
 
 case class SkolemConstructor(shape: RecordType) extends TypeConstructor(shape.variables.toList) {

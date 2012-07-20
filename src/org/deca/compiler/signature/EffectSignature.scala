@@ -44,7 +44,11 @@ case class CallEffect(module: Module) extends MonoEffect {
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
 }
-case class SetEffect(effects: Set[MonoEffect]) extends MonoEffect {
+case class SetEffect(var effects: Set[MonoEffect]) extends MonoEffect {
+  effects = effects.foldLeft(Set.empty[MonoEffect])((set,effect) => set ++ (effect match {
+    case setEffect: SetEffect => setEffect.effects
+    case _ => Set.empty + effect
+  }))
   assert(effects.forall(effect => !effect.isInstanceOf[SetEffect]))
   def contains(effect: MonoEffect): Boolean = !filterE(eff => eff == effect).isEmpty
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = effects.map(eff => eff.filterT(pred)).foldLeft(HashSet.empty[MonoType].asInstanceOf[Set[MonoType]])((res: Set[MonoType],ts: Set[MonoType]) => res ++ ts)
@@ -55,6 +59,7 @@ case class SetEffect(effects: Set[MonoEffect]) extends MonoEffect {
   override def mapE(f: (MonoEffect) => MonoEffect): MonoEffect = f(SetEffect(effects.map(eff => eff.mapE(f))))
   override def variables: Set[SignatureVariable] = effects.map(effect => effect.variables).foldLeft(HashSet.empty[SignatureVariable])((accum: HashSet[SignatureVariable],y: Set[SignatureVariable]) => accum ++ y)
 }
+
 object TopEffect extends MonoEffect {
   override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable]
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = HashSet.empty
@@ -69,7 +74,7 @@ class BoundedEffectVariable(epsilon: MonoEffect,bnd: SignatureBound,univ: Boolea
 }
 
 object EffectRelation extends InferenceOrdering[MonoEffect] {
-  override protected val lattice = new GraphLattice(PureEffect,TopEffect)(EffectOrdering)
+  override protected val lattice = new GraphLattice(TopEffect,PureEffect)(EffectOrdering)
   def lt(x: MonoEffect,y: MonoEffect): Option[Set[InferenceConstraint]] = (x,y) match {
     case (PureEffect,_) => Some(HashSet.empty)
     case (_,TopEffect) => Some(HashSet.empty)

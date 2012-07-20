@@ -19,6 +19,23 @@ trait MonoSignature {
   def variables: Set[SignatureVariable]
 }
 
+object MonoSignature {
+  def universalize[S <: MonoSignature](sig: S): S = {
+    val tau = sig.mapT(tau => tau match {
+      case tvar: TypeVariable => new TypeVariable(true,tvar.name)
+      case _ => tau
+    })
+    val rho = tau.mapR(rho => rho match {
+      case rvar: RegionVariable => new RegionVariable(true)
+      case _ => rho
+    })
+    rho.mapE(epsilon => epsilon match {
+      case evar: EffectVariable => new EffectVariable(true)
+      case _ => epsilon
+    }).asInstanceOf[S]
+  }
+}
+
 trait SignatureVariable extends MonoSignature {
   val universal = false
   override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable] + this
