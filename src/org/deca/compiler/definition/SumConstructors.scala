@@ -43,7 +43,7 @@ case class DataConstructor(override val name: String,arguments: List[RecordMembe
       MemberConstructor(arg._2,arg._1.mutable,arg._1.tau,initializer)
     })
     val args = arguments.zip(argNames).map(arg => (arg._2,arg._1.tau))
-    new FunctionDefinition(name,scope,Left(new RecordConstructorBody(name,args,scope,tagCode,members)))
+    new FunctionDefinition(name,scope,Unit => new RecordConstructorBody(name,args,scope,tagCode,members))
   }
 }
 
@@ -54,7 +54,7 @@ class RecordConstructor(override val name: String,
   val body = new RecordConstructorBody(name,arguments,scope.owner,tagCode,mems)
   val members = body.members
   override def defineSelf(scope: Module): Unit = {
-    new FunctionDefinition(name,scope,Left(body))
+    new FunctionDefinition(name,scope,Unit => body)
   }
   override protected def record: RecordType = 
     new RecordType(members.map(member => RecordMember(Some(member.name),member.mu,member.tau)))

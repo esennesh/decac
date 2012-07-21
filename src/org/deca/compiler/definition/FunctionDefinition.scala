@@ -20,45 +20,44 @@ trait FunctionBody {
   def compile(instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue
 }
 
-case class ExternalFunctionSignature(arguments: List[(String,MonoType)],
-                                     implicits: List[(String,MonoType)],
-                                     result: MonoType,
-                                     effect: EffectPair)
+case class ExternalFunctionBody(override val arguments: List[(String,MonoType)],
+                                override val implicits: List[(String,MonoType)],
+                                result: MonoType,
+                                effect: EffectPair,
+                                parent: Module) extends FunctionBody {
+  override val scope = new LexicalScope(parent,arguments)
+  override val bodyType: MonoType = result
+  override val bodyEffect: EffectPair = effect
+  
+  override def infer = new SignatureSubstitution
+  override def substitute(substitution: SignatureSubstitution): Unit = Unit
+  override def specialize(spec: SignatureSubstitution): ExternalFunctionBody = 
+    ExternalFunctionBody(arguments.map(arg => (arg._1,spec.solve(arg._2))),
+                         implicits.map(impl => (impl._1,spec.solve(impl._2))),
+                         spec.solve(result),
+                         effect.map(spec.solve(_)),
+                         parent)
+  override def compile(instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue = new LLVMUnreachableInstruction(builder)
+}
 
 class FunctionDefinition(val name: String,
-                         val scope: Module,
-                         val body: Either[FunctionBody,ExternalFunctionSignature]) extends Definition {
-  val arguments = body match {
-    case Left(fBody) => fBody.arguments
-    case Right(sig) => sig.arguments
-  }
-  val implicits = body match {
-    case Left(fBody) => fBody.implicits
-    case Right(sig) => sig.implicits
-  }
+                         override val scope: Module,
+                         bod: Unit => FunctionBody) extends Definition {
+  scope.define(this)
+  val body = bod(Unit)
+  val arguments = body.arguments
+  val implicits = body.implicits
   val funcType: TypeConstructor = {
-    val substitution = body match {
-      case Left(fBody) => fBody.infer
-      case Right(_) => new SignatureSubstitution
-    }
+    val substitution = body.infer
     val args = arguments.map(_._2) ++ implicits.map(_._2)
-    val arrow = substitution.solve[MonoType](body match {
-      case Left(fBody) => new FunctionPointer(args,fBody.bodyType,fBody.bodyEffect.positive,fBody.bodyEffect.negative)
-      case Right(ExternalFunctionSignature(_,_,tau,epsilons)) =>
-        new FunctionPointer(args,tau,epsilons.positive,epsilons.negative)
-    })
+    val arrow = substitution.solve[MonoType](new FunctionPointer(args,body.bodyType,body.bodyEffect.positive,body.bodyEffect.negative))
     //Substitute away solved type variables, and then replace what remains with universal variables.
     val solvedArrow = MonoSignature.universalize[MonoType](substitution.solve(arrow))
     //Replace the remaining variables in solvedArrow with universal variables
     solvedArrow
     val result = new TypeExpressionConstructor(solvedArrow.variables.toList,solvedArrow)
-    body match {
-      case Left(fBody) => {
-        fBody.substitute(substitution)
-        assert(fBody.bodyEffect.safe(PureEffect))
-      }
-      case Right(ExternalFunctionSignature(_,_,_,epsilons)) => assert(epsilons.safe(PureEffect))
-    }
+    body.substitute(substitution)
+    assert(body.bodyEffect.safe(PureEffect))
     result
   }
   val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMFunction]] = Memoize1(sigvars => {
@@ -66,7 +65,8 @@ class FunctionDefinition(val name: String,
     Memoize1(instantiation => {
       val func = new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile)
       body match {
-        case Left(fBody) if funcType.parameters != Nil || instantiation == scope => {
+        case external: ExternalFunctionBody => func.setLinkage(LLVMLinkage.LLVMExternalLinkage)
+        case _ if funcType.parameters != Nil || instantiation == scope => {
           if(funcType.parameters != Nil)
             func.setLinkage(LLVMLinkage.LLVMWeakODRLinkage)
           val specialization = new SignatureSubstitution
@@ -75,8 +75,7 @@ class FunctionDefinition(val name: String,
           val entry = func.appendBasicBlock("entry")
           val builder = new LLVMInstructionBuilder
           builder.positionBuilderAtEnd(entry)
-          new LLVMReturnInstruction(builder,fBody.specialize(specialization).compile(instantiation,builder))
-          func
+          new LLVMReturnInstruction(builder,body.specialize(specialization).compile(instantiation,builder))
         }
         case _ => func.setLinkage(LLVMLinkage.LLVMExternalLinkage)
       }

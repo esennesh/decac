@@ -317,8 +317,8 @@ object ASTProcessor {
       val tscope = new TypeDefinitionScope(typeParameters,scope)
       val arguments: List[(String,MonoType)] = processArguments(normal.getFunctionArguments.asInstanceOf[AFunctionArguments].getArguments,tscope)
       val resultType = if(normal.getType != null) Some(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) else None
-      //TODO: Modify ExpressionBody to include specifying resultType
-      new FunctionDefinition(name,scope,Left(new ExpressionBody(arguments,Nil,resultType,scope,lexical => processBlock(normal.getBody,lexical))))
+      //My problem here is that the ExpressionBody is getting constructed before the function is defined.  This means recursive functions can't see their own definitions.
+      new FunctionDefinition(name,scope,Unit => new ExpressionBody(arguments,Nil,resultType,scope,lexical => processBlock(normal.getBody,lexical)))
     }
     case method: AMethodFunctionDefinition => null
     case over: AOverrideFunctionDefinition => null

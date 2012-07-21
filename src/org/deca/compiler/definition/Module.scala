@@ -49,7 +49,10 @@ class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) wi
     fPath = Some(str)
   }
   
-  def define(d: Definition) = declare(d)
+  def define(d: Definition) = {
+    System.err.println("Defining: " + d.name)
+    declare(d)
+  }
   override def lookup(name: String): Definition = super.lookup(name).asInstanceOf[Definition]
   override def lookup(name: List[String]): Definition = super.lookup(name).asInstanceOf[Definition]
   

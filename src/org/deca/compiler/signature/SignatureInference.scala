@@ -6,7 +6,7 @@ import scala.collection.mutable.Lattice
 import org.deca.compiler.definition._
 
 class SignatureSubstitution {
-  protected val queue: Queue[Tuple2[SignatureVariable,MonoSignature]] = new Queue[Tuple2[SignatureVariable,MonoSignature]]
+  protected val queue: Queue[(SignatureVariable,MonoSignature)] = new Queue[(SignatureVariable,MonoSignature)]
   
   def substitute(x: SignatureVariable,y: MonoSignature): Unit = {
     assert(!x.universal)
@@ -168,6 +168,7 @@ class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None) {
         case EqualityConstraint(vx: SignatureVariable,vy: SignatureVariable) => substitute(vx,vy)
         case EqualityConstraint(vx: SignatureVariable,_) => substitute(vx,c.beta)
         case EqualityConstraint(_,vy: SignatureVariable) => substitute(vy,c.alpha)
+        case _ => constraints.push(c)
       }
     }
     result
