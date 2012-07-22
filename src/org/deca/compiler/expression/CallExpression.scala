@@ -10,9 +10,6 @@ import org.deca.compiler.signature._
 abstract class CallExpression extends Expression {
   val arguments: List[Expression]
   var arrow: FunctionPointer
-  expType = arrow.range
-  expEffect = EffectPair(arrow.positive,arrow.negative)
-  assert(arguments.length == arrow.domain.length)
   override val children: List[Expression] = arguments
   
   override def constrain(scs: SignatureConstraints): Unit = {
@@ -46,14 +43,17 @@ class DefinitionCall(val definition: FunctionDefinition,
   val specialization: List[MonoSignature] = spec getOrElse definition.funcType.freshlySpecialize
   override val arguments: List[Expression] = {
     val specializeSubstitution = definition.funcType.substitution(specialization)
-    val specializedImplicits = definition.implicits.map(impl => (impl._1,specializeSubstitution.solve(impl._2)))
+    val specializedImplicits = definition.signature.implicits.map(impl => (impl._1,specializeSubstitution.solve(impl._2)))
     val actualImplicits = implicits._1.zip(specializedImplicits).map(impl =>
       impl._1 getOrElse new ImplicitResolutionExpression(impl._2._2,implicits._2))
     args ++ actualImplicits
   }
-  assert(definition.arguments.length == args.length)
-  assert(definition.implicits.length == implicits._1.length)
+  assert(definition.signature.arguments.length == args.length)
+  assert(definition.signature.implicits.length == implicits._1.length)
   var arrow: FunctionPointer = definition.funcType.represent(specialization).asInstanceOf[FunctionPointer]
+  expType = arrow.range
+  expEffect = EffectPair(arrow.positive,arrow.negative)
+  assert(arguments.length == arrow.domain.length)
   
   override def specialize(spec: SignatureSubstitution,specScope: Scope): DefinitionCall = {
     val newArguments = args.map(_.specialize(spec,specScope))
@@ -71,6 +71,9 @@ class DefinitionCall(val definition: FunctionDefinition,
 class ExpressionCall(val expression: Expression,override val arguments: List[Expression]) extends CallExpression {
   override val children: List[Expression] = expression :: arguments
   var arrow: FunctionPointer = new FunctionPointer(arguments.map(arg => new TypeVariable(false,None)),new TypeVariable(false,None),new EffectVariable(false),new EffectVariable(false))
+  expType = arrow.range
+  expEffect = EffectPair(arrow.positive,arrow.negative)
+  assert(arguments.length == arrow.domain.length)
   val closureType = {
     val tau = new OpaqueType
     //It might be completely wrong to create a new region variable here.  The region of the environment has to be the region in which the closure itself is stored.

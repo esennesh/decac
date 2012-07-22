@@ -43,7 +43,7 @@ case class DataConstructor(override val name: String,arguments: List[RecordMembe
       MemberConstructor(arg._2,arg._1.mutable,arg._1.tau,initializer)
     })
     val args = arguments.zip(argNames).map(arg => (arg._2,arg._1.tau))
-    new FunctionDefinition(name,scope,Unit => new RecordConstructorBody(name,args,scope,tagCode,members))
+    new FunctionDefinition(name,scope,new FunctionSignature(args,Nil),Some(sig => new RecordConstructorBody(name,sig,scope,tagCode,members)))
   }
 }
 
@@ -51,10 +51,10 @@ class RecordConstructor(override val name: String,
                         val arguments: List[(String,MonoType)],
                         val scope: TypeDefinitionScope,
                         mems: List[MemberConstructor]) extends VariantCase {
-  val body = new RecordConstructorBody(name,arguments,scope.owner,tagCode,mems)
+  val body = new RecordConstructorBody(name,FunctionSignature(arguments,Nil),scope.owner,tagCode,mems)
   val members = body.members
   override def defineSelf(scope: Module): Unit = {
-    new FunctionDefinition(name,scope,Unit => body)
+    new FunctionDefinition(name,scope,body.signature,Some(sig => body))
   }
   override protected def record: RecordType = 
     new RecordType(members.map(member => RecordMember(Some(member.name),member.mu,member.tau)))
@@ -64,13 +64,12 @@ case class MemberConstructor(name: String,mu: MonoMutability,tau: MonoType,initi
 case class MemberInitializer(name: String,var mu: MonoMutability,var tau: MonoType,val initializer: Expression)
 
 class RecordConstructorBody(val name: String,
-                            override val arguments: List[(String,MonoType)],
+                            override val signature: FunctionSignature,
                             val parent: Module,
                             val tag: Int,
                             mems: List[MemberConstructor]) extends FunctionBody {
   //TODO: Enable implicit parameters for data constructors
-  override val implicits: List[(String,MonoType)] = Nil
-  override val scope: LexicalScope = new LexicalScope(parent,arguments.map(arg => (arg._1,arg._2)))
+  override val scope: LexicalScope = new LexicalScope(parent,signature.arguments.map(arg => (arg._1,arg._2)))
   val members: List[MemberInitializer] = mems.map(mem => MemberInitializer(mem.name,mem.mu,mem.tau,mem.initializer(scope))) 
   override def infer: SignatureSubstitution = {
     val inference = new LatticeUnificationInstance
@@ -100,9 +99,9 @@ class RecordConstructorBody(val name: String,
     }
   }
   def specialize(spec: SignatureSubstitution): RecordConstructorBody = {
-    val args = arguments.map(arg => (arg._1,spec.solve(arg._2)))
+    val args = signature.arguments.map(arg => (arg._1,spec.solve(arg._2)))
     val mems = members.map(member => MemberConstructor(member.name,spec.solve(member.mu),spec.solve(member.tau),specScope => member.initializer.specialize(spec,specScope)))
-    new RecordConstructorBody(name,args,parent,tag,mems)
+    new RecordConstructorBody(name,FunctionSignature(args,Nil),parent,tag,mems)
   }
   def compile(instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue = {
     val llvmArguments = new HashMap ++ builder.getInsertBlock.getParent.getParameters.toList.map(arg => (arg.getValueName,arg))
