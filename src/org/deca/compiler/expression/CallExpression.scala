@@ -40,9 +40,15 @@ class DefinitionCall(val definition: FunctionDefinition,
                      args: List[Expression],
                      val implicits: (List[Option[Expression]],Scope),
                      spec: Option[List[MonoSignature]] = None) extends CallExpression {
-  val specialization: List[MonoSignature] = spec getOrElse definition.funcType.freshlySpecialize
+  val specialization: List[MonoSignature] = spec getOrElse (definition.signature.arrow match {
+    case Left(funcType) => funcType.freshlySpecialize
+    case Right(_) => Nil
+  })
   override val arguments: List[Expression] = {
-    val specializeSubstitution = definition.funcType.substitution(specialization)
+    val specializeSubstitution = definition.signature.arrow match {
+      case Left(funcType) => funcType.substitution(specialization)
+      case Right(arrow) => new SignatureSubstitution
+    }
     val specializedImplicits = definition.signature.implicits.map(impl => (impl._1,specializeSubstitution.solve(impl._2)))
     val actualImplicits = implicits._1.zip(specializedImplicits).map(impl =>
       impl._1 getOrElse new ImplicitResolutionExpression(impl._2._2,implicits._2))
@@ -50,7 +56,10 @@ class DefinitionCall(val definition: FunctionDefinition,
   }
   assert(definition.signature.arguments.length == args.length)
   assert(definition.signature.implicits.length == implicits._1.length)
-  var arrow: FunctionPointer = definition.funcType.represent(specialization).asInstanceOf[FunctionPointer]
+  var arrow: FunctionPointer = definition.signature.arrow match {
+    case Left(funcType) => funcType.represent(specialization).asInstanceOf[FunctionPointer]
+    case Right(arrow) => arrow
+  }
   expType = arrow.range
   expEffect = EffectPair(arrow.positive,arrow.negative)
   assert(arguments.length == arrow.domain.length)

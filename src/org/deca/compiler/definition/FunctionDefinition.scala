@@ -35,6 +35,13 @@ case class FunctionSignature(var arguments: List[(String,MonoType)],
                       implicits.map(impl => (impl._1,spec.solve(impl._2))),
                       spec.solve(result),
                       EffectPair(spec.solve(effect.positive),spec.solve(effect.negative)))
+  def arrow: Either[TypeConstructor,FunctionPointer] = {
+    val func = new FunctionPointer(arguments.map(_._2) ++ implicits.map(_._2),result,effect.positive,effect.negative)
+    if(func.variables.forall(svar => svar.universal))
+      Left(new TypeExpressionConstructor(func.variables.toList,func))
+    else
+      Right(func)
+  }
 }
 
 class FunctionDefinition(val name: String,
@@ -43,18 +50,18 @@ class FunctionDefinition(val name: String,
                          mkBody: Option[FunctionSignature => FunctionBody]) extends Definition {
   scope.define(this)
   val body: Option[FunctionBody] = mkBody.map(f => f(signature))
-  val funcType: TypeConstructor = {
-    for(b <- body) {
-      val substitution = b.infer
-      signature.substitute(substitution)
-      b.substitute(substitution)
-      assert(signature.effect.safe(PureEffect))
-    }
-    val arrow = new FunctionPointer(signature.arguments.map(_._2) ++ signature.implicits.map(_._2),signature.result,signature.effect.positive,signature.effect.negative)
-    new TypeExpressionConstructor(arrow.variables.toList,arrow)
+  for(b <- body) {
+    val substitution = b.infer
+    signature.substitute(substitution)
+    b.substitute(substitution)
+    assert(signature.effect.safe(PureEffect))
   }
   val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMFunction]] = Memoize1(sigvars => {
-    val signature = funcType.represent(sigvars).asInstanceOf[FunctionPointer]
+    val funcType: TypeConstructor = this.signature.arrow match {
+      case Left(funcType) => funcType
+      case _ => throw new Exception("Attempting to specialize a function before its principal type has been inferred.")
+    }
+    val signature: FunctionPointer = funcType.represent(sigvars).asInstanceOf[FunctionPointer]
     Memoize1(instantiation => {
       val func = new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile)
       body match {
@@ -79,7 +86,6 @@ class FunctionDefinition(val name: String,
   )
 }
 
-//This is wrong because type inference can't substitute away types of arguments or results
 class ExpressionBody(override val signature: FunctionSignature,
                      parent: Module,
                      mkBody: LexicalScope => Expression) extends FunctionBody {
