@@ -20,17 +20,29 @@ trait MonoSignature {
 }
 
 object MonoSignature {
-  def universalize[S <: MonoSignature](sig: S): S = {
+  def universalize[S <: MonoSignature](sig: S,substitution: SignatureSubstitution): S = {
     val tau = sig.mapT(tau => tau match {
-      case tvar: TypeVariable => new TypeVariable(true,tvar.name)
+      case tvar: TypeVariable if !tvar.universal => {
+        val universal = new TypeVariable(true,tvar.name)
+        substitution.substitute(tvar,universal)
+        universal
+      }
       case _ => tau
     })
     val rho = tau.mapR(rho => rho match {
-      case rvar: RegionVariable => new RegionVariable(true)
+      case rvar: RegionVariable if !rvar.universal => {
+        val universal = new RegionVariable(true)
+        substitution.substitute(rvar,universal)
+        universal
+      }
       case _ => rho
     })
     rho.mapE(epsilon => epsilon match {
-      case evar: EffectVariable => new EffectVariable(true)
+      case evar: EffectVariable if !evar.universal => {
+        val universal = new EffectVariable(true)
+        substitution.substitute(evar,universal)
+        universal
+      }
       case _ => epsilon
     }).asInstanceOf[S]
   }

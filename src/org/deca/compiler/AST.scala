@@ -250,7 +250,7 @@ object ASTProcessor {
         case func: FunctionDefinition => {
           val implicits: List[Option[Expression]] = actualParameters._2 match {
             case Some(impls) => processActualImplicitList(impls,scope)
-            case None => func.implicits.map(impl => None)
+            case None => func.signature.implicits.map(impl => None)
           }
           new DefinitionCall(func,arguments,(implicits,scope))
         }
@@ -316,9 +316,12 @@ object ASTProcessor {
         Nil
       val tscope = new TypeDefinitionScope(typeParameters,scope)
       val arguments: List[(String,MonoType)] = processArguments(normal.getFunctionArguments.asInstanceOf[AFunctionArguments].getArguments,tscope)
-      val resultType = if(normal.getType != null) Some(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) else None
-      //My problem here is that the ExpressionBody is getting constructed before the function is defined.  This means recursive functions can't see their own definitions.
-      new FunctionDefinition(name,scope,Unit => new ExpressionBody(arguments,Nil,resultType,scope,lexical => processBlock(normal.getBody,lexical)))
+      if(normal.getType != null) {
+        val resultType = processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)
+        new FunctionDefinition(name,scope,FunctionSignature(arguments,Nil,resultType),Some(sig => new ExpressionBody(sig,scope,lexical => processBlock(normal.getBody,lexical))))
+      }
+      else
+        new FunctionDefinition(name,scope,FunctionSignature(arguments,Nil),Some(sig => new ExpressionBody(sig,scope,lexical => processBlock(normal.getBody,lexical))))
     }
     case method: AMethodFunctionDefinition => null
     case over: AOverrideFunctionDefinition => null

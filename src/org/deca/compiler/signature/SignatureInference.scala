@@ -55,7 +55,11 @@ class SignatureConstraints {
     for(hypoth <- polyHypotheses) {
       hypoth.substitute(x,y)
       (hypoth.alpha,hypoth.beta) match {
-        case (vx: SignatureVariable,vy: SignatureVariable) => if(vx.isInstanceOf[BoundsVariable[_]] || vy.isInstanceOf[BoundsVariable[_]]) { current.push(hypoth); polyHypotheses.dequeueFirst(h => h == hypoth) }
+        case (vx: SignatureVariable,vy: SignatureVariable) => 
+          if(vx.isInstanceOf[BoundsVariable[_]] || vy.isInstanceOf[BoundsVariable[_]]) {
+            current.push(hypoth)
+            polyHypotheses.dequeueFirst(h => h == hypoth)
+          }
         case _ => {
           current.push(hypoth)
           polyHypotheses.dequeueFirst(h => h == hypoth)
@@ -75,8 +79,10 @@ class SignatureConstraints {
   }
   
   def pop: InferenceConstraint = {
-    if(current.isEmpty)
-      polyHypotheses.dequeue
+    if(current.isEmpty) {
+      val sub = polyHypotheses.dequeue
+      EqualityConstraint(sub.alpha,sub.beta)
+    }
     else
       current.pop
   }
@@ -162,9 +168,9 @@ class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None) {
           (joins._2 + pair._1).map(c => constrain(c))
           substitute(vy,pair._2)
         }
+        case SubsumptionConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
         case SubsumptionConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,false))
         case SubsumptionConstraint(tx: MonoType,vy: TypeVariable) => substitute(vy,new BoundedTypeVariable(tx,JoinBound,false))
-        case SubsumptionConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
         case EqualityConstraint(vx: SignatureVariable,vy: SignatureVariable) => substitute(vx,vy)
         case EqualityConstraint(vx: SignatureVariable,_) => substitute(vx,c.beta)
         case EqualityConstraint(_,vy: SignatureVariable) => substitute(vy,c.alpha)
