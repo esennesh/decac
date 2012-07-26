@@ -131,7 +131,7 @@ class RecordType(val fields: List[RecordMember]) extends MonoType {
 
   override def toString: String = {
     val fieldStrings = fields.map(field => field.name + ": " + field.tau.toString)
-    "{" + fieldStrings.tail.foldLeft(fieldStrings.head)((rest: String,next: String) => rest + "," + next) + "}"
+    "{" + fieldStrings.foldRight("")((field: String,result: String) => field + (if(result != "") "," else "") + result) + "}"
   }
 }
 
@@ -141,6 +141,7 @@ class FunctionPointer(val domain: List[MonoType],
                       val range: MonoType,
                       val positive: MonoEffect,
                       val negative: MonoEffect) extends MonoType {
+  def pure: Boolean = !EffectOrdering.equiv(positive,PureEffect) || !EffectOrdering.equiv(negative,PureEffect)
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
     val domains = domain.map(d => d.filterT(pred)).foldLeft(Set.empty[MonoType])((res,typ) => res ++ typ)
     domains ++ range.filterT(pred) ++ positive.filterT(pred) ++ negative.filterT(pred) ++ (if(pred(this)) Set.empty + this else Set.empty)
@@ -168,7 +169,14 @@ class FunctionPointer(val domain: List[MonoType],
     new LLVMFunctionType(compiledRange,compiledDomain.toArray,false)
   }
 
-  override def toString: String = "(" + domain.tail.foldLeft(domain.head.toString)((x: String,y: MonoType) => x + "," + y.toString) + ") @->" + range.toString
+  override def toString: String = {
+    val parameters = "(" + domain.tail.foldLeft(domain.head.toString)((x: String,y: MonoType) => x + "," + y.toString) + ") @->"
+    val effect = if(pure)
+      "!{+(" + positive.toString + "),-(" + negative.toString + ")}"
+    else
+      ""
+    parameters + effect + " " + range.toString
+  }
 }
 
 case class TaggedRecord(name: String,tag: Any,record: RecordType) {
@@ -182,16 +190,23 @@ case class TaggedRecord(name: String,tag: Any,record: RecordType) {
     val tagType = new LLVMIntegerType(tagSize)
     LLVMConstantInteger.constantInteger(tagType,tagCode,false)
   }
+  override def toString: String = {
+    val fields = record.fields.foldRight("")((field,result) => (field.name match {
+      case Some(str) => str + ": " + field.tau.toString
+      case None => field.tau.toString
+    }) + (if(result != "") "," else "") + result)
+    name + (if(fields != "") "(" + fields + ")" else "")
+  }
 }
 
 class ZippableMap[A,B](val m: Map[A,B]) {
-  def zipElements[C](that: Map[A,C]): Map[A,Tuple2[B,C]] = {
+  def zipElements[C](that: Map[A,C]): Map[A,(B,C)] = {
     val xys = m.map(xs => (xs._1,xs._2,that.get(xs._1)))
     val intersection = xys.foldRight(Nil : List[(A,(B,C))])((head: (A,B,Option[C]),rest: List[(A,(B,C))]) => head._3 match {
       case Some(c) => (head._1,(head._2,c)) :: rest
       case None => rest
     })
-    HashMap.empty[A,Tuple2[B,C]] ++ intersection
+    HashMap.empty[A,(B,C)] ++ intersection
   }
 }
 
@@ -252,7 +267,7 @@ class SumType(trs: Iterable[TaggedRecord]) extends MonoType {
   }
 
   override def toString: String = {
-    val sum = cases.tail.map(x => x.toString).foldLeft(cases.head.toString)((x: String,y: String) => x + " + " + y)
+    val sum = cases.values.foldRight("")((c,res: String) => c.toString + (if(res != "") " + " else "") + res)
     "<" + sum + ">"
   }
 }

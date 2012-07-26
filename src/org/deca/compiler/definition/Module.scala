@@ -49,10 +49,7 @@ class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) wi
     fPath = Some(str)
   }
   
-  def define(d: Definition) = {
-    System.err.println("Defining: " + d.name)
-    declare(d)
-  }
+  def define(d: Definition) = declare(d)
   override def lookup(name: String): Definition = super.lookup(name).asInstanceOf[Definition]
   override def lookup(name: List[String]): Definition = super.lookup(name).asInstanceOf[Definition]
   
@@ -60,6 +57,7 @@ class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) wi
     for(definition <- symbols.values) definition match {
       case function: FunctionDefinition => function.build(this)
       //case defin: TypeDefinition => defin.getSpecializations.foreach(tau => compiledModule.addTypeName(name,tau.compile))
+      case typeDefinition: TypeDefinition => Unit
       case global: VariableDefinition => global.build(this)
       //TODO: Add code for constant expressions, and use it to set the initializer on global variables.
       //Modules defined in this namespace may not be child modules, but possibly imports.

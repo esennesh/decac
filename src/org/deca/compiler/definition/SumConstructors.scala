@@ -76,20 +76,19 @@ class RecordConstructorBody(val name: String,
     for(member <- members) {
       member.initializer.constrain(inference.constraints)
       inference.constrain(new SubsumptionConstraint(member.initializer.expType,member.tau))
+      inference.constrain(new SubsumptionConstraint(member.initializer.expEffect.positive,signature.effect.positive))
+      inference.constrain(new SubsumptionConstraint(member.initializer.expEffect.negative,signature.effect.negative))
     }
+    inference.constrain(new SubsumptionConstraint(bodyType,signature.result))
     inference.solve
     for(member <- members)
       member.initializer.check(inference)
     inference.solve
   }
-  override def bodyType: SumType = {
+  val bodyType: SumType = {
     val tr = new TaggedRecord(name,tag,new RecordType(members.map(member => RecordMember(Some(member.name),member.mu,member.tau))))
     new SumType(tr :: Nil)
   }
-  override val bodyEffect: EffectPair =
-    members.foldLeft(EffectPair(PureEffect,PureEffect))((eff: EffectPair,member: MemberInitializer) => {
-      eff ++ member.initializer.expEffect
-    })
   override def substitute(substitution: SignatureSubstitution): Unit = {
     scope.substitute(substitution)
     for(member <- members) {

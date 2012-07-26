@@ -20,11 +20,11 @@ trait MonoSignature {
 }
 
 object MonoSignature {
-  def universalize[S <: MonoSignature](sig: S,substitution: SignatureSubstitution): S = {
+  def universalize[S <: MonoSignature](sig: S,substitution: Option[SignatureSubstitution] = None): S = {
     val tau = sig.mapT(tau => tau match {
       case tvar: TypeVariable if !tvar.universal => {
         val universal = new TypeVariable(true,tvar.name)
-        substitution.substitute(tvar,universal)
+        substitution.map(_.substitute(tvar,universal))
         universal
       }
       case _ => tau
@@ -32,7 +32,7 @@ object MonoSignature {
     val rho = tau.mapR(rho => rho match {
       case rvar: RegionVariable if !rvar.universal => {
         val universal = new RegionVariable(true)
-        substitution.substitute(rvar,universal)
+        substitution.map(_.substitute(rvar,universal))
         universal
       }
       case _ => rho
@@ -40,7 +40,7 @@ object MonoSignature {
     rho.mapE(epsilon => epsilon match {
       case evar: EffectVariable if !evar.universal => {
         val universal = new EffectVariable(true)
-        substitution.substitute(evar,universal)
+        substitution.map(_.substitute(evar,universal))
         universal
       }
       case _ => epsilon
@@ -118,9 +118,11 @@ trait MonoEffect extends MonoSignature {
   def <=(sig: MonoEffect)(implicit ordering: PartialOrdering[MonoEffect]) = ordering.lteq(this,sig)
   def >=(sig: MonoEffect)(implicit ordering: PartialOrdering[MonoEffect]) = ordering.gteq(this,sig)
   
-  def ++(eff: MonoEffect): SetEffect = eff match {
-    case SetEffect(effects) => SetEffect(effects + this)
-    case _ => SetEffect(HashSet.empty[MonoEffect] + this + eff)
+  def ++(eff: MonoEffect): SetEffect = (this,eff) match {
+    case (SetEffect(ex),SetEffect(ey)) => SetEffect(ex ++ ey)
+    case (_,SetEffect(effects)) => SetEffect(effects + this)
+    case (SetEffect(effects),_) => SetEffect(effects + eff)
+    case (_,_) => SetEffect(Set.empty[MonoEffect] + this + eff)
   }
 }
 

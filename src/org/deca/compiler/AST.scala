@@ -49,7 +49,7 @@ object ASTProcessor {
   }
   def processTupleComponents(components: PTupleComponentList,scope: TypeDefinitionScope): List[RecordMember] = components match {
     case one: AOneTupleComponentList => processTupleComponent(one.getTupleComponent,scope) :: Nil
-    case many: AManyTupleComponentList => processTupleComponents(many.getTupleComponentList,scope) ++ (processTupleComponent(many.getTupleComponent,scope) :: Nil)
+    case many: AManyTupleComponentList => processTupleComponent(many.getTupleComponent,scope) :: processTupleComponents(many.getTupleComponentList,scope)
   }
   def processSlotDeclaration(decl: PSlotDeclaration,scope: TypeDefinitionScope): (String,MonoType,MonoMutability) = {
     val adecl = decl.asInstanceOf[ASlotDeclaration]
@@ -130,7 +130,7 @@ object ASTProcessor {
         case "!read" => ReadEffect(module.region)
         case "!write" => WriteEffect(module.region)
         case "!destroy" => DestroyEffect(module.region)
-        case "!call" => CallEffect(module)
+        case "!call" => CallEffect(module.region)
       }
     }
     case exceptional: AExceptionalEffectForm => ThrowEffect(processTypeForm(exceptional.getTypeForm,scope))
@@ -373,12 +373,12 @@ object ASTProcessor {
     case others: AOthersExp4 => processExp3(others.getExp3,scope)
   }
   def processExp5(exp: PExp5,scope: LexicalScope): Expression = exp match {
-    /*case greater: AGreaterExp5 => new UninferredComparison(GreaterComp(false),processExp4(greater.getExp1,scope),processExp4(greater.getExp2,scope))
-    case greatereq: AGreatereqExp5 => new UninferredComparison(GreaterComp(true),processExp4(greatereq.getExp1,scope),processExp4(greatereq.getExp2,scope))
-    case lesser: ALessExp5 => new UninferredComparison(LesserComp(false),processExp4(lesser.getExp1,scope),processExp4(lesser.getExp2,scope))
-    case lessereq: ALessereqExp5 => new UninferredComparison(LesserComp(true),processExp4(lessereq.getExp1,scope),processExp4(lessereq.getExp2,scope))
-    case equals: AEqualsExp5 => new UninferredComparison(EqualComp,processExp4(equals.getExp1,scope),processExp4(equals.getExp2,scope))
-    case different: ADifferentExp5 => new UninferredComparison(DifferentComp,processExp4(different.getExp1,scope),processExp4(different.getExp2,scope))*/
+    case greater: AGreaterExp5 => new ComparisonExpression(OrdinalComparison(true,false),processExp4(greater.getExp1,scope),processExp4(greater.getExp2,scope))
+    case greatereq: AGreatereqExp5 => new ComparisonExpression(OrdinalComparison(true,true),processExp4(greatereq.getExp1,scope),processExp4(greatereq.getExp2,scope))
+    case lesser: ALessExp5 => new ComparisonExpression(OrdinalComparison(false,false),processExp4(lesser.getExp1,scope),processExp4(lesser.getExp2,scope))
+    case lessereq: ALessereqExp5 => new ComparisonExpression(OrdinalComparison(false,true),processExp4(lessereq.getExp1,scope),processExp4(lessereq.getExp2,scope))
+    case equals: AEqualsExp5 => new ComparisonExpression(IdentityComparison(true),processExp4(equals.getExp1,scope),processExp4(equals.getExp2,scope))
+    case different: ADifferentExp5 => new ComparisonExpression(IdentityComparison(false),processExp4(different.getExp1,scope),processExp4(different.getExp2,scope))
     case others: AOthersExp5 => processExp4(others.getExp4,scope)
   }
   def processBlockSteps(contents: LinkedList[PBlockStep]): List[PExpression] = convertList(contents).map(step => step.asInstanceOf[ABlockStep].getExpression)
@@ -421,8 +421,8 @@ object ASTProcessor {
       val alpha = new TypeVariable(false,Some(name))
       tscope.bind(name,Some(alpha))
       val sigma = processTypeForm(atypedef.getTypeForm,tscope)
-      val mu = if(sigma.filterT(tau => tau == alpha) != Nil) new RecursiveType(sigma,Some(alpha)) else sigma
-      new TypeDefinition(new TypeExpressionConstructor(tparams,mu),name,scope)
+      val mu = MonoSignature.universalize(if(sigma.filterT(tau => tau == alpha).empty == false) new RecursiveType(sigma,Some(alpha)) else sigma,None)
+      new TypeDefinition(new TypeExpressionConstructor(mu.variables.toList,mu),name,scope)
     }
     case avardef: AGlobaldefDefinition => {
       val slot = processSlotDeclaration(avardef.getSlotDeclaration,new TypeDefinitionScope(Nil,scope))

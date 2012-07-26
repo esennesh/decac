@@ -8,7 +8,7 @@ import org.deca.compiler.signature._
 
 class AssignmentExpression(val slot: WritableExpression,val value: Expression) extends Expression {
   expType = slot.expType
-  expEffect = value.expEffect
+  expEffect = value.expEffect ++ EffectPair(WriteEffect(slot.region),PureEffect)
   
   override val children: List[Expression] = List(slot,value)
   override def constrain(scs: SignatureConstraints): Unit = {

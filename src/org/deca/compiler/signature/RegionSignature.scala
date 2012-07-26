@@ -33,8 +33,8 @@ class BoundedRegionVariable(rho: MonoRegion,bnd: SignatureBound,univ: Boolean) e
 object RegionRelation extends InferenceOrdering[MonoRegion] {
   override protected val lattice = new GraphLattice(GlobalRegion,BottomRegion)(RegionOrdering)
   def lt(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {
-    case (GlobalRegion,_) => Some(Set.empty)
-    case (_,BottomRegion) => Some(Set.empty)
+    case (BottomRegion,_) => Some(Set.empty)
+    case (_,GlobalRegion) => Some(Set.empty)
     case (ScopeRegion(sx),ScopeRegion(sy)) => if(sy enclosedIn sx) Some(Set.empty) else None
     case (RegionVariable(true),RegionVariable(_)) => Some(Set.empty)
     case (RegionVariable(false),RegionVariable(false)) => Some(Set.empty + SubsumptionConstraint(x,y))
@@ -44,7 +44,7 @@ object RegionRelation extends InferenceOrdering[MonoRegion] {
     case _ => None
   }
   def equiv(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {
-    case (ScopeRegion(sx),ScopeRegion(sy)) => if(sx == sy) Some(HashSet.empty) else None
+    case (ScopeRegion(sx),ScopeRegion(sy)) => if(sx == sy) Some(Set.empty) else None
     case (RegionVariable(fx),RegionVariable(fy)) => if(fx == fy) Some(HashSet.empty[InferenceConstraint] + EqualityConstraint(x,y)) else None
     case _ => None
   }

@@ -10,8 +10,6 @@ import org.deca.compiler.expression.{EffectPair,Expression}
 trait FunctionBody {
   val scope: LexicalScope
   val signature: FunctionSignature
-  def bodyType: MonoType
-  def bodyEffect: EffectPair
   
   def infer: SignatureSubstitution
   def substitute(substitution: SignatureSubstitution): Unit
@@ -24,23 +22,30 @@ case class FunctionSignature(var arguments: List[(String,MonoType)],
                              var result: MonoType = new TypeVariable(false,None),
                              var effect: EffectPair = EffectPair(new EffectVariable(false),new EffectVariable(false))) {
   def substitute(substitution: SignatureSubstitution): Unit = {
-    arguments = arguments.map(arg => (arg._1,MonoSignature.universalize(substitution.solve(arg._2),substitution)))
-    implicits = implicits.map(impl => (impl._1,MonoSignature.universalize(substitution.solve(impl._2),substitution)))
-    result = MonoSignature.universalize(substitution.solve(result),substitution)
-    effect = EffectPair(MonoSignature.universalize(substitution.solve(effect.positive),substitution),
-                        MonoSignature.universalize(substitution.solve(effect.negative),substitution))
+    val variables = arguments.foldLeft(Set.empty[SignatureVariable])((result: Set[SignatureVariable],arg) => result ++ arg._2.variables)
+    for(variable <- variables)
+      MonoSignature.universalize(variable,Some(substitution))
+    arguments = arguments.map(arg => (arg._1,substitution.solve(arg._2)))
+    implicits = implicits.map(impl => (impl._1,substitution.solve(impl._2)))
+    result = substitution.solve(result)
+    effect = EffectPair(substitution.solve(effect.positive),
+                        substitution.solve(effect.negative))
   }
   def specialize(spec: SignatureSubstitution): FunctionSignature =
     FunctionSignature(arguments.map(arg => (arg._1,spec.solve(arg._2))),
                       implicits.map(impl => (impl._1,spec.solve(impl._2))),
                       spec.solve(result),
                       EffectPair(spec.solve(effect.positive),spec.solve(effect.negative)))
-  def arrow: Either[TypeConstructor,FunctionPointer] = {
+  def arrow: Either[TypeExpressionConstructor,FunctionPointer] = {
     val func = new FunctionPointer(arguments.map(_._2) ++ implicits.map(_._2),result,effect.positive,effect.negative)
     if(func.variables.forall(svar => svar.universal))
       Left(new TypeExpressionConstructor(func.variables.toList,func))
     else
       Right(func)
+  }
+  override def toString: String = arrow match {
+    case Left(constructor) => constructor.toString
+    case Right(func) => func.toString
   }
 }
 
@@ -91,8 +96,6 @@ class ExpressionBody(override val signature: FunctionSignature,
                      mkBody: LexicalScope => Expression) extends FunctionBody {
   override val scope = new LexicalScope(parent,signature.arguments ++ signature.implicits)
   val body: Expression = mkBody(scope)
-  override def bodyType: MonoType = signature.result
-  override def bodyEffect: EffectPair = signature.effect
   override def infer: SignatureSubstitution = {
     val inference = new LatticeUnificationInstance
     body.constrain(inference.constraints)
