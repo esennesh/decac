@@ -8,17 +8,17 @@ import org.deca.compiler.definition._
 class SignatureSubstitution {
   protected val queue: Queue[(SignatureVariable,MonoSignature)] = new Queue[(SignatureVariable,MonoSignature)]
   
-  def substitute(x: SignatureVariable,y: MonoSignature): Unit = {
-    assert(!x.universal)
+  def substitute(x: SignatureVariable,y: MonoSignature,specialize: Boolean = false): Unit = {
+    assert(if(specialize) x.universal else !x.universal)
     queue.enqueue((x,y))
   }
   def isEmpty: Boolean = queue.isEmpty
   
   def solve[T <: MonoSignature](sig: T): T = {
-    val substituted: T = queue.foldLeft(sig)((result: MonoSignature,sub: Tuple2[SignatureVariable,MonoSignature]) => sub._1 match {
-      case t: MonoType => sig.mapT((st: MonoType) => if(st == sub._1) sub._2.asInstanceOf[MonoType] else st).asInstanceOf[T]
-      case e: MonoEffect => sig.mapE((se: MonoEffect) => if(se == sub._1) sub._2.asInstanceOf[MonoEffect] else se).asInstanceOf[T]
-      case r: MonoRegion => sig.mapR((sr: MonoRegion) => if(sr == sub._1) sub._2.asInstanceOf[MonoRegion] else sr).asInstanceOf[T]
+    val substituted: T = queue.foldLeft(sig)((result: MonoSignature,sub: (SignatureVariable,MonoSignature)) => sub._1 match {
+      case t: MonoType => result.mapT((st: MonoType) => if(st == sub._1) sub._2.asInstanceOf[MonoType] else st).asInstanceOf[T]
+      case e: MonoEffect => result.mapE((se: MonoEffect) => if(se == sub._1) sub._2.asInstanceOf[MonoEffect] else se).asInstanceOf[T]
+      case r: MonoRegion => result.mapR((sr: MonoRegion) => if(sr == sub._1) sub._2.asInstanceOf[MonoRegion] else sr).asInstanceOf[T]
     })
     val typeBounded: T = substituted.mapT((sigprime: MonoType) => sigprime match {
       case bounded: BoundsVariable[MonoType] => {
@@ -78,24 +78,19 @@ class SignatureConstraints {
     case _ => current.push(c)
   }
   
-  def pop: InferenceConstraint = {
+  def pop: InferenceConstraint =
     if(current.isEmpty) {
       val sub = polyHypotheses.dequeue
       EqualityConstraint(sub.alpha,sub.beta)
     }
     else
       current.pop
-  }
   
   def isEmpty = current.isEmpty && polyHypotheses.isEmpty
 }
 
-class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None) {
+class LatticeUnificationInstance(protected val result: SignatureSubstitution = new SignatureSubstitution) {
   val constraints = new SignatureConstraints
-  protected val result = subst match {
-    case Some(s) => s
-    case None => new SignatureSubstitution
-  }
   
   def constrain(c: InferenceConstraint): Unit = constraints.push(c)
   
@@ -156,25 +151,37 @@ class LatticeUnificationInstance(subst: Option[SignatureSubstitution] = None) {
           substitute(vx,px._2)
           substitute(vy,py._2)
         }
+        case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],vy: SignatureVariable) =>
+          constrain(SubsumptionConstraint(vx.signature,vy))
         case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],_) => {
           val meets = SignatureRelation.meet(vx.signature,c.beta)
           val pair = vx.meet(meets._1)
           (meets._2 + pair._1).map(c => constrain(c))
           substitute(vx,pair._2)
         }
+        case SubsumptionConstraint(vx: SignatureVariable,vy: BoundsVariable[MonoSignature]) =>
+          constrain(SubsumptionConstraint(vx,vy.signature))
         case SubsumptionConstraint(_,vy: BoundsVariable[MonoSignature]) => {
           val joins = SignatureRelation.join(c.alpha,vy.signature)
           val pair = vy.join(joins._1)
           (joins._2 + pair._1).map(c => constrain(c))
           substitute(vy,pair._2)
         }
+        case SubsumptionConstraint(ex: MonoEffect,vy: EffectVariable) => substitute(vy,new BoundedEffectVariable(ex,JoinBound,false))
+        case SubsumptionConstraint(vx: EffectVariable,ey: MonoEffect) => substitute(vx,new BoundedEffectVariable(ey,MeetBound,false))
         case SubsumptionConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
         case SubsumptionConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,false))
         case SubsumptionConstraint(tx: MonoType,vy: TypeVariable) => substitute(vy,new BoundedTypeVariable(tx,JoinBound,false))
-        case EqualityConstraint(vx: SignatureVariable,vy: SignatureVariable) => substitute(vx,vy)
+        case EqualityConstraint(vx: SignatureVariable,vy: SignatureVariable) => (vx.universal,vy.universal) match {
+          case (true, true) => if(vx != vy) throw new Exception("Cannot substitute from one universal variable to another: " + vx.toString + " =:= " + vy.toString)
+          case (true,false) => substitute(vy,vx)
+          case _ => substitute(vx,vy)
+        }
         case EqualityConstraint(vx: SignatureVariable,_) => substitute(vx,c.beta)
         case EqualityConstraint(_,vy: SignatureVariable) => substitute(vy,c.alpha)
-        case _ => constraints.push(c)
+        /* DEBUG: If the inference engine seems to get stuck, I'm not properly handling a case that should occur down here in the inference
+           section.  To handle it, I can comment this next line out, figure out how to handle it, and then uncomment this line. */
+        case _ => constrain(c)
       }
     }
     result

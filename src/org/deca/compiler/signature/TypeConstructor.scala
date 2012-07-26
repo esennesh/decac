@@ -50,7 +50,7 @@ abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
   def substitution(params: List[MonoSignature]): SignatureSubstitution = {
     val result = new SignatureSubstitution
     for(param <- parameters zip params)
-      result.substitute(param._1,param._2)
+      result.substitute(param._1,param._2,true)
     result
   }
   def freshlySpecialize: List[SignatureVariable] = parameters.map(_ match {
@@ -69,7 +69,7 @@ abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
 }
 
 class TypeExpressionConstructor(alphas: List[SignatureVariable],protected val tau: MonoType) extends TypeConstructor(alphas) {
-  assert(tau.variables.forall(tvar => alphas.contains(tvar)))
+  assert(tau.variables.forall(alphas.contains(_)) && alphas.forall(tvar => !tau.filterT(_ == tvar).isEmpty))
   
   override def compile(params: List[MonoSignature]): LLVMType = specializations.get(params) match {
     case Some(t) => t
@@ -83,6 +83,8 @@ class TypeExpressionConstructor(alphas: List[SignatureVariable],protected val ta
   override def represent(params: List[MonoSignature]): MonoType = {
     parameters.zip(params).foldLeft(tau)((result: MonoType,spec: Tuple2[SignatureVariable,MonoSignature]) => result.mapT((sig: MonoType) => if(sig == spec._1) spec._2.asInstanceOf[MonoType] else sig))
   }
+  
+  override def toString: String = "forall " + alphas.foldRight(".")((svar,res) => svar.toString + " " + res) + tau.toString
 }
 
 class OpenSumConstructor(alphas: List[TypeVariable],addends: List[TaggedRecord],loopNode: Option[MonoType]) extends TypeConstructor(alphas) {

@@ -3,8 +3,7 @@ package scala.collection.mutable
 import scala.collection.mutable
 import scala.math.PartialOrdering
 
-protected class LatticeNode[E](v: E)(implicit po: PartialOrdering[E]) {
-  val value: E = v
+protected class LatticeNode[E](val value: E)(implicit po: PartialOrdering[E]) {
   protected val ordering = po
   protected val parents: mutable.HashSet[LatticeNode[E]] = new mutable.HashSet[LatticeNode[E]]()
   protected val children: mutable.HashSet[LatticeNode[E]] = new mutable.HashSet[LatticeNode[E]]()
@@ -78,11 +77,9 @@ trait LatticeSet[E] extends Lattice[E] with mutable.Set[E] {
   val bottom: E
 }
 
-class GraphLattice[E](t: E,b: E)(implicit override val ordering: PartialOrdering[E]) extends LatticeSet[E] {
-  protected val topNode: LatticeNode[E] = new LatticeNode[E](t)(ordering)
-  protected val bottomNode: LatticeNode[E] = new LatticeNode[E](b)(ordering)
-  override val top: E = topNode.value
-  override val bottom: E = bottomNode.value
+class GraphLattice[E](override val top: E,override val bottom: E)(implicit override val ordering: PartialOrdering[E]) extends LatticeSet[E] {
+  protected val topNode: LatticeNode[E] = new LatticeNode[E](top)(ordering)
+  protected val bottomNode: LatticeNode[E] = new LatticeNode[E](bottom)(ordering)
   assert(ordering.lt(bottom,top))
   
   override def contains(key: E): Boolean = topNode.find(key) match {

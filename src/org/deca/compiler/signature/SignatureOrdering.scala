@@ -66,7 +66,21 @@ object SignatureRelation extends InferenceOrdering[MonoSignature] {
     case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.equiv(rx,ry)
     case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.equiv(ex,ey)
     case (mx: MonoMutability,my: MonoMutability) => MutabilityRelation.equiv(mx,my)
-    case _ => throw new Exception("Mismatched signatures: " + x.toString + " = " + y.toString)
+    case _ => throw new Exception("Mismatched signatures: " + x.toString + " =:= " + y.toString)
+  }
+  override def join(x: MonoSignature,y: MonoSignature): (MonoSignature,Set[InferenceConstraint]) = (x,y) match {
+    case (tx: MonoType,ty: MonoType) => TypeRelation.join(tx,ty)
+    case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.join(rx,ry)
+    case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.join(ex,ey)
+    case (mx: MonoMutability,my: MonoMutability) => MutabilityRelation.join(mx,my)
+    case _ => throw new Exception("Mismatched signatures: " + x.toString + " join " + y.toString)
+  }
+  override def meet(x: MonoSignature,y: MonoSignature): (MonoSignature,Set[InferenceConstraint]) = (x,y) match {
+    case (tx: MonoType,ty: MonoType) => TypeRelation.meet(tx,ty)
+    case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.meet(rx,ry)
+    case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.meet(ex,ey)
+    case (mx: MonoMutability,my: MonoMutability) => MutabilityRelation.meet(mx,my)
+    case _ => throw new Exception("Mismatched signatures: " + x.toString + " join " + y.toString)
   }
 }
 

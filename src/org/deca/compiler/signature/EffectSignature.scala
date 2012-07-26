@@ -9,11 +9,6 @@ class EffectVariable(override val universal: Boolean) extends MonoEffect with Si
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = Set.empty
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = Set.empty
 }
-case object PureEffect extends MonoEffect {
-  override def filterT(pred: MonoType => Boolean): Set[MonoType] = Set.empty
-  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = Set.empty
-  override def variables: Set[SignatureVariable] = Set.empty[SignatureVariable]
-}
 case class ReadEffect(region: MonoRegion) extends MonoEffect {
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = Set.empty
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = region.filterR(pred)
@@ -39,7 +34,7 @@ case class ThrowEffect(exception: MonoType) extends MonoEffect {
   override def mapT(f: (MonoType) => MonoType): MonoEffect = ThrowEffect(f(exception))
   override def variables: Set[SignatureVariable] = exception.variables
 }
-case class CallEffect(module: Module) extends MonoEffect {
+case class CallEffect(region: MonoRegion) extends MonoEffect {
   override def variables: Set[SignatureVariable] = Set.empty[SignatureVariable]
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = Set.empty
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = Set.empty
@@ -49,16 +44,18 @@ case class SetEffect(var effects: Set[MonoEffect]) extends MonoEffect {
     case setEffect: SetEffect => setEffect.effects
     case _ => Set.empty + effect
   }))
-  assert(effects.forall(effect => !effect.isInstanceOf[SetEffect]))
+  assert(effects.forall(effect => !effect.isInstanceOf[SetEffect] && effect != PureEffect))
   def contains(effect: MonoEffect): Boolean = !filterE(eff => eff == effect).isEmpty
-  override def filterT(pred: MonoType => Boolean): Set[MonoType] = effects.map(eff => eff.filterT(pred)).foldLeft(Set.empty[MonoType].asInstanceOf[Set[MonoType]])((res: Set[MonoType],ts: Set[MonoType]) => res ++ ts)
-  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = effects.map(eff => eff.filterR(pred)).foldLeft(Set.empty[MonoRegion].asInstanceOf[Set[MonoRegion]])((res: Set[MonoRegion],ts: Set[MonoRegion]) => res ++ ts)
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = effects.map(eff => eff.filterT(pred)).foldLeft(Set.empty[MonoType])((res: Set[MonoType],ts: Set[MonoType]) => res ++ ts)
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = effects.map(eff => eff.filterR(pred)).foldLeft(Set.empty[MonoRegion])((res: Set[MonoRegion],ts: Set[MonoRegion]) => res ++ ts)
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = effects.map(eff => eff.filterE(pred)).foldLeft(Set.empty[MonoEffect])((res,ts) => res ++ ts) ++ (if(pred(this)) Set.empty[MonoEffect] + this else Set.empty[MonoEffect])
   override def mapR(f: (MonoRegion) => MonoRegion): MonoEffect = SetEffect(effects.map(eff => eff.mapR(f)))
   override def mapT(f: (MonoType) => MonoType): MonoEffect = SetEffect(effects.map(eff => eff.mapT(f)))
   override def mapE(f: (MonoEffect) => MonoEffect): MonoEffect = f(SetEffect(effects.map(eff => eff.mapE(f))))
   override def variables: Set[SignatureVariable] = effects.map(effect => effect.variables).foldLeft(Set.empty[SignatureVariable])((accum: Set[SignatureVariable],y: Set[SignatureVariable]) => accum ++ y)
 }
+
+object PureEffect extends SetEffect(Set.empty)
 
 object TopEffect extends MonoEffect {
   override def variables: Set[SignatureVariable] = Set.empty[SignatureVariable]
@@ -76,6 +73,15 @@ class BoundedEffectVariable(epsilon: MonoEffect,bnd: SignatureBound,univ: Boolea
 object EffectRelation extends InferenceOrdering[MonoEffect] {
   override protected val lattice = new GraphLattice(TopEffect,PureEffect)(EffectOrdering)
   def lt(x: MonoEffect,y: MonoEffect): Option[Set[InferenceConstraint]] = (x,y) match {
+    case (vx: EffectVariable,vy: EffectVariable) =>
+      if(vy.universal || vx == vy)
+        Some(Set.empty)
+      else if(!vx.universal)
+        Some(Set.empty + SubsumptionConstraint(vx,vy))
+      else
+        None
+    case (_,vy: EffectVariable) => if(vy.universal) Some(Set.empty) else Some(Set.empty + SubsumptionConstraint(x,vy))
+    case (vx: EffectVariable,_) => Some(Set.empty + SubsumptionConstraint(vx,y))
     case (PureEffect,_) => Some(Set.empty)
     case (_,TopEffect) => Some(Set.empty)
     case (SetEffect(ex),SetEffect(ey)) => if(ex.forall(eff => ey.contains(eff))) Some(Set.empty) else None
@@ -83,22 +89,22 @@ object EffectRelation extends InferenceOrdering[MonoEffect] {
     case (ReadEffect(rx),ReadEffect(ry)) => Some(Set.empty[InferenceConstraint] + SubsumptionConstraint(rx,ry))
     case (WriteEffect(rx),WriteEffect(ry)) => Some(Set.empty[InferenceConstraint] + SubsumptionConstraint(rx,ry))
     case (ThrowEffect(tx),ThrowEffect(ty)) => Some(Set.empty[InferenceConstraint] + SubsumptionConstraint(tx,ty))
-    case (vx: EffectVariable,vy: EffectVariable) =>
-      if(vx.universal || vy.universal || vx == vy)
-        Some(Set.empty)
-      else
-        Some(Set.empty + SubsumptionConstraint(vx,vy))
-    case (_,vy: EffectVariable) => if(vy.universal || x == vy) Some(Set.empty[InferenceConstraint]) else None
     case _ => None
   }
   def equiv(x: MonoEffect,y: MonoEffect): Option[Set[InferenceConstraint]] = (x,y) match {
-    case (PureEffect,PureEffect) => Some(Set.empty[InferenceConstraint])
-    case (SetEffect(ex),SetEffect(ey)) => if(ex.forall(eff => ey.contains(eff))) Some(Set.empty) else None
-    case (ReadEffect(rx),ReadEffect(ry)) => Some(Set.empty[InferenceConstraint] + EqualityConstraint(rx,ry))
-    case (WriteEffect(rx),WriteEffect(ry)) => Some(Set.empty[InferenceConstraint] + EqualityConstraint(rx,ry))
-    case (ThrowEffect(tx),ThrowEffect(ty)) => Some(Set.empty[InferenceConstraint] + EqualityConstraint(tx,ty))
-    case (CallEffect(mx),CallEffect(my)) => if(mx == my) Some(Set.empty[InferenceConstraint]) else None
-    case (vx: EffectVariable,vy: EffectVariable) => if(vx eq vy) Some(Set.empty[InferenceConstraint]) else Some(Set.empty + EqualityConstraint(x,y))
+    case (TopEffect,TopEffect) => Some(Set.empty)
+    case (SetEffect(ex),SetEffect(ey)) => if(ex.forall(ey.contains(_)) && ey.forall(ex.contains(_))) Some(Set.empty) else None
+    case (ReadEffect(rx),ReadEffect(ry)) => RegionRelation.equiv(rx,ry)
+    case (WriteEffect(rx),WriteEffect(ry)) => RegionRelation.equiv(rx,ry)
+    case (ThrowEffect(tx),ThrowEffect(ty)) => TypeRelation.equiv(tx,ty)
+    case (CallEffect(rx),CallEffect(ry)) => RegionRelation.equiv(rx,ry)
+    case (vx: EffectVariable,vy: EffectVariable) =>
+      if(vx eq vy)
+        Some(Set.empty)
+      else if(!vx.universal || !vy.universal)
+        Some(Set.empty + EqualityConstraint(x,y))
+      else
+        None
     case _ => None
   }
 }

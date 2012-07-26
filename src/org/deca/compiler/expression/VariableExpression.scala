@@ -7,7 +7,8 @@ import org.deca.compiler.signature._
 class VariableExpression(val name: List[String],val scope: Scope) extends WritableExpression {
   val binding = scope.typedLookup[VariableBinding](name)
   expType = binding.variableType
-  expEffect = EffectPair(ReadEffect(scope.region),PureEffect)
+  expEffect = EffectPair(PureEffect,PureEffect)
+  override val region: MonoRegion = scope.region
   override val children: List[Expression] = Nil
   override def substitute(sub: SignatureSubstitution): Unit = {
     expType = sub.solve[MonoType](expType)
