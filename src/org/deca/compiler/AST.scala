@@ -387,7 +387,7 @@ object ASTProcessor {
     case many: AManyBlockExpression => processBlockSteps(many.getBlockStep)
   }
   def processBlock(expr: PBlockExpression,scope: LexicalScope): BlockExpression = {
-    val exprs: List[Expression] = processBlockContents(expr).map(expr => processExpression(expr,scope))
+    val exprs: List[Expression] = processBlockContents(expr).map(processExpression(_,scope))
     new BlockExpression(exprs)
   }
   def processExpression(expression: PExpression,scope: LexicalScope): Expression = expression match {

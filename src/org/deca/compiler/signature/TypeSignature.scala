@@ -211,6 +211,7 @@ class ZippableMap[A,B](val m: Map[A,B]) {
 }
 
 class SumType(trs: Iterable[TaggedRecord]) extends MonoType {
+  assert(!trs.isEmpty)
   val cases: Map[String,TaggedRecord] = HashMap.empty[String,TaggedRecord] ++ trs.map(tr => (tr.name,tr))
   implicit def zippingMap[A,B](m: Map[A,B]): ZippableMap[A,B] = new ZippableMap[A,B](m)
   
@@ -236,8 +237,9 @@ class SumType(trs: Iterable[TaggedRecord]) extends MonoType {
   def enumeration: Boolean = cases.forall(trec => trec._2.record.length == 0)
   
   def tagRepresentation: LLVMIntegerType = {
-    val tagSize = math.floor(math.log(cases.size-1) / math.log(2)).toInt + 1
-    assert(tagSize > 0)
+    val tagSize = math.floor(math.log(cases.size) / math.log(2)).toInt + 1
+    if(tagSize <= 0)
+      throw new Exception("Size of sum-type tag in bits is non-positive: " + tagSize.toString)
     new LLVMIntegerType(tagSize)
   }
   

@@ -73,6 +73,9 @@ class BoundedEffectVariable(epsilon: MonoEffect,bnd: SignatureBound,univ: Boolea
 object EffectRelation extends InferenceOrdering[MonoEffect] {
   override protected val lattice = new GraphLattice(TopEffect,PureEffect)(EffectOrdering)
   def lt(x: MonoEffect,y: MonoEffect): Option[Set[InferenceConstraint]] = (x,y) match {
+    case (bx: BoundedEffectVariable,by: BoundedEffectVariable) => lt(bx.signature,by.signature)
+    case (_,by: BoundedEffectVariable) => lt(x,by.signature)
+    case (bx: BoundedEffectVariable,_) => lt(bx.signature,y)
     case (vx: EffectVariable,vy: EffectVariable) =>
       if(vy.universal || vx == vy)
         Some(Set.empty)

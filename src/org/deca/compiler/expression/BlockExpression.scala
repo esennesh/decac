@@ -10,6 +10,7 @@ import org.deca.compiler.definition._
 import org.deca.compiler.signature._
 
 class BlockExpression(val steps: List[Expression]) extends Expression {
+  assert(steps.length >= 1)
   expType = steps.last.expType
   expEffect = EffectPair(new EffectVariable(false),new EffectVariable(false))
   override val children = steps
@@ -30,4 +31,7 @@ class BlockExpression(val steps: List[Expression]) extends Expression {
     new BlockExpression(steps.map(_.specialize(spec,specScope)))
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = 
     steps.map(_.compile(builder,scope,instantiation)).last
+    
+  override def toString: String =
+    "{\n" + steps.foldRight("")((step,result) => step.toString + ";\n" + result) + "}"
 }

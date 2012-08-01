@@ -9,6 +9,10 @@ sealed abstract class InferenceConstraint {
   def substitute(vx: SignatureVariable,newY: MonoSignature): Unit
   def alpha: MonoSignature
   def beta: MonoSignature
+  def polymorphic: Boolean = (alpha,beta) match {
+    case (vx: SignatureVariable,vy: SignatureVariable) => !vx.isInstanceOf[BoundsVariable[_]] && !vy.isInstanceOf[BoundsVariable[_]]
+    case _ => false
+  }
 }
 case class SubsumptionConstraint(var x: MonoSignature,var y: MonoSignature) extends InferenceConstraint {
   override def alpha = x

@@ -52,31 +52,16 @@ class SignatureConstraints {
   def substitute(x: SignatureVariable,y: MonoSignature): Unit = {
     for(constraint <- current)
       constraint.substitute(x,y)
-    for(hypoth <- polyHypotheses) {
-      hypoth.substitute(x,y)
-      (hypoth.alpha,hypoth.beta) match {
-        case (vx: SignatureVariable,vy: SignatureVariable) => 
-          if(vx.isInstanceOf[BoundsVariable[_]] || vy.isInstanceOf[BoundsVariable[_]]) {
-            current.push(hypoth)
-            polyHypotheses.dequeueFirst(h => h == hypoth)
-          }
-        case _ => {
-          current.push(hypoth)
-          polyHypotheses.dequeueFirst(h => h == hypoth)
-        }
-      }
-    }
+    for(hypothesis <- polyHypotheses)
+      hypothesis.substitute(x,y)
+    polyHypotheses.dequeueAll(!_.polymorphic).map(current.push(_))
   }
   
-  def push(c: InferenceConstraint): Unit = (c.alpha,c.beta) match {
-    case (vx: SignatureVariable,vy: SignatureVariable) => {
-      if(!vx.isInstanceOf[BoundsVariable[_]] && !vy.isInstanceOf[BoundsVariable[_]])
-        polyHypotheses.enqueue(c)
-      else
-        current.push(c)
-    }
-    case _ => current.push(c)
-  }
+  def push(c: InferenceConstraint): Unit =
+    if(c.polymorphic)
+      polyHypotheses.enqueue(c)
+    else
+      current.push(c)
   
   def pop: InferenceConstraint =
     if(current.isEmpty) {
@@ -169,7 +154,7 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
         }
         case SubsumptionConstraint(ex: MonoEffect,vy: EffectVariable) => substitute(vy,new BoundedEffectVariable(ex,JoinBound,false))
         case SubsumptionConstraint(vx: EffectVariable,ey: MonoEffect) => substitute(vx,new BoundedEffectVariable(ey,MeetBound,false))
-        case SubsumptionConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
+        //case SubsumptionConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
         case SubsumptionConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,false))
         case SubsumptionConstraint(tx: MonoType,vy: TypeVariable) => substitute(vy,new BoundedTypeVariable(tx,JoinBound,false))
         case EqualityConstraint(vx: SignatureVariable,vy: SignatureVariable) => (vx.universal,vy.universal) match {
