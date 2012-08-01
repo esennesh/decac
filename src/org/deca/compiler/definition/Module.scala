@@ -16,6 +16,7 @@ trait Definition extends Scopeable {
 
 class VariableDefinition(override val scope: Module,override val name: String,val value: ConstantExpression,override var variableType: MonoType,override var mutability: MonoMutability) extends Definition with VariableBinding {
   assert(TypeOrdering.lteq(value.expType,variableType))
+  scope.define(this)
   override def substitute(sub: SignatureSubstitution): Unit = Unit
   override def specialize(spec: SignatureSubstitution): VariableDefinition = this
   val declare: Memoize1[Module,LLVMValue] = Memoize1(instantiation => {

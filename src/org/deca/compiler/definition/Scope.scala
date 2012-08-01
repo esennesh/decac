@@ -59,9 +59,7 @@ abstract class Scope(val parent: Option[Scope]) {
   def implicitLookup(tau: MonoType): VariableBinding =
     implicits.get(tau) getOrElse parent.getOrElse(throw new UndeclaredImplicitException(tau)).implicitLookup(tau)
   
-  protected def declare(obj: Scopeable) = {
-    symbols.put(obj.name,obj)
-  }
+  protected def declare(obj: Scopeable) = symbols.put(obj.name,obj)
   
   def enclosedIn(s: Scope): Boolean = parent match {
     case Some(p) => p == s || p.enclosedIn(s)
