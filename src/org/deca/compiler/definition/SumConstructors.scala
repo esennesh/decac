@@ -28,10 +28,8 @@ class EnumValueDefinition(scope: Module,name: String,val tag: Int) extends Varia
 class EnumerationValue(val enum: String,val tag: Int) extends ConstantExpression {
   expType = new SumType(List(TaggedRecord(enum,tag,EmptyRecord)))
   override val children = Nil
-  override def build(scope: Scope,instantiation: Module): LLVMConstantInteger = {
-    val tagType = new LLVMIntegerType(math.floor(math.log(tag - 1) / math.log(2)).toInt + 1)
-    LLVMConstantInteger.constantInteger(tagType,tag,false)
-  }
+  override def build(scope: Scope,instantiation: Module): LLVMConstantInteger =
+    LLVMConstantInteger.constantInteger(expType.compile.asInstanceOf[LLVMIntegerType],tag,false)
 }
 
 case class DataConstructor(override val name: String,arguments: List[RecordMember]) extends VariantCase {
