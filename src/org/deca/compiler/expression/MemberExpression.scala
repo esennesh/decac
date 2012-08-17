@@ -64,6 +64,7 @@ class MemberExpression(val structure: Expression,
     }
   }
   
+  override def region: MonoRegion = structure.asInstanceOf[WritableExpression].region
   override def pointer(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
     val original = structure match {
       case writable: WritableExpression => writable.pointer(builder,scope,instantiation)

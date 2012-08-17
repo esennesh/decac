@@ -401,14 +401,15 @@ object ASTProcessor {
     case ifthen: AIfwithoutelseexpExpression => processIfThen(ifthen,scope)
     case ifelse: AIfwithelseexpExpression => processIfElse(ifelse,scope)
   }
+  def processModuleDefinition(amoddef: AModuledefDefinition,scope: Module): Module = {
+    val moddef: AModuleDefinition = amoddef.getModuleDefinition() match {case real: AModuleDefinition => real}
+    val result = new Module(moddef.getName().getText(),scope)
+    convertList(moddef.getImports()).foreach(imp => declareImportDeclaration(result,imp))
+    convertList(moddef.getDefinitions).foreach(definition => processDefinition(definition,result))
+    result
+  }
   def processDefinition(adef: PDefinition,scope: Module): Definition = adef match {
-    case amoddef: AModuledefDefinition => {
-      val moddef: AModuleDefinition = amoddef.getModuleDefinition() match {case real: AModuleDefinition => real}
-      val result = new Module(moddef.getName().getText(),scope)
-      convertList(moddef.getImports()).foreach(imp => declareImportDeclaration(result,imp))
-      convertList(moddef.getDefinitions).foreach(definition => processDefinition(definition,result))
-      result
-    }
+    case amoddef: AModuledefDefinition => processModuleDefinition(amoddef,scope)
     case afuncdef: AFundefDefinition => processFunctionDefinition(afuncdef.getFunctionDefinition(),scope)
     case atypedef: ATypedefDefinition => {
       val name = atypedef.getUnqualifiedIdentifier.getText

@@ -27,13 +27,10 @@ object Decac {
   
   def compile(file: String): Module = {
     val module: PModuleDefinition = check_syntax(file).getPModuleDefinition()
-    ASTProcessor.processDefinition(new AModuledefDefinition(module),GlobalScope) match {
-      case mod: Module => {
-        mod.setPath(file.split('/').init.mkString + "/")
-        mod
-      }
-      case _ => throw new Exception("Processing a module definition must yield a Module.")
-    }
+    val mod = ASTProcessor.processModuleDefinition(new AModuledefDefinition(module),GlobalScope)
+    val path = file.split('/').init.mkString
+    mod.setPath(if(path != "") path + "/" else path)
+    mod
   }
   
   def main(args: Array[String]): Unit = {
@@ -60,7 +57,6 @@ object Decac {
       System.err.println("  _ => compile the given Deca source files")
     }
     else try {
-      
       val modules = args.map(arg => compile(arg))
       for(module <- modules)
         module.writeBitcode
