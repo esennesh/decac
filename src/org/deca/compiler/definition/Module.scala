@@ -21,6 +21,7 @@ class VariableDefinition(override val scope: Module,override val name: String,va
   override def specialize(spec: SignatureSubstitution): VariableDefinition = this
   val declare: Memoize1[Module,LLVMValue] = Memoize1(instantiation => {
     val global = instantiation.compiledModule.addGlobal(variableType.compile,name)
+    System.err.println("Defining " + global.getValueName + ": " + variableType.toString + " (" + global.typeOf.toString + ")")
     if(instantiation == scope)
       global.setInitializer(value.build(scope,instantiation))
     else
@@ -55,19 +56,28 @@ class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) wi
   override def lookup(name: List[String]): Definition = super.lookup(name).asInstanceOf[Definition]
   
   def compile: LLVMModule = {
-    for(definition <- symbols.values) definition match {
+    for(definition <- symbols.values) {
+      System.err.println("Compiling definition of: " + definition.name)
+      definition match {
       case function: FunctionDefinition => function.build(this)
       //case defin: TypeDefinition => defin.getSpecializations.foreach(tau => compiledModule.addTypeName(name,tau.compile))
       case typeDefinition: TypeDefinition => Unit
       case global: VariableDefinition => global.build(this)
-      //TODO: Add code for constant expressions, and use it to set the initializer on global variables.
       //Modules defined in this namespace may not be child modules, but possibly imports.
       case module: Module => if(module.parent == Some(this)) module.compile
+      }
+      System.err.println("Compiled definition of: " + definition.name)
     }
+    var global: LLVMGlobalVariable = compiledModule.getFirstGlobal
+    while(global != null) {
+      System.err.println("Compiled module contains definition of: " + global.getValueName)
+      global = global.getNextGlobal
+    }
+    System.err.println("Compiled Deca module to LLVM module.")
     compiledModule
   }
   
-  def writeBitcode: Unit = (new LLVMBitWriter(compile)).writeBitcodeToFile(path + name + ".bc")
+  def writeBitcode: Unit = compile.writeBitcodeToFile(path + name + ".bc")
 }
 
 object GlobalScope extends Module("") {
