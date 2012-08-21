@@ -15,16 +15,20 @@ class SignatureSubstitution {
   def isEmpty: Boolean = queue.isEmpty
   
   def solve[T <: MonoSignature](sig: T): T = {
-    val substituted: T = queue.foldLeft(sig)((result: MonoSignature,sub: (SignatureVariable,MonoSignature)) => sub._1 match {
-      case t: MonoType => result.mapT((st: MonoType) => if(st == sub._1) sub._2.asInstanceOf[MonoType] else st).asInstanceOf[T]
-      case e: MonoEffect => result.mapE((se: MonoEffect) => if(se == sub._1) sub._2.asInstanceOf[MonoEffect] else se).asInstanceOf[T]
-      case r: MonoRegion => result.mapR((sr: MonoRegion) => if(sr == sub._1) sub._2.asInstanceOf[MonoRegion] else sr).asInstanceOf[T]
-    })
+    if(sig.isInstanceOf[MonoType]) System.err.println("Before substitution: " + sig.toString)
+    val substituted: T = queue.foldLeft(sig)((result: MonoSignature,sub: (SignatureVariable,MonoSignature)) => result.replace(sub._1,sub._2).asInstanceOf[T])
+    if(sig.isInstanceOf[MonoType] && !TypeOrdering.equiv(sig.asInstanceOf[MonoType],substituted.asInstanceOf[MonoType]))
+      System.err.println("After substitution: " + substituted.toString)
     val typeBounded: T = substituted.mapT((sigprime: MonoType) => sigprime match {
       case bounded: BoundsVariable[MonoType] => {
         assert(!bounded.universal)
         bounded.signature
       }
+      /*case tvar: TypeVariable if !tvar.universal => {
+        val result = new TypeVariable(true,tvar.name)
+        substitute(tvar,result)
+        result
+      }*/
       case _ => sigprime
     }).asInstanceOf[T]
     val effectBounded: T = typeBounded.mapE((sigprime: MonoEffect) => sigprime match {
@@ -32,6 +36,11 @@ class SignatureSubstitution {
         assert(!bounded.universal)
         bounded.signature
       }
+      /*case evar: EffectVariable if !evar.universal => {
+        val result = new EffectVariable(true)
+        substitute(evar,result)
+        result
+      }*/
       case _ => sigprime
     }).asInstanceOf[T]
     val regionBounded: T = effectBounded.mapR((sigprime: MonoRegion) => sigprime match {
@@ -39,6 +48,11 @@ class SignatureSubstitution {
         assert(!bounded.universal)
         bounded.signature
       }
+      /*case rvar: RegionVariable if !rvar.universal => {
+        val result = new RegionVariable(true)
+        substitute(rvar,result)
+        result
+      }*/
       case _ => sigprime
     }).asInstanceOf[T]
     regionBounded

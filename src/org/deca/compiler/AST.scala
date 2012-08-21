@@ -422,7 +422,7 @@ object ASTProcessor {
       val alpha = new TypeVariable(false,Some(name))
       tscope.bind(name,Some(alpha))
       val sigma = processTypeForm(atypedef.getTypeForm,tscope)
-      val mu = MonoSignature.universalize(if(sigma.filterT(tau => tau == alpha).empty == false) new RecursiveType(sigma,Some(alpha)) else sigma,None)
+      val mu = if(sigma.filterT(tau => tau == alpha).empty == false) new RecursiveType(sigma,Some(alpha)) else sigma
       new TypeDefinition(new TypeExpressionConstructor(mu.variables.toList,mu),name,scope)
     }
     case avardef: AGlobaldefDefinition => {

@@ -170,7 +170,7 @@ class FunctionPointer(val domain: List[MonoType],
   }
 
   override def toString: String = {
-    val parameters = "(" + domain.tail.foldLeft(domain.head.toString)((x: String,y: MonoType) => x + "," + y.toString) + ") @->"
+    val parameters = "(" + domain.foldLeft("")((x: String,y: MonoType) => x + (if(x != "") "," else "") + y.toString) + ") @->"
     val effect = if(pure)
       "!{+(" + positive.toString + "),-(" + negative.toString + ")}"
     else
@@ -323,13 +323,10 @@ class ExistentialInterface(r: RecordType,abs: MonoType,w: Option[MonoType] = Non
 class TypeVariable(override val universal: Boolean,val name: Option[String] = None) extends MonoType with SignatureVariable {
   override def compile: LLVMType = throw new TypeException("Cannot compile type variable " + name.toString + ".")
   override def sizeOf: Int = 1
-  override def toString: String = name match {
-    case Some(str) => str
-    case None => getClass().getName() + '@' + Integer.toHexString(hashCode())
-  }
+  override def toString: String = name.getOrElse(getClass().getName()) + ':' + universal.toString + '@' + Integer.toHexString(hashCode)
   
-  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
-  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = Set.empty
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = Set.empty
 }
 
 class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean) extends BoundsVariable[MonoType](tau,bnd,univ) with MonoType {

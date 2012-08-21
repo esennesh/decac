@@ -22,9 +22,6 @@ case class FunctionSignature(var arguments: List[(String,MonoType)],
                              var result: MonoType = new TypeVariable(false,None),
                              var effect: EffectPair = EffectPair(new EffectVariable(false),new EffectVariable(false))) {
   def substitute(substitution: SignatureSubstitution): Unit = {
-    val variables = arguments.foldLeft(Set.empty[SignatureVariable])((result: Set[SignatureVariable],arg) => result ++ arg._2.variables)
-    for(variable <- variables)
-      MonoSignature.universalize(variable,Some(substitution))
     arguments = arguments.map(arg => (arg._1,substitution.solve(arg._2)))
     implicits = implicits.map(impl => (impl._1,substitution.solve(impl._2)))
     result = substitution.solve(result)
@@ -38,8 +35,9 @@ case class FunctionSignature(var arguments: List[(String,MonoType)],
                       EffectPair(spec.solve(effect.positive),spec.solve(effect.negative)))
   def arrow: Either[TypeExpressionConstructor,FunctionPointer] = {
     val func = new FunctionPointer(arguments.map(_._2) ++ implicits.map(_._2),result,effect.positive,effect.negative)
-    if(func.variables.forall(svar => svar.universal))
-      Left(new TypeExpressionConstructor(func.variables.toList,func))
+    val argVariables: List[SignatureVariable] = arguments.map(_._2.variables.toList).reduceLeft(_ ++ _)
+    if(argVariables.forall(svar => svar.universal))
+      Left(new TypeExpressionConstructor(argVariables,func))
     else
       Right(func)
   }
@@ -56,6 +54,7 @@ class FunctionDefinition(val name: String,
   scope.define(this)
   val body: Option[FunctionBody] = mkBody.map(f => f(signature))
   for(b <- body) {
+    System.err.println("Inferring types for " + name + "()")
     val substitution = b.infer
     signature.substitute(substitution)
     b.substitute(substitution)
@@ -64,11 +63,12 @@ class FunctionDefinition(val name: String,
   val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMFunction]] = Memoize1(sigvars => {
     val funcType: TypeConstructor = this.signature.arrow match {
       case Left(funcType) => funcType
-      case _ => throw new Exception("Attempting to specialize a function before its principal type has been inferred.")
+      case Right(_) => throw new Exception("Attempting to specialize a function before its principal type has been inferred.")
     }
     val signature: FunctionPointer = funcType.represent(sigvars).asInstanceOf[FunctionPointer]
     Memoize1(instantiation => {
       val func = new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile)
+      System.err.println("Defining " + func.getValueName + ": " + signature.toString + " (" + func.typeOf.toString + ")")
       body match {
         case Some(b) if funcType.parameters != Nil || instantiation == scope => {
           if(funcType.parameters != Nil)
@@ -86,9 +86,15 @@ class FunctionDefinition(val name: String,
       func
     })
   })
-  override val build: Memoize1[Module,Set[LLVMValue]] = Memoize1(instantiation =>
-    specialize.values.foldLeft(Set.empty[LLVMValue])((set,specialization) => set + specialization(instantiation))
-  )
+  override val build: Memoize1[Module,Set[LLVMValue]] = Memoize1(instantiation => signature.arrow match {
+    case Left(funcType) => {
+      if(funcType.parameters == Nil)
+        Set.empty[LLVMValue] + specialize(Nil)(instantiation)
+      else
+        specialize.values.foldLeft(Set.empty[LLVMValue])((set,specialization) => set + specialization(instantiation))
+    }
+    case Right(_) => throw new Exception("Attempting to build LLVM code for a function before its principal type has been inferred.")
+  })
 }
 
 class ExpressionBody(override val signature: FunctionSignature,

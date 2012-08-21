@@ -11,41 +11,12 @@ trait MonoSignature {
   def filterT(pred: MonoType => Boolean): Set[MonoType]
   def filterR(pred: MonoRegion => Boolean): Set[MonoRegion]
   def filterE(pred: MonoEffect => Boolean): Set[MonoEffect]
-  def replace(from: MonoSignature,to: MonoSignature): MonoSignature = from match {
+  def replace[T <: MonoSignature](from: T,to: T): MonoSignature = from match {
     case t: MonoType => mapT((sig: MonoType) => if(sig == from) to.asInstanceOf[MonoType] else sig)
     case e: MonoEffect => mapE((sig: MonoEffect) => if(sig == from) to.asInstanceOf[MonoEffect] else sig)
     case r: MonoRegion => mapR((sig: MonoRegion) => if(sig == from) to.asInstanceOf[MonoRegion] else sig)
   }
   def variables: Set[SignatureVariable]
-}
-
-object MonoSignature {
-  def universalize[S <: MonoSignature](sig: S,substitution: Option[SignatureSubstitution] = None): S = {
-    val tau = sig.mapT(tau => tau match {
-      case tvar: TypeVariable if !tvar.universal => {
-        val universal = new TypeVariable(true,tvar.name)
-        substitution.map(_.substitute(tvar,universal))
-        universal
-      }
-      case _ => tau
-    })
-    val rho = tau.mapR(rho => rho match {
-      case rvar: RegionVariable if !rvar.universal => {
-        val universal = new RegionVariable(true)
-        substitution.map(_.substitute(rvar,universal))
-        universal
-      }
-      case _ => rho
-    })
-    rho.mapE(epsilon => epsilon match {
-      case evar: EffectVariable if !evar.universal => {
-        val universal = new EffectVariable(true)
-        substitution.map(_.substitute(evar,universal))
-        universal
-      }
-      case _ => epsilon
-    }).asInstanceOf[S]
-  }
 }
 
 trait SignatureVariable extends MonoSignature {
