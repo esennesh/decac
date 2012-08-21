@@ -57,23 +57,15 @@ class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) wi
   
   def compile: LLVMModule = {
     for(definition <- symbols.values) {
-      System.err.println("Compiling definition of: " + definition.name)
       definition match {
-      case function: FunctionDefinition => function.build(this)
-      //case defin: TypeDefinition => defin.getSpecializations.foreach(tau => compiledModule.addTypeName(name,tau.compile))
-      case typeDefinition: TypeDefinition => Unit
-      case global: VariableDefinition => global.build(this)
-      //Modules defined in this namespace may not be child modules, but possibly imports.
-      case module: Module => if(module.parent == Some(this)) module.compile
+        case function: FunctionDefinition => function.build(this)
+        //case defin: TypeDefinition => defin.getSpecializations.foreach(tau => compiledModule.addTypeName(name,tau.compile))
+        case typeDefinition: TypeDefinition => Unit
+        case global: VariableDefinition => global.build(this)
+        //Modules defined in this namespace may not be child modules, but possibly imports.
+        case module: Module => if(module.parent == Some(this)) module.compile
       }
-      System.err.println("Compiled definition of: " + definition.name)
     }
-    var global: LLVMGlobalVariable = compiledModule.getFirstGlobal
-    while(global != null) {
-      System.err.println("Compiled module contains definition of: " + global.getValueName)
-      global = global.getNextGlobal
-    }
-    System.err.println("Compiled Deca module to LLVM module.")
     compiledModule
   }
   

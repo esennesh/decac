@@ -69,7 +69,9 @@ abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
 }
 
 class TypeExpressionConstructor(alphas: List[SignatureVariable],protected val tau: MonoType) extends TypeConstructor(alphas) {
-  assert(tau.variables.forall(alphas.contains(_)) && alphas.forall(tvar => !tau.filterT(_ == tvar).isEmpty))
+  System.err.println(toString)
+  assert(tau.variables.forall(alphas.contains(_)))
+  assert(alphas.forall(tvar => !tau.filterT(_ == tvar).isEmpty))
   
   override def compile(params: List[MonoSignature]): LLVMType = specializations.get(params) match {
     case Some(t) => t
