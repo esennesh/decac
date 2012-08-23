@@ -15,16 +15,13 @@ class SignatureSubstitution {
   def isEmpty: Boolean = queue.isEmpty
   
   def solve[T <: MonoSignature](sig: T): T = {
-    if(sig.isInstanceOf[MonoType]) System.err.println("Before substitution: " + sig.toString)
     val substituted: T = queue.foldLeft(sig)((result: MonoSignature,sub: (SignatureVariable,MonoSignature)) => result.replace(sub._1,sub._2).asInstanceOf[T])
-    if(sig.isInstanceOf[MonoType] && !TypeOrdering.equiv(sig.asInstanceOf[MonoType],substituted.asInstanceOf[MonoType]))
-      System.err.println("After substitution: " + substituted.toString)
     val typeBounded: T = substituted.mapT((sigprime: MonoType) => sigprime match {
       case bounded: BoundsVariable[MonoType] => {
         assert(!bounded.universal)
         bounded.signature
       }
-      /*case tvar: TypeVariable if !tvar.universal => {
+      /*case tvar: TypeVariable if !tvar.universal && solve(tvar) == tvar => {
         val result = new TypeVariable(true,tvar.name)
         substitute(tvar,result)
         result
@@ -36,7 +33,7 @@ class SignatureSubstitution {
         assert(!bounded.universal)
         bounded.signature
       }
-      /*case evar: EffectVariable if !evar.universal => {
+      /*case evar: EffectVariable if !evar.universal && solve(evar) == evar => {
         val result = new EffectVariable(true)
         substitute(evar,result)
         result
@@ -48,7 +45,7 @@ class SignatureSubstitution {
         assert(!bounded.universal)
         bounded.signature
       }
-      /*case rvar: RegionVariable if !rvar.universal => {
+      /*case rvar: RegionVariable if !rvar.universal && solve(rvar) == rvar => {
         val result = new RegionVariable(true)
         substitute(rvar,result)
         result

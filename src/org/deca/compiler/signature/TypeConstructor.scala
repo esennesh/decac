@@ -29,6 +29,7 @@ object BuiltInSums {
 }
 
 abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
+  assert(parameters.forall(_.universal))
   protected var strName: Option[String] = None
   def declare(str: String): String = strName match {
     case Some(n) => n
@@ -41,7 +42,6 @@ abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
     case Some(n) => n
     case None => getClass().getName() + '@' + Integer.toHexString(hashCode())
   }
-  assert(parameters.forall(param => param.universal))
   protected val specializations = new HashMap[List[MonoSignature],LLVMType]()
   
   def compile(params: List[MonoSignature]): LLVMType
@@ -69,9 +69,8 @@ abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
 }
 
 class TypeExpressionConstructor(alphas: List[SignatureVariable],protected val tau: MonoType) extends TypeConstructor(alphas) {
-  System.err.println(toString)
-  assert(tau.variables.forall(alphas.contains(_)))
-  assert(alphas.forall(tvar => !tau.filterT(_ == tvar).isEmpty))
+  assert(tau.variables.forall(parameters.contains(_)))
+  assert(parameters.forall(tvar => !tau.filterT(_ == tvar).isEmpty))
   
   override def compile(params: List[MonoSignature]): LLVMType = specializations.get(params) match {
     case Some(t) => t
@@ -83,7 +82,7 @@ class TypeExpressionConstructor(alphas: List[SignatureVariable],protected val ta
   }
   override def resolve(params: List[MonoSignature]): LLVMType = compile(params)
   override def represent(params: List[MonoSignature]): MonoType = {
-    parameters.zip(params).foldLeft(tau)((result: MonoType,spec: Tuple2[SignatureVariable,MonoSignature]) => result.mapT((sig: MonoType) => if(sig == spec._1) spec._2.asInstanceOf[MonoType] else sig))
+    parameters.zip(params).foldLeft(tau)((result: MonoType,spec: (SignatureVariable,MonoSignature)) => result.replace(spec._1,spec._2).asInstanceOf[MonoType])
   }
   
   override def toString: String = "forall " + alphas.foldRight(".")((svar,res) => svar.toString + " " + res) + tau.toString

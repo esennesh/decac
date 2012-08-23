@@ -21,7 +21,7 @@ trait MonoSignature {
 
 trait SignatureVariable extends MonoSignature {
   val universal = false
-  override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable] + this
+  override def variables: Set[SignatureVariable] = Set.empty[SignatureVariable] + this
 }
 
 sealed abstract class SignatureBound
