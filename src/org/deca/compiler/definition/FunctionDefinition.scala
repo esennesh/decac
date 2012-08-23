@@ -59,6 +59,7 @@ class FunctionDefinition(val name: String,
     signature.substitute(substitution)
     b.substitute(substitution)
     assert(signature.effect.safe(PureEffect))
+    System.err.println("Inferred type -- " + name + ": " + signature.toString)
   }
   val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMFunction]] = Memoize1(sigvars => {
     val funcType: TypeConstructor = this.signature.arrow match {
@@ -93,7 +94,7 @@ class FunctionDefinition(val name: String,
       else
         specialize.values.foldLeft(Set.empty[LLVMValue])((set,specialization) => set + specialization(instantiation))
     }
-    case Right(_) => throw new Exception("Attempting to build LLVM code for a function before its principal type has been inferred.")
+    case Right(arrow) => throw new Exception("Attempting to build LLVM code for non-principly-typed function -- " + name + ": " + arrow.toString)
   })
 }
 

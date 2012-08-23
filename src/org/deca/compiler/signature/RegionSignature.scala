@@ -11,9 +11,7 @@ object GlobalRegion extends ScopeRegion(GlobalScope)
 object BottomRegion extends MonoRegion {
   override def variables: Set[SignatureVariable] = HashSet.empty
 }
-case class RegionVariable(formal: Boolean) extends MonoRegion with SignatureVariable {
-  override val universal = formal
-}
+case class RegionVariable(override val universal: Boolean) extends MonoRegion with SignatureVariable
 
 class BoundedRegionVariable(rho: MonoRegion,bnd: SignatureBound,univ: Boolean) extends BoundsVariable[MonoRegion](rho,bnd,univ) with MonoRegion {
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = if(pred(this)) signature.filterR(pred) + this else signature.filterR(pred)

@@ -418,12 +418,12 @@ object ASTProcessor {
       else
         Nil
       val tscope = new TypeDefinitionScope(params,scope)
-      val tparams = tscope.bindings.map(_.tau.asInstanceOf[TypeVariable]).toList
+      val tparams: List[TypeVariable] = tscope.bindings.map(_.tau.asInstanceOf[TypeVariable]).toList
       val alpha = new TypeVariable(false,Some(name))
       tscope.bind(name,Some(alpha))
       val sigma = processTypeForm(atypedef.getTypeForm,tscope)
       val mu = if(sigma.filterT(tau => tau == alpha).empty == false) new RecursiveType(sigma,Some(alpha)) else sigma
-      new TypeDefinition(new TypeExpressionConstructor(mu.variables.toList,mu),name,scope)
+      new TypeDefinition(new TypeExpressionConstructor(tparams,mu),name,scope)
     }
     case avardef: AGlobaldefDefinition => {
       val slot = processSlotDeclaration(avardef.getSlotDeclaration,new TypeDefinitionScope(Nil,scope))
