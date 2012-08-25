@@ -1,58 +1,47 @@
 package org.deca.compiler.signature
 
-import scala.collection.mutable.Queue
-import scala.collection.mutable.Stack
-import scala.collection.mutable.Lattice
+import scala.collection.mutable.{Map,HashMap,Queue,Stack,Lattice}
 import org.deca.compiler.definition._
 
 class SignatureSubstitution {
-  protected val queue: Queue[(SignatureVariable,MonoSignature)] = new Queue[(SignatureVariable,MonoSignature)]
+  protected val substitutions: Map[SignatureVariable,MonoSignature] = new HashMap[SignatureVariable,MonoSignature]
   
   def substitute(x: SignatureVariable,y: MonoSignature,specialize: Boolean = false): Unit = {
-    assert(if(specialize) x.universal else !x.universal)
-    queue.enqueue((x,y))
+    assert(specialize == x.universal)
+    substitutions.put(x,y) match {
+      case Some(sig) => throw new Exception("Cannot substitute " + x.toString + " |--> " + y.toString + " when it already maps to " + sig.toString)
+      case None =>
+        for(substitution <- substitutions)
+          substitutions.update(substitution._1,substitution._2.replace(x,y))
+    }
   }
-  def isEmpty: Boolean = queue.isEmpty
+  
+  def isEmpty: Boolean = substitutions.isEmpty
   
   def solve[T <: MonoSignature](sig: T): T = {
-    val substituted: T = queue.foldLeft(sig)((result: MonoSignature,sub: (SignatureVariable,MonoSignature)) => result.replace(sub._1,sub._2).asInstanceOf[T])
-    val typeBounded: T = substituted.mapT((sigprime: MonoType) => sigprime match {
-      case bounded: BoundsVariable[MonoType] => {
-        assert(!bounded.universal)
-        bounded.signature
+    sig.variables.foldLeft[T](sig)((prime: T,svar: SignatureVariable) => if(svar.universal) prime else {
+      substitutions.get(svar) match {
+        case None => {
+          val solution = svar match {
+            case tvar: TypeVariable => new TypeVariable(true,tvar.name)
+            case evar: EffectVariable => new EffectVariable(true)
+            case rvar: RegionVariable => new RegionVariable(true)
+            case _ => throw new Exception("Cannot generalize signature variable: " + svar.toString)
+          }
+          prime.replace(svar,solution).asInstanceOf[T]
+        }
+        case Some(solved) => {
+          val solution = solved match {
+            case bounded: BoundsVariable[_] => {
+              assert(!bounded.universal)
+              bounded.signature
+            }
+            case _ => solved
+          }
+          prime.replace(svar,solution).asInstanceOf[T]
+        }
       }
-      /*case tvar: TypeVariable if !tvar.universal && solve(tvar) == tvar => {
-        val result = new TypeVariable(true,tvar.name)
-        substitute(tvar,result)
-        result
-      }*/
-      case _ => sigprime
-    }).asInstanceOf[T]
-    val effectBounded: T = typeBounded.mapE((sigprime: MonoEffect) => sigprime match {
-      case bounded: BoundsVariable[MonoEffect] => {
-        assert(!bounded.universal)
-        bounded.signature
-      }
-      /*case evar: EffectVariable if !evar.universal && solve(evar) == evar => {
-        val result = new EffectVariable(true)
-        substitute(evar,result)
-        result
-      }*/
-      case _ => sigprime
-    }).asInstanceOf[T]
-    val regionBounded: T = effectBounded.mapR((sigprime: MonoRegion) => sigprime match {
-      case bounded: BoundsVariable[MonoRegion] => {
-        assert(!bounded.universal)
-        bounded.signature
-      }
-      /*case rvar: RegionVariable if !rvar.universal && solve(rvar) == rvar => {
-        val result = new RegionVariable(true)
-        substitute(rvar,result)
-        result
-      }*/
-      case _ => sigprime
-    }).asInstanceOf[T]
-    regionBounded
+    })
   }
 }
 
