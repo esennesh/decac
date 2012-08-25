@@ -125,7 +125,7 @@ class RecordType(val fields: List[RecordMember]) extends MonoType {
   override def mapE(f: (MonoEffect) => MonoEffect): RecordType = {
     new RecordType(fields.map(field => RecordMember(field.name,field.mutable,field.tau.mapE(f))))
   }
-  override def variables: Set[SignatureVariable] = fields.foldLeft(HashSet.empty[SignatureVariable])((result,field) => result ++ field.tau.variables)
+  override def variables: Set[SignatureVariable] = fields.foldLeft(Set.empty[SignatureVariable])((result,field) => result ++ field.tau.variables)
 
   override def compile: LLVMStructType = new LLVMStructType(fields.map(field => field.tau.compile).toArray,true)
 
@@ -161,7 +161,7 @@ class FunctionPointer(val domain: List[MonoType],
   override def mapR(f: (MonoRegion) => MonoRegion): FunctionPointer =
     new FunctionPointer(domain.map(d => d.mapR(f)),range.mapR(f),negative.mapR(f),negative.mapR(f))
   override def variables: Set[SignatureVariable] =
-    domain.foldLeft(Set.empty[SignatureVariable])((result,tau) => result ++ tau.variables) ++ range.variables ++ positive.variables ++ negative.variables
+    domain.foldLeft[Set[SignatureVariable]](Set.empty)(_ ++ _.variables) ++ range.variables ++ positive.variables ++ negative.variables
 
   override def compile: LLVMFunctionType = {
     val compiledRange = range.compile

@@ -35,7 +35,7 @@ case class FunctionSignature(var arguments: List[(String,MonoType)],
                       EffectPair(spec.solve(effect.positive),spec.solve(effect.negative)))
   def arrow: Either[TypeExpressionConstructor,FunctionPointer] = {
     val func = new FunctionPointer(arguments.map(_._2) ++ implicits.map(_._2),result,effect.positive,effect.negative)
-    val argVariables: List[SignatureVariable] = arguments.map(_._2.variables.toList).reduceLeft(_ ++ _)
+    val argVariables: List[SignatureVariable] = arguments.map(_._2.variables.toList).foldLeft[List[SignatureVariable]](Nil)(_ ++ _)
     if(argVariables.forall(svar => svar.universal))
       Left(new TypeExpressionConstructor(argVariables,func))
     else
@@ -54,7 +54,6 @@ class FunctionDefinition(val name: String,
   scope.define(this)
   val body: Option[FunctionBody] = mkBody.map(f => f(signature))
   for(b <- body) {
-    System.err.println("Inferring types for " + name + "()")
     val substitution = b.infer
     signature.substitute(substitution)
     b.substitute(substitution)
