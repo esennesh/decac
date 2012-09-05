@@ -9,7 +9,7 @@ function troll(x,y: nat,z) {
   x * (y - z) / 3
 }
 
-function harpdarp(a: byte,b: byte): TwoTuple<nat,nat> {
+/*function harpdarp(a: byte,b: byte): TwoTuple<nat,nat> {
   [a,b]
 }
 
@@ -68,6 +68,6 @@ function ilied(x) {
     Some(x)
   else
     None
-}
+} */
 
 end
