@@ -46,13 +46,24 @@ trait InferenceOrdering[T <: MonoSignature] {
   protected val lattice: Lattice[T]
   def lt(x: T,y: T): Option[Set[InferenceConstraint]]
   def equiv(x: T,y: T): Option[Set[InferenceConstraint]]
+  def lteq(x: T,y: T): Option[Set[InferenceConstraint]] = lt(x,y) orElse equiv(x,y)
   def join(x: T,y: T): (T,Set[InferenceConstraint]) = {
     val tau = lattice.join(x,y)
-    (tau,lt(x,tau).get ++ lt(y,tau).get)
+    (lteq(x,tau),lteq(y,tau)) match {
+      case (Some(cx),Some(cy)) => (tau,cx ++ cy)
+      case (None,None) => throw new Exception("Unsatisfiable signature constraints: " + SubsumptionConstraint(x,tau).toString + " and " + SubsumptionConstraint(y,tau).toString)
+      case (None,_) => throw new Exception("Unsatisfiable signature constraint: " + SubsumptionConstraint(x,tau).toString)
+      case (_,None) => throw new Exception("Unsatisfiable signature constraint: " + SubsumptionConstraint(y,tau).toString)
+    }
   }
   def meet(x: T,y: T): (T,Set[InferenceConstraint]) = {
     val tau = lattice.meet(x,y)
-    (tau,lt(tau,x).get ++ lt(tau,y).get)
+    (lteq(tau,x),lteq(tau,y)) match {
+      case (Some(cx),Some(cy)) => (tau,cx ++ cy)
+      case (None,None) => throw new Exception("Unsatisfiable signature constraints: " + SubsumptionConstraint(tau,x).toString + " and " + SubsumptionConstraint(tau,y).toString)
+      case (None,_) => throw new Exception("Unsatisfiable signature constraint: " + SubsumptionConstraint(tau,x).toString)
+      case (_,None) => throw new Exception("Unsatisfiable signature constraint: " + SubsumptionConstraint(tau,y).toString)
+    }
   }
 }
 

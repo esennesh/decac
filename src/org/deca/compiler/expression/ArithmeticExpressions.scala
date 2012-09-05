@@ -17,7 +17,7 @@ abstract class ArithmeticExpression extends Expression {
   def specialize(spec: SignatureSubstitution,specScope: Scope): ArithmeticExpression
 }
 
-class IntegerLiteralExpression(val value: Int) extends ConstantExpression {
+class IntegerLiteralExpression(val value: Int) extends ArithmeticExpression with ConstantExpression {
   override val children = Nil
   val intType: IntegerType =
     if(value >= 0) {
@@ -43,6 +43,8 @@ class IntegerLiteralExpression(val value: Int) extends ConstantExpression {
   expType = intType
   def build(scope: Scope,instantiation: Module): LLVMConstant =
     LLVMConstantInteger.constantInteger(intType.compile,value,true)
+    
+  override def specialize(spec: SignatureSubstitution,specScope: Scope): IntegerLiteralExpression = this
 }
 
 class ArithmeticOperatorExpression(val operator: Char,val left: Expression,val right: Expression) extends ArithmeticExpression {

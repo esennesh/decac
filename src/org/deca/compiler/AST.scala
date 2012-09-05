@@ -208,7 +208,7 @@ object ASTProcessor {
   def processArgument(arg: AArgument,scope: TypeDefinitionScope): Tuple2[String,MonoType] = {
     val name = arg.getName.getText
     val argType = arg.getType match {
-      case null => new TypeVariable(false,None)
+      case null => new TypeVariable(false,Some("'" + name))
       case annotation: ATypeAnnotation => processTypeForm(annotation.getType,scope)
     }
     (name,argType)
