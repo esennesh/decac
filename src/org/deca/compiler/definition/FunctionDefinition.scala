@@ -58,7 +58,6 @@ class FunctionDefinition(val name: String,
     signature.substitute(substitution)
     b.substitute(substitution)
     assert(signature.effect.safe(PureEffect))
-    System.err.println("Inferred type -- " + name + ": " + signature.toString)
   }
   val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMFunction]] = Memoize1(sigvars => {
     val funcType: TypeConstructor = this.signature.arrow match {

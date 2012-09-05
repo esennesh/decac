@@ -17,6 +17,7 @@ class BlockExpression(val steps: List[Expression]) extends Expression {
   
   override def constrain(scs: SignatureConstraints): Unit =
     for(step <- steps) {
+      step.constrain(scs)
       scs.push(new SubsumptionConstraint(step.expEffect.positive,expEffect.positive))
       scs.push(new SubsumptionConstraint(step.expEffect.negative,expEffect.negative))
     }

@@ -35,13 +35,14 @@ class EnumerationValue(val enum: String,val tag: Int) extends ConstantExpression
 case class DataConstructor(override val name: String,arguments: List[RecordMember]) extends VariantCase {
   override protected def record: RecordType = new RecordType(arguments)
   override def defineSelf(scope: Module): Unit = {
-    val argNames: List[String] = arguments.zipWithIndex.map(arg => arg._1.name getOrElse ('#' + arg._2.toString))
-    val members = arguments.zip(argNames).map(arg => {
-      val initializer = (lexical: LexicalScope) => new VariableExpression(List(arg._2),lexical)
-      MemberConstructor(arg._2,arg._1.mutable,arg._1.tau,initializer)
+    val members = arguments.zipWithIndex.map(arg => {
+      val argName = arg._1.name getOrElse ("#" + arg._2.toString)
+      val initializer = (lexical: LexicalScope) => new VariableExpression(List(argName),lexical)
+      MemberConstructor(argName,arg._1.mutable,arg._1.tau,initializer)
     })
-    val args = arguments.zip(argNames).map(arg => (arg._2,arg._1.tau))
-    new FunctionDefinition(name,scope,new FunctionSignature(args,Nil),Some(sig => new RecordConstructorBody(name,sig,scope,tagCode,members)))
+    val args = arguments.zipWithIndex.map(arg => (arg._1.name getOrElse ("#" + arg._2.toString),arg._1.tau))
+    val resultType = new SumType(List(TaggedRecord(name,tag,record)))
+    new FunctionDefinition(name,scope,new FunctionSignature(args,Nil,resultType),Some(sig => new RecordConstructorBody(name,sig,scope,tagCode,members)))
   }
 }
 
@@ -67,7 +68,7 @@ class RecordConstructorBody(val name: String,
                             val tag: Int,
                             mems: List[MemberConstructor]) extends FunctionBody {
   //TODO: Enable implicit parameters for data constructors
-  override val scope: LexicalScope = new LexicalScope(parent,signature.arguments.map(arg => (arg._1,arg._2)))
+  override val scope: LexicalScope = new LexicalScope(parent,signature.arguments)
   val members: List[MemberInitializer] = mems.map(mem => MemberInitializer(mem.name,mem.mu,mem.tau,mem.initializer(scope))) 
   override def infer: SignatureSubstitution = {
     val inference = new LatticeUnificationInstance
@@ -84,8 +85,11 @@ class RecordConstructorBody(val name: String,
     inference.solve
   }
   val bodyType: SumType = {
-    val tr = new TaggedRecord(name,tag,new RecordType(members.map(member => RecordMember(Some(member.name),member.mu,member.tau))))
-    new SumType(tr :: Nil)
+    val recordMembers = members.map(member => {
+      val name: Option[String] = if(member.name(0) == '#') None else Some(member.name)
+      RecordMember(name,member.mu,member.tau)
+    })
+    new SumType(List(new TaggedRecord(name,tag,new RecordType(recordMembers))))
   }
   override def substitute(substitution: SignatureSubstitution): Unit = {
     scope.substitute(substitution)

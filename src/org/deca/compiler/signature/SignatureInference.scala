@@ -8,7 +8,8 @@ class SignatureSubstitution {
   
   def substitute(x: SignatureVariable,y: MonoSignature,specialize: Boolean = false): Unit = {
     assert(specialize == x.universal)
-    substitutions.put(x,y) match {
+    
+    if(x != y) substitutions.put(x,y) match {
       case Some(sig) => throw new Exception("Cannot substitute " + x.toString + " |--> " + y.toString + " when it already maps to " + sig.toString)
       case None =>
         for(substitution <- substitutions)
@@ -89,12 +90,12 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
       val constraint = constraints.pop
       val cs: Option[Set[InferenceConstraint]] = constraint match {
         case SubsumptionConstraint(x,y) => (x,y) match {
-          case (tx: MonoType,ty: MonoType) => TypeRelation.lt(tx,ty)
-          case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.lt(ex,ey)
-          case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.lt(rx,ry)
-          case (mx: MonoMutability,my: MonoMutability) => MutabilityRelation.lt(mx,my)
+          case (tx: MonoType,ty: MonoType) => TypeRelation.lteq(tx,ty)
+          case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.lteq(ex,ey)
+          case (rx: MonoRegion,ry: MonoRegion) => RegionRelation.lteq(rx,ry)
+          case (mx: MonoMutability,my: MonoMutability) => MutabilityRelation.lteq(mx,my)
         }
-        case PhysicalSubtypingConstraint(x,y) => PhysicalTypeRelation.lt(x,y)
+        case PhysicalSubtypingConstraint(x,y) => PhysicalTypeRelation.lteq(x,y)
         case EqualityConstraint(x,y) => (x,y) match {
           case (tx: MonoType,ty: MonoType) => TypeRelation.equiv(tx,ty)
           case (ex: MonoEffect,ey: MonoEffect) => EffectRelation.equiv(ex,ey)
@@ -124,8 +125,8 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
           (joins._2 + pair._1).foreach(c => constrain(c))
           substitute(vy,pair._2)
         }
-        case PhysicalSubtypingConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,false))
-        case PhysicalSubtypingConstraint(tx: MonoType,vy: TypeVariable) => substitute(vy,new BoundedTypeVariable(tx,JoinBound,false))
+        case PhysicalSubtypingConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,vx.universal,vx.name))
+        case PhysicalSubtypingConstraint(tx: MonoType,vy: TypeVariable) => substitute(vy,new BoundedTypeVariable(tx,JoinBound,vy.universal,vy.name))
         case PhysicalSubtypingConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
         case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],vy: BoundsVariable[MonoSignature]) => {
           val meets = SignatureRelation.meet(vy.signature,vx.signature)
@@ -137,7 +138,7 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
           substitute(vy,py._2)
         }
         case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],vy: SignatureVariable) =>
-          constrain(SubsumptionConstraint(vx.signature,vy))
+          substitute(vy,vx.clone(vx.signature,vx.bound,vx.universal))
         case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],_) => {
           val meets = SignatureRelation.meet(vx.signature,c.beta)
           val pair = vx.meet(meets._1)
@@ -145,18 +146,17 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
           substitute(vx,pair._2)
         }
         case SubsumptionConstraint(vx: SignatureVariable,vy: BoundsVariable[MonoSignature]) =>
-          constrain(SubsumptionConstraint(vx,vy.signature))
+          substitute(vx,vy.clone(vy.signature,vy.bound,vy.universal))
         case SubsumptionConstraint(_,vy: BoundsVariable[MonoSignature]) => {
           val joins = SignatureRelation.join(c.alpha,vy.signature)
           val pair = vy.join(joins._1)
           (joins._2 + pair._1).map(c => constrain(c))
           substitute(vy,pair._2)
         }
-        case SubsumptionConstraint(ex: MonoEffect,vy: EffectVariable) => substitute(vy,new BoundedEffectVariable(ex,JoinBound,false))
-        case SubsumptionConstraint(vx: EffectVariable,ey: MonoEffect) => substitute(vx,new BoundedEffectVariable(ey,MeetBound,false))
-        //case SubsumptionConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
-        case SubsumptionConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,false))
-        case SubsumptionConstraint(tx: MonoType,vy: TypeVariable) => substitute(vy,new BoundedTypeVariable(tx,JoinBound,false))
+        case SubsumptionConstraint(ex: MonoEffect,vy: EffectVariable) => substitute(vy,new BoundedEffectVariable(ex,JoinBound,vy.universal))
+        case SubsumptionConstraint(vx: EffectVariable,ey: MonoEffect) => substitute(vx,new BoundedEffectVariable(ey,MeetBound,vx.universal))
+        case SubsumptionConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,vx.universal,vx.name))
+        case SubsumptionConstraint(tx: MonoType,vy: TypeVariable) => substitute(vy,new BoundedTypeVariable(tx,JoinBound,vy.universal,vy.name))
         case EqualityConstraint(vx: SignatureVariable,vy: SignatureVariable) => (vx.universal,vy.universal) match {
           case (true, true) => if(vx != vy) throw new Exception("Cannot substitute from one universal variable to another: " + vx.toString + " =:= " + vy.toString)
           case (true,false) => substitute(vy,vx)

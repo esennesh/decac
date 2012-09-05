@@ -329,13 +329,24 @@ class TypeVariable(override val universal: Boolean,val name: Option[String] = No
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = Set.empty
 }
 
-class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean) extends BoundsVariable[MonoType](tau,bnd,univ) with MonoType {
+class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean,val name: Option[String] = None) extends BoundsVariable[MonoType](tau,bnd,univ) with MonoType {
   override def clone(sig: MonoType,bnd: SignatureBound,univ: Boolean) = new BoundedTypeVariable(sig,bnd,univ)
   override def compile: LLVMType = signature.compile
   override def sizeOf: Int = signature.sizeOf
   override def filterT(pred: MonoType => Boolean) = if(pred(this)) signature.filterT(pred) + this else signature.filterT(pred)
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = signature.filterR(pred)
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = signature.filterE(pred)
+  
+  override def toString: String = name match {
+    case Some(str) => {
+      val suffix = "(" + str + "," + signature.toString + "," + universal.toString + ")"
+      bound match {
+        case JoinBound => "Join" + suffix
+        case MeetBound => "Meet" + suffix
+      }
+    }
+    case None => super.toString
+  }
 }
 
 object TypeRelation extends InferenceOrdering[MonoType] {
@@ -382,18 +393,20 @@ object TypeRelation extends InferenceOrdering[MonoType] {
       })
     }
     case (sx: SumType,sy: SumType) => {
-      val width = if(sx.cases.size <= sy.cases.size) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = sx.cases.zip(sy.cases).map(cs => if(cs._1._1 == cs._2._1) lt(cs._1._2.record,cs._2._2.record) else None)
+      val width = if(sx.cases.size <= sy.cases.size) Some(Set.empty[InferenceConstraint]) else None
+      val depths = sx.cases.zip(sy.cases).map(cs =>
+        if(cs._1._1 == cs._2._1)
+          lt(cs._1._2.record,cs._2._2.record)
+        else
+          None
+      )
       depths.foldLeft(width)((res,depth) => (res,depth) match {
         case (Some(resset),Some(set)) => Some(resset union set)
         case _ => None
       })
     }
     case (ex: ExistentialInterface,ey: ExistentialInterface) => lt(ex.shape,ey.shape)
-    case (nx: NumericalType,ny: NumericalType) => if(nx enclosedIn ny) Some(Set.empty) else None
-    case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => lt(bx.signature,by.signature)
-    case (bx: BoundedTypeVariable,_) => lt(bx.signature,y)
-    case (_,by: BoundedTypeVariable) => lt(x,by.signature)
+    case (nx: NumericalType,ny: NumericalType) => if((nx == ny) || (nx enclosedIn ny)) Some(Set.empty) else None
     case (vx: TypeVariable,vy: TypeVariable) => {
       val constraint: InferenceConstraint = SubsumptionConstraint(vx,vy)
       if(vx == vy || vx.name == vy.name && vy.universal || assumptions.contains(constraint) || assumptions.contains(EqualityConstraint(vx,vy)))
