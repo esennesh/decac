@@ -35,8 +35,8 @@ case class FunctionSignature(var arguments: List[(String,MonoType)],
                       EffectPair(spec.solve(effect.positive),spec.solve(effect.negative)))
   def arrow: Either[TypeExpressionConstructor,FunctionPointer] = {
     val func = new FunctionPointer(arguments.map(_._2) ++ implicits.map(_._2),result,effect.positive,effect.negative)
-    val argVariables: List[SignatureVariable] = arguments.map(_._2.variables.toList).foldLeft[List[SignatureVariable]](Nil)(_ ++ _)
-    if(argVariables.forall(svar => svar.universal))
+    val argVariables: List[SignatureVariable] = func.variables.toList
+    if(argVariables.forall(_.universal))
       Left(new TypeExpressionConstructor(argVariables,func))
     else
       Right(func)
@@ -58,6 +58,7 @@ class FunctionDefinition(val name: String,
     signature.substitute(substitution)
     b.substitute(substitution)
     assert(signature.effect.safe(PureEffect))
+    System.err.println("Type-checked function body of " + name + ": " + signature.toString)
   }
   val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMFunction]] = Memoize1(sigvars => {
     val funcType: TypeConstructor = this.signature.arrow match {
@@ -67,7 +68,9 @@ class FunctionDefinition(val name: String,
     val signature: FunctionPointer = funcType.represent(sigvars).asInstanceOf[FunctionPointer]
     Memoize1(instantiation => {
       val func = new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile)
-      System.err.println("Defining " + func.getValueName + ": " + signature.toString + " (" + func.typeOf.toString + ")")
+      for(argument <- func.getParameters.toList.zip(this.signature.arguments ++ this.signature.implicits))
+        argument._1.setValueName(argument._2._1)
+      System.err.println("Defining " + name + ": " + signature.toString + " (" + func.typeOf.toString + ")")
       body match {
         case Some(b) if funcType.parameters != Nil || instantiation == scope => {
           if(funcType.parameters != Nil)
@@ -92,7 +95,7 @@ class FunctionDefinition(val name: String,
       else
         specialize.values.foldLeft(Set.empty[LLVMValue])((set,specialization) => set + specialization(instantiation))
     }
-    case Right(arrow) => throw new Exception("Attempting to build LLVM code for non-principly-typed function -- " + name + ": " + arrow.toString)
+    case Right(arrow) => throw new Exception("Attempting to build LLVM code for non-principally-typed function -- " + name + ": " + arrow.toString)
   })
 }
 

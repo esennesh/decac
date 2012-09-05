@@ -97,7 +97,12 @@ class LexicalScope(par: Scope,arguments: Iterable[(String,MonoType)]) extends Sc
   }
   def setArguments(args: immutable.Map[String,LLVMArgument]): Unit =
     for(binding <- bindings) binding match {
-      case arg: ArgumentBinding => arg.setArgument(args(arg.name))
+      case (name: String,arg: ArgumentBinding) => {
+        assert(name == arg.name)
+        System.err.println(args)
+        arg.setArgument(args(name))
+      }
+      case _ => Unit
     }
   def substitute(sub: SignatureSubstitution): Unit =
     for(binding <- bindings.values)
