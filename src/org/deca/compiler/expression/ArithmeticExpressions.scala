@@ -6,11 +6,14 @@ import org.deca.compiler.signature._
 
 abstract class ArithmeticExpression extends Expression {
   expType = new TypeVariable(false,None)
-  override def constrain(scs: SignatureConstraints): Unit = {
-    scs.push(new SubsumptionConstraint(expType,FP128Type))
+  expEffect = EffectPair(new EffectVariable(false),new EffectVariable(false))
+  override def constrain(lui: LatticeUnificationInstance): Unit = {
+    lui.constrain(new SubsumptionConstraint(expType,FP128Type))
     for(child <- children) {
-      child.constrain(scs)
-      scs.push(new SubsumptionConstraint(child.expType,expType))
+      child.constrain(lui)
+      lui.constrain(new SubsumptionConstraint(child.expType,expType))
+      lui.constrain(new SubsumptionConstraint(child.expEffect.positive,expEffect.positive))
+      lui.constrain(new SubsumptionConstraint(child.expEffect.negative,expEffect.negative))
     }
   }
   override def check(lui: LatticeUnificationInstance): Unit = for(child <- children) child.check(lui)
@@ -41,13 +44,15 @@ class IntegerLiteralExpression(val value: Int) extends ArithmeticExpression with
         LongInt
     }
   expType = intType
+  expEffect = EffectPair(PureEffect,PureEffect)
   def build(scope: Scope,instantiation: Module): LLVMConstant =
     LLVMConstantInteger.constantInteger(intType.compile,value,true)
     
   override def specialize(spec: SignatureSubstitution,specScope: Scope): IntegerLiteralExpression = this
 }
 
-class ArithmeticOperatorExpression(val operator: Char,val left: Expression,val right: Expression) extends ArithmeticExpression {
+class ArithmeticOperatorExpression(val operator: Char,val left: Expression,val right: Expression,tau: MonoType = new TypeVariable(false,None)) extends ArithmeticExpression {
+  expType = tau
   override val children = List(left, right)
   override def substitute(sub: SignatureSubstitution): Unit = {
     super.substitute(sub)
@@ -55,7 +60,7 @@ class ArithmeticOperatorExpression(val operator: Char,val left: Expression,val r
     right.substitute(sub)
   }
   override def specialize(spec: SignatureSubstitution,specScope: Scope): ArithmeticOperatorExpression =
-    new ArithmeticOperatorExpression(operator,left.specialize(spec,specScope),right.specialize(spec,specScope))
+    new ArithmeticOperatorExpression(operator,left.specialize(spec,specScope),right.specialize(spec,specScope),spec.solve(expType))
   
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
     val lhs = (new ImplicitUpcast(left,expType)).compile(builder,scope,instantiation)

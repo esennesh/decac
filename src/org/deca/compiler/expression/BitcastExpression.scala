@@ -8,7 +8,7 @@ class BitcastExpression(val expression: Expression,val tau: MonoType) extends Ex
   expType = tau
   override val children = List(expression)
   
-  def constrain(scs: SignatureConstraints): Unit = expression.constrain(scs)
+  def constrain(lui: LatticeUnificationInstance): Unit = expression.constrain(lui)
   def check(lui: LatticeUnificationInstance): Unit = expression.check(lui)
   
   override def substitute(sub: SignatureSubstitution): Unit = {

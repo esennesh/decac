@@ -5,7 +5,7 @@ import scala.collection.immutable.Set
 import scala.collection.mutable.GraphLattice
 import org.deca.compiler.definition._
 
-class EffectVariable(override val universal: Boolean) extends MonoEffect with SignatureVariable {
+class EffectVariable(override val universal: Boolean,override val name: Option[String] = None) extends MonoEffect with SignatureVariable {
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = Set.empty
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = Set.empty
 }
@@ -63,11 +63,11 @@ object TopEffect extends MonoEffect {
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = Set.empty
 }
 
-class BoundedEffectVariable(epsilon: MonoEffect,bnd: SignatureBound,univ: Boolean) extends BoundsVariable[MonoEffect](epsilon,bnd,univ) with MonoEffect {
+class BoundedEffectVariable(epsilon: MonoEffect,bnd: SignatureBound,univ: Boolean,override val name: Option[String] = None) extends BoundsVariable[MonoEffect](epsilon,bnd,univ) with MonoEffect {
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = signature.filterR(pred)
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = signature.filterT(pred)
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = if(pred(this)) signature.filterE(pred) + this else signature.filterE(pred)
-  override def clone(sig: MonoEffect,bnd: SignatureBound,univ: Boolean) = new BoundedEffectVariable(sig,bnd,univ)
+  override def clone(sig: MonoEffect,bnd: SignatureBound,univ: Boolean,nm: Option[String]) = new BoundedEffectVariable(sig,bnd,univ,nm orElse name)
 }
 
 object EffectRelation extends InferenceOrdering[MonoEffect] {

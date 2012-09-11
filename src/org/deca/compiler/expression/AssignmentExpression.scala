@@ -11,10 +11,10 @@ class AssignmentExpression(val slot: WritableExpression,val value: Expression) e
   expEffect = value.expEffect ++ EffectPair(WriteEffect(slot.region),PureEffect)
   
   override val children: List[Expression] = List(slot,value)
-  override def constrain(scs: SignatureConstraints): Unit = {
-    slot.constrain(scs)
-    value.constrain(scs)
-    scs.push(new SubsumptionConstraint(value.expType,slot.expType))
+  override def constrain(lui: LatticeUnificationInstance): Unit = {
+    slot.constrain(lui)
+    value.constrain(lui)
+    lui.constrain(new SubsumptionConstraint(value.expType,slot.expType))
   }
   override def check(lui: LatticeUnificationInstance): Unit = {
     slot.check(lui)

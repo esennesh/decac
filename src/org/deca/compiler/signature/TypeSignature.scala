@@ -320,7 +320,7 @@ class ExistentialInterface(r: RecordType,abs: MonoType,w: Option[MonoType] = Non
   override def variables: Set[SignatureVariable] = shape.variables
 }
 
-class TypeVariable(override val universal: Boolean,val name: Option[String] = None) extends MonoType with SignatureVariable {
+class TypeVariable(override val universal: Boolean,override val name: Option[String] = None) extends MonoType with SignatureVariable {
   override def compile: LLVMType = throw new TypeException("Cannot compile type variable " + name.toString + ".")
   override def sizeOf: Int = 1
   override def toString: String = name.getOrElse(getClass().getName()) + ':' + universal.toString + '@' + Integer.toHexString(hashCode)
@@ -329,8 +329,8 @@ class TypeVariable(override val universal: Boolean,val name: Option[String] = No
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = Set.empty
 }
 
-class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean,val name: Option[String] = None) extends BoundsVariable[MonoType](tau,bnd,univ) with MonoType {
-  override def clone(sig: MonoType,bnd: SignatureBound,univ: Boolean) = new BoundedTypeVariable(sig,bnd,univ)
+class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean,override val name: Option[String] = None) extends BoundsVariable[MonoType](tau,bnd,univ) with MonoType {
+  override def clone(sig: MonoType,bnd: SignatureBound,univ: Boolean,nm: Option[String]) = new BoundedTypeVariable(sig,bnd,univ,nm orElse name)
   override def compile: LLVMType = signature.compile
   override def sizeOf: Int = signature.sizeOf
   override def filterT(pred: MonoType => Boolean) = if(pred(this)) signature.filterT(pred) + this else signature.filterT(pred)

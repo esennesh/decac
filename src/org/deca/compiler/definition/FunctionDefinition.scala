@@ -70,18 +70,20 @@ class FunctionDefinition(val name: String,
       val func = new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile)
       for(argument <- func.getParameters.toList.zip(this.signature.arguments ++ this.signature.implicits))
         argument._1.setValueName(argument._2._1)
-      System.err.println("Defining " + name + ": " + signature.toString + " (" + func.typeOf.toString + ")")
       body match {
         case Some(b) if funcType.parameters != Nil || instantiation == scope => {
           if(funcType.parameters != Nil)
             func.setLinkage(LLVMLinkage.LLVMWeakODRLinkage)
           val specialization = new SignatureSubstitution
-          for(spec <- (funcType.parameters zip sigvars))
+          for(spec <- (funcType.parameters zip sigvars)) {
+            System.err.println("Specializing: " + spec._1.toString + " |--> " + spec._2.toString)
             specialization.substitute(spec._1,spec._2)
+          }
           val entry = func.appendBasicBlock("entry")
           val builder = new LLVMInstructionBuilder
           builder.positionBuilderAtEnd(entry)
-          new LLVMReturnInstruction(builder,b.specialize(specialization).compile(instantiation,builder))
+          val specializedBody = b.specialize(specialization)
+          new LLVMReturnInstruction(builder,specializedBody.compile(instantiation,builder))
         }
         case _ => func.setLinkage(LLVMLinkage.LLVMExternalLinkage)
       }
@@ -106,7 +108,7 @@ class ExpressionBody(override val signature: FunctionSignature,
   val body: Expression = mkBody(scope)
   override def infer: SignatureSubstitution = {
     val inference = new LatticeUnificationInstance
-    body.constrain(inference.constraints)
+    body.constrain(inference)
     inference.constrain(new SubsumptionConstraint(body.expType,signature.result))
     inference.constrain(new SubsumptionConstraint(body.expEffect.positive,signature.effect.positive))
     inference.constrain(new SubsumptionConstraint(body.expEffect.negative,signature.effect.negative))

@@ -99,7 +99,6 @@ class LexicalScope(par: Scope,arguments: Iterable[(String,MonoType)]) extends Sc
     for(binding <- bindings) binding match {
       case (name: String,arg: ArgumentBinding) => {
         assert(name == arg.name)
-        System.err.println(args)
         arg.setArgument(args(name))
       }
       case _ => Unit

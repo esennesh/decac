@@ -16,7 +16,7 @@ class VariableExpression(val name: List[String],val scope: Scope) extends Writab
   }
   override def specialize(spec: SignatureSubstitution,specScope: Scope): VariableExpression =
     new VariableExpression(name,specScope)
-  override def constrain(scs: SignatureConstraints): Unit = Unit
+  override def constrain(lui: LatticeUnificationInstance): Unit = Unit
   override def check(lui: LatticeUnificationInstance): Unit = Unit
 
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue =
@@ -36,7 +36,7 @@ class ImplicitResolutionExpression(val tau: MonoType,val scope: Scope) extends E
   }
   override def specialize(spec: SignatureSubstitution,specScope: Scope): ImplicitResolutionExpression =
     new ImplicitResolutionExpression(spec.solve[MonoType](tau),specScope)
-  override def constrain(scs: SignatureConstraints): Unit = Unit
+  override def constrain(lui: LatticeUnificationInstance): Unit = Unit
   override def check(lui: LatticeUnificationInstance): Unit = Unit
   
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue =

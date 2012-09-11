@@ -15,11 +15,11 @@ class BlockExpression(val steps: List[Expression]) extends Expression {
   expEffect = EffectPair(new EffectVariable(false),new EffectVariable(false))
   override val children = steps
   
-  override def constrain(scs: SignatureConstraints): Unit =
+  override def constrain(lui: LatticeUnificationInstance): Unit =
     for(step <- steps) {
-      step.constrain(scs)
-      scs.push(new SubsumptionConstraint(step.expEffect.positive,expEffect.positive))
-      scs.push(new SubsumptionConstraint(step.expEffect.negative,expEffect.negative))
+      step.constrain(lui)
+      lui.constrain(new SubsumptionConstraint(step.expEffect.positive,expEffect.positive))
+      lui.constrain(new SubsumptionConstraint(step.expEffect.negative,expEffect.negative))
     }
   override def check(lui: LatticeUnificationInstance): Unit = assert(expEffect.safe(PureEffect))
   override def substitute(sub: SignatureSubstitution): Unit = {

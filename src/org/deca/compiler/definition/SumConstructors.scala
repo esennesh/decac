@@ -73,7 +73,7 @@ class RecordConstructorBody(val name: String,
   override def infer: SignatureSubstitution = {
     val inference = new LatticeUnificationInstance
     for(member <- members) {
-      member.initializer.constrain(inference.constraints)
+      member.initializer.constrain(inference)
       inference.constrain(new SubsumptionConstraint(member.initializer.expType,member.tau))
       inference.constrain(new SubsumptionConstraint(member.initializer.expEffect.positive,signature.effect.positive))
       inference.constrain(new SubsumptionConstraint(member.initializer.expEffect.negative,signature.effect.negative))

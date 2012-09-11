@@ -21,7 +21,7 @@ class BoundedMutabilityVariable(mu: MonoMutability,bnd: SignatureBound,univ: Boo
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = signature.filterR(pred)
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = signature.filterT(pred)
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = signature.filterE(pred)
-  override def clone(sig: MonoMutability,bnd: SignatureBound,univ: Boolean) = new BoundedMutabilityVariable(sig,bnd,univ)
+  override def clone(sig: MonoMutability,bnd: SignatureBound,univ: Boolean,nm: Option[String]) = new BoundedMutabilityVariable(sig,bnd,univ)
 }
 
 object MutabilityRelation extends InferenceOrdering[MonoMutability] {

@@ -9,14 +9,14 @@ class IfExpression(val condition: Expression,
                    val otherwise: Option[Expression]) extends Expression {
   expType = new TypeVariable(false,None)
   override val children: List[Expression] = condition :: then :: otherwise.toList
-  override def constrain(scs: SignatureConstraints): Unit = {
-    condition.constrain(scs)
-    scs.push(new SubsumptionConstraint(condition.expType,BuiltInSums.BooleanSum.represent(Nil)))
-    then.constrain(scs)
-    scs.push(new SubsumptionConstraint(then.expType,expType))
+  override def constrain(lui: LatticeUnificationInstance): Unit = {
+    condition.constrain(lui)
+    lui.constrain(new SubsumptionConstraint(condition.expType,BuiltInSums.BooleanSum.represent(Nil)))
+    then.constrain(lui)
+    lui.constrain(new SubsumptionConstraint(then.expType,expType))
     otherwise.foreach(exp => {
-      exp.constrain(scs)
-      scs.push(new SubsumptionConstraint(exp.expType,expType))
+      exp.constrain(lui)
+      lui.constrain(new SubsumptionConstraint(exp.expType,expType))
     })
   }
   override def check(lui: LatticeUnificationInstance): Unit = {

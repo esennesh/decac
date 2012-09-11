@@ -16,9 +16,8 @@ trait Expression {
   val writable: Boolean = false
   val children: List[Expression]
   var expEffect: EffectPair = EffectPair(PureEffect,PureEffect)
-  //var expEffect: EffectPair = children.foldLeft(EffectPair(PureEffect,PureEffect))((ep: EffectPair,child: Expression) => ep ++ child.expEffect)
   
-  def constrain(scs: SignatureConstraints): Unit
+  def constrain(lui: LatticeUnificationInstance): Unit
   def check(lui: LatticeUnificationInstance): Unit
   
   def substitute(sub: SignatureSubstitution): Unit = {
@@ -30,6 +29,12 @@ trait Expression {
    * When !(scope enclosedIn instantiation), this expression was imported, and references to outside
    * variables and functions will need to be emitted into instantiation.compiledModule as externals. */
   def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue
+  
+  def dump: Unit = {
+    for(child <- children)
+      child.dump
+    System.err.println(toString + ": " + expType.toString + " !: " + expEffect.toString)
+  }
 }
 
 trait WritableExpression extends Expression {
@@ -41,7 +46,7 @@ trait WritableExpression extends Expression {
 
 trait ConstantExpression extends Expression {
   override val writable: Boolean = false
-  override def constrain(scs: SignatureConstraints): Unit = Unit
+  override def constrain(lui: LatticeUnificationInstance): Unit = Unit
   override def check(lui: LatticeUnificationInstance): Unit = Unit
   override def substitute(substitution: SignatureSubstitution): Unit = Unit
   override def specialize(spec: SignatureSubstitution,specScope: Scope): ConstantExpression = this
