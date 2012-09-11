@@ -21,6 +21,7 @@ trait MonoSignature {
 
 trait SignatureVariable extends MonoSignature {
   val universal = false
+  val name: Option[String] = None
   override def variables: Set[SignatureVariable] = Set.empty[SignatureVariable] + this
 }
 
@@ -32,7 +33,7 @@ abstract class BoundsVariable[T <: MonoSignature](val signature: T,val bound: Si
   assert(!signature.isInstanceOf[SignatureVariable])
   assert(!universal || signature.variables.forall(svar => svar.universal))
   
-  def clone(sig: T,bnd: SignatureBound,univ: Boolean): BoundsVariable[T]
+  def clone(sig: T,bnd: SignatureBound,univ: Boolean,nm: Option[String] = None): BoundsVariable[T]
   override def toString: String = {
     val suffix = "(" + super.toString + "," + signature.toString + "," + universal.toString + ")"
     bound match {

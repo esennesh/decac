@@ -1,9 +1,9 @@
 module memes
 
-type Option<a> = variant { Some(val a) None}
+/* type Option<a> = variant { Some(val a) None}
 type TwoTuple<a,b> = [val a,val b]
 type Either<a,b> = variant { Left(val a) Right(val b) }
-type Array<a> = a[3]
+type Array<a> = a[3] */
 
 function troll(x,y: nat,z) {
   x * (y - z) / 3

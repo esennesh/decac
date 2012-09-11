@@ -8,12 +8,15 @@ import org.deca.compiler.signature._
 
 class ImplicitUpcast(val expression: Expression,upcast: MonoType) extends Expression {
   expType = upcast
-  assert(TypeOrdering.lteq(expression.expType,expType))
-  override def constrain(scs: SignatureConstraints): Unit = Unit
+  if(!TypeOrdering.lteq(expression.expType,expType))
+    throw new Exception(expression.expType.toString + " </: " + expType.toString)
+  override def constrain(lui: LatticeUnificationInstance): Unit = Unit
   override def check(lui: LatticeUnificationInstance): Unit = Unit
   
-  override def substitute(sub: SignatureSubstitution): Unit =
+  override def substitute(sub: SignatureSubstitution): Unit = {
+    expression.substitute(sub)
     expType = sub.solve(expType).asInstanceOf[MonoType]
+  }
   override def specialize(spec: SignatureSubstitution,specScope: Scope): Expression =
     new ImplicitUpcast(expression.specialize(spec,specScope),spec.solve(upcast).asInstanceOf[MonoType])
   override val children: List[Expression] = (expression :: Nil)

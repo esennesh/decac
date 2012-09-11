@@ -33,7 +33,7 @@ class MemberExpression(val structure: Expression,
     }
     case _ => throw new TypeException("Cannot select fields of non-variant, non-record type.")
   }
-  override def constrain(scs: SignatureConstraints): Unit = structure.constrain(scs)
+  override def constrain(lui: LatticeUnificationInstance): Unit = structure.constrain(lui)
   override def check(lui: LatticeUnificationInstance): Unit = {
     structure.check(lui)
     val substitution = lui.solve

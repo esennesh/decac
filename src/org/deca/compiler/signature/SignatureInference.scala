@@ -76,9 +76,13 @@ class SignatureConstraints {
 }
 
 class LatticeUnificationInstance(protected val result: SignatureSubstitution = new SignatureSubstitution) {
-  val constraints = new SignatureConstraints
+  protected val constraints = new SignatureConstraints
   
-  def constrain(c: InferenceConstraint): Unit = constraints.push(c)
+  def constrain(c: InferenceConstraint): Unit = {
+    if(c.alpha.isInstanceOf[MonoType] && c.beta.isInstanceOf[MonoType])
+        System.err.println(c.toString)
+    constraints.push(c)
+  }
   
   def substitute(x: SignatureVariable,y: MonoSignature): Unit = {
     result.substitute(x,y)
@@ -138,7 +142,7 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
           substitute(vy,py._2)
         }
         case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],vy: SignatureVariable) =>
-          substitute(vy,vx.clone(vx.signature,vx.bound,vx.universal))
+          substitute(vy,vx.clone(vx.signature,vx.bound,vx.universal,vy.name))
         case SubsumptionConstraint(vx: BoundsVariable[MonoSignature],_) => {
           val meets = SignatureRelation.meet(vx.signature,c.beta)
           val pair = vx.meet(meets._1)
@@ -146,7 +150,7 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
           substitute(vx,pair._2)
         }
         case SubsumptionConstraint(vx: SignatureVariable,vy: BoundsVariable[MonoSignature]) =>
-          substitute(vx,vy.clone(vy.signature,vy.bound,vy.universal))
+          substitute(vx,vy.clone(vy.signature,vy.bound,vy.universal,vx.name))
         case SubsumptionConstraint(_,vy: BoundsVariable[MonoSignature]) => {
           val joins = SignatureRelation.join(c.alpha,vy.signature)
           val pair = vy.join(joins._1)

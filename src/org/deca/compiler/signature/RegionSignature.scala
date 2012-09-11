@@ -11,13 +11,13 @@ object GlobalRegion extends ScopeRegion(GlobalScope)
 object BottomRegion extends MonoRegion {
   override def variables: Set[SignatureVariable] = HashSet.empty
 }
-case class RegionVariable(override val universal: Boolean) extends MonoRegion with SignatureVariable
+case class RegionVariable(override val universal: Boolean,override val name: Option[String] = None) extends MonoRegion with SignatureVariable
 
-class BoundedRegionVariable(rho: MonoRegion,bnd: SignatureBound,univ: Boolean) extends BoundsVariable[MonoRegion](rho,bnd,univ) with MonoRegion {
+class BoundedRegionVariable(rho: MonoRegion,bnd: SignatureBound,univ: Boolean,override val name: Option[String] = None) extends BoundsVariable[MonoRegion](rho,bnd,univ) with MonoRegion {
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = if(pred(this)) signature.filterR(pred) + this else signature.filterR(pred)
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = signature.filterT(pred)
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = signature.filterE(pred)
-  override def clone(sig: MonoRegion,bnd: SignatureBound,univ: Boolean) = new BoundedRegionVariable(sig,bnd,univ)
+  override def clone(sig: MonoRegion,bnd: SignatureBound,univ: Boolean,nm: Option[String]) = new BoundedRegionVariable(sig,bnd,univ,nm orElse name)
 }
 
 /* Normally, data "flows" through the signature system from smaller elements to larger elements in the
@@ -34,16 +34,16 @@ object RegionRelation extends InferenceOrdering[MonoRegion] {
     case (BottomRegion,_) => Some(Set.empty)
     case (_,GlobalRegion) => Some(Set.empty)
     case (ScopeRegion(sx),ScopeRegion(sy)) => if(sy enclosedIn sx) Some(Set.empty) else None
-    case (RegionVariable(true),RegionVariable(_)) => Some(Set.empty)
-    case (RegionVariable(false),RegionVariable(false)) => Some(Set.empty + SubsumptionConstraint(x,y))
-    case (ScopeRegion(sx: Module),RegionVariable(true)) => Some(Set.empty)
-    case (RegionVariable(false),ScopeRegion(sy: LexicalScope)) => Some(Set.empty + SubsumptionConstraint(x,y))
-    case (ScopeRegion(sx: LexicalScope),RegionVariable(false)) => Some(Set.empty + SubsumptionConstraint(x,y))
+    case (RegionVariable(true,_),RegionVariable(_,_)) => Some(Set.empty)
+    case (RegionVariable(false,_),RegionVariable(false,_)) => Some(Set.empty + SubsumptionConstraint(x,y))
+    case (ScopeRegion(sx: Module),RegionVariable(true,_)) => Some(Set.empty)
+    case (RegionVariable(false,_),ScopeRegion(sy: LexicalScope)) => Some(Set.empty + SubsumptionConstraint(x,y))
+    case (ScopeRegion(sx: LexicalScope),RegionVariable(false,_)) => Some(Set.empty + SubsumptionConstraint(x,y))
     case _ => None
   }
   def equiv(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {
     case (ScopeRegion(sx),ScopeRegion(sy)) => if(sx == sy) Some(Set.empty) else None
-    case (RegionVariable(fx),RegionVariable(fy)) => if(fx == fy) Some(HashSet.empty[InferenceConstraint] + EqualityConstraint(x,y)) else None
+    case (RegionVariable(fx,_),RegionVariable(fy,_)) => if(fx == fy) Some(HashSet.empty[InferenceConstraint] + EqualityConstraint(x,y)) else None
     case _ => None
   }
 }

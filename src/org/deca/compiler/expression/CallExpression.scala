@@ -12,11 +12,11 @@ abstract class CallExpression extends Expression {
   var arrow: FunctionPointer
   override val children: List[Expression] = arguments
   
-  override def constrain(scs: SignatureConstraints): Unit = {
+  override def constrain(lui: LatticeUnificationInstance): Unit = {
     for(argument <- arguments)
-      argument.constrain(scs)
+      argument.constrain(lui)
     for(actual <- (arguments.map(_.expType) zip arrow.domain))
-      scs.push(new SubsumptionConstraint(actual._1,actual._2))
+      lui.constrain(new SubsumptionConstraint(actual._1,actual._2))
   }
   override def check(lui: LatticeUnificationInstance): Unit = {
     for(argument <- arguments)
@@ -91,9 +91,9 @@ class ExpressionCall(val expression: Expression,override val arguments: List[Exp
     new ExistentialInterface(shape,tau)
   }
   
-  override def constrain(scs: SignatureConstraints): Unit = {
-    super.constrain(scs)
-    scs.push(new SubsumptionConstraint(expression.expType,closureType))
+  override def constrain(lui: LatticeUnificationInstance): Unit = {
+    super.constrain(lui)
+    lui.constrain(new SubsumptionConstraint(expression.expType,closureType))
   }
   
   override def specialize(spec: SignatureSubstitution,specScope: Scope): ExpressionCall = 

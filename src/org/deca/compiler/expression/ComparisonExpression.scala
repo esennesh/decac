@@ -16,13 +16,13 @@ class ComparisonExpression(val operator: ComparisonOperator,
   expType = BuiltInSums.BooleanSum.represent(Nil)
   val children: List[Expression] = List(left,right)
   
-  override def constrain(scs: SignatureConstraints): Unit = {
-    scs.push(new SubsumptionConstraint(left.expType,join))
-    scs.push(new SubsumptionConstraint(right.expType,join))
+  override def constrain(lui: LatticeUnificationInstance): Unit = {
+    lui.constrain(new SubsumptionConstraint(left.expType,join))
+    lui.constrain(new SubsumptionConstraint(right.expType,join))
     if(operator.isInstanceOf[OrdinalComparison])
-      scs.push(new SubsumptionConstraint(join,FP128Type))
-    left.constrain(scs)
-    right.constrain(scs)
+      lui.constrain(new SubsumptionConstraint(join,FP128Type))
+    left.constrain(lui)
+    right.constrain(lui)
   }
   override def check(lui: LatticeUnificationInstance): Unit = Unit
   override def substitute(sub: SignatureSubstitution): Unit = {

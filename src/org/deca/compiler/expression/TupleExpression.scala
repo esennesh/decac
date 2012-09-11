@@ -7,9 +7,9 @@ import org.deca.compiler.definition._
 class TupleExpression(override val children: List[Expression]) extends Expression {
   expType = new RecordType(children.map(child => RecordMember(None,ImmutableMutability,child.expType)))
   
-  override def constrain(scs: SignatureConstraints): Unit =
+  override def constrain(lui: LatticeUnificationInstance): Unit =
     for(child <- children)
-      child.constrain(scs)
+      child.constrain(lui)
   override def check(lui: LatticeUnificationInstance): Unit =
     for(child <- children)
       child.check(lui)
