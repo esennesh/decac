@@ -46,9 +46,9 @@ class SignatureSubstitution {
   }
 }
 
-class SignatureConstraints {
-  val current = new Stack[InferenceConstraint]
-  val polyHypotheses = new Queue[InferenceConstraint]
+class SignatureConstraints extends Iterable[InferenceConstraint] {
+  protected val current = new Stack[InferenceConstraint]
+  protected val polyHypotheses = new Queue[InferenceConstraint]
   
   def substitute(x: SignatureVariable,y: MonoSignature): Unit = {
     for(constraint <- current)
@@ -72,17 +72,15 @@ class SignatureConstraints {
     else
       current.pop
   
-  def isEmpty = current.isEmpty && polyHypotheses.isEmpty
+  override def isEmpty = current.isEmpty && polyHypotheses.isEmpty
+  
+  override def iterator: Iterator[InferenceConstraint] = current.iterator ++ polyHypotheses.iterator
 }
 
 class LatticeUnificationInstance(protected val result: SignatureSubstitution = new SignatureSubstitution) {
   protected val constraints = new SignatureConstraints
   
-  def constrain(c: InferenceConstraint): Unit = {
-    if(c.alpha.isInstanceOf[MonoType] && c.beta.isInstanceOf[MonoType])
-        System.err.println(c.toString)
-    constraints.push(c)
-  }
+  def constrain(c: InferenceConstraint): Unit = constraints.push(c)
   
   def substitute(x: SignatureVariable,y: MonoSignature): Unit = {
     result.substitute(x,y)
@@ -90,6 +88,9 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
   }
   
   def solve: SignatureSubstitution = {
+    for(c <- constraints)
+      if(c.alpha.isInstanceOf[MonoType])
+        System.err.println("Original constraint: " + c.toString)
     while(!constraints.isEmpty) {
       val constraint = constraints.pop
       val cs: Option[Set[InferenceConstraint]] = constraint match {
@@ -107,7 +108,10 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
           case (mx: MonoMutability,my: MonoMutability) => MutabilityRelation.equiv(mx,my)
         }
       }
-      for(c <- cs.getOrElse(throw new Exception("Unsatisfiable signature constraint: " + constraint.toString))) c match {
+      for(c <- cs.getOrElse(throw new Exception("Unsatisfiable signature constraint: " + constraint.toString))) {
+        if(c.alpha.isInstanceOf[MonoType] && c.beta.isInstanceOf[MonoType])
+          System.err.println(c.toString)
+        c match {
         case PhysicalSubtypingConstraint(vx: BoundsVariable[MonoType],vy: BoundsVariable[MonoType]) => {
           val meets = PhysicalTypeRelation.meet(vy.signature,vx.signature)
           val px = vx.meet(meets._1)
@@ -157,6 +161,7 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
           (joins._2 + pair._1).map(c => constrain(c))
           substitute(vy,pair._2)
         }
+        case SubsumptionConstraint(vx: SignatureVariable,vy: SignatureVariable) => constrain(c)
         case SubsumptionConstraint(ex: MonoEffect,vy: EffectVariable) => substitute(vy,new BoundedEffectVariable(ex,JoinBound,vy.universal))
         case SubsumptionConstraint(vx: EffectVariable,ey: MonoEffect) => substitute(vx,new BoundedEffectVariable(ey,MeetBound,vx.universal))
         case SubsumptionConstraint(vx: TypeVariable,ty: MonoType) => substitute(vx,new BoundedTypeVariable(ty,MeetBound,vx.universal,vx.name))
@@ -171,7 +176,7 @@ class LatticeUnificationInstance(protected val result: SignatureSubstitution = n
         /* DEBUG: If the inference engine seems to get stuck, I'm not properly handling a case that should occur down here in the inference
            section.  To handle it, I can comment this next line out, figure out how to handle it, and then uncomment this line. */
         case _ => constrain(c)
-      }
+      } }
     }
     result
   }
