@@ -454,14 +454,8 @@ object TypeRelation extends InferenceOrdering[MonoType] {
         case _ => None
       })
     }
-    case (fx: FunctionPointer,fy: FunctionPointer) => {
-      val width = if(fx.domain.length == fy.domain.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = equiv(fx.range,fy.range) :: fx.domain.zip(fy.domain).map(taus => equiv(taus._1,taus._2))
-      depths.foldLeft(width)((res,depth) => (res,depth) match {
-        case (Some(resset),Some(set)) => Some(resset union set)
-        case _ => None
-      })
-    }
+    //Function pointers have to physiosubtype each other in a systems language, since there can be no implicit upcasts/coercions of arguments or results.
+    case (fx: FunctionPointer,fy: FunctionPointer) => PhysicalTypeRelation.lt(fx,fy)
     case (sx: SumType,sy: SumType) => {
       val width = if(sx.cases.size == sy.cases.size) Some(HashSet.empty[InferenceConstraint]) else None
       val depths = sx.cases.zip(sy.cases).map(cs => if(cs._1._1 == cs._2._1) equiv(cs._1._2.record,cs._2._2.record) else None)
@@ -530,9 +524,10 @@ object PhysicalTypeRelation extends InferenceOrdering[MonoType] {
         case _ => None
       })
     }
+    //Physiosubtyping allows only width extension, not depth.  To physiosubtype each other, function pointers must equal each other.
     case (fx: FunctionPointer,fy: FunctionPointer) => {
       val width = if(fx.domain.length == fy.domain.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = lt(fx.range,fy.range) :: fx.domain.zip(fy.domain).map(taus => lt(taus._2,taus._1))
+      val depths = equiv(fx.range,fy.range) :: fx.domain.zip(fy.domain).map(taus => equiv(taus._2,taus._1))
       depths.foldLeft(width)((res,depth) => (res,depth) match {
         case (Some(resset),Some(set)) => Some(resset union set)
         case _ => None
