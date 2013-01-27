@@ -1,0 +1,36 @@
+module highorder
+
+import list
+
+method map(s: @Sequence,f): @Sequence
+
+override map(s: @list.List,f) {
+  match *s {
+    case Cons(head,tail) => list.cons(f(head),map(tail,f))
+    case Nil => Nil
+  }
+}
+
+method filter(s: @Sequence<a>,p?: a -> boolean): @Sequence
+
+override filter(s: @list.List<a>,p?: a -> boolean) {
+  match *s {
+    case Cons(head,tail) => if(p?(head)) list.cons(head,filter(tail,p?)) else filter(tail,p?)
+    case Nil => Nil
+  }
+}
+
+method fold(s: @Sequence<a>,f: (a,b) -> b,base: b): b
+
+override fold(s: @list.List<a>,f: (a,b) -> b,base: b): b {
+  match *s {
+    case Cons(head,tail) => f(head,fold(tail,f,base))
+    case Nil => base
+  }
+}
+
+function copy_list(s) {
+  fold(s,list.cons,Nil)
+}
+
+end

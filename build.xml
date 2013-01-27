@@ -1,0 +1,51 @@
+<project name="decac">
+	<property environment="env"/>
+	<property name="scala.lib.dir" location="${env.SCALA_HOME}"/>
+	<path id="scala.classpath">
+		<pathelement location="${scala.lib.dir}/scala-compiler.jar"/>
+		<pathelement location="${scala.lib.dir}/scala-library.jar"/>
+		<fileset dir="lib/">
+			<include name="**/*.jar"/>
+		</fileset>
+		<pathelement location="build/"/>
+	</path>
+	<manifestclasspath property="manifest.classpath" jarfile="decac.jar" maxParentLevels="13">
+		<classpath refid="scala.classpath" />
+	</manifestclasspath>
+	<taskdef resource="scala/tools/ant/antlib.xml">
+		<classpath refid="scala.classpath"/>
+	</taskdef>
+	<target name="build_parser">
+		<exec executable="sablecc">
+			<arg value="-d src/"/>
+			<arg value="deca.scc"/>
+			<arg value="--no-inline"/>
+		</exec>
+		<mkdir dir="build/"/>
+		<javac srcdir="src/org/deca/compiler/parser" destdir="build" includeantruntime="false"/>
+		<copy file="src/org/deca/compiler/parser/lexer/lexer.dat" todir="build/org/deca/compiler/parser/lexer"/>
+		<copy file="src/org/deca/compiler/parser/parser/parser.dat" todir="build/org/deca/compiler/parser/parser"/>
+	</target>
+	<target name="build">
+		<mkdir dir="build/"/>
+		<scalac sourcepath="" srcdir="src/" unchecked="false" destdir="build" classpathref="scala.classpath" deprecation="yes">
+			<include name="**/*.scala"/>
+			<exclude name="**/jllvm"/>
+			<exclude name="**/decasyntax"/>
+		</scalac>
+		<jar destfile="decac.jar" basedir="build/">
+			<manifest>
+				<attribute name="Main-Class" value="org.deca.compiler.Decac" />
+				<attribute name="Class-Path" value="${manifest.classpath}" />
+			</manifest>
+		</jar>
+	</target>
+	<target name="clean">
+		<exec dir="src/" executable="fsc">
+			<arg value="-reset"/>
+		</exec>
+		<delete file="decac.jar" />
+		<delete dir="build/"/>
+		<delete dir="src/org/deca/compiler/parser/"/>
+	</target>
+</project>

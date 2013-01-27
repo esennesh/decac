@@ -1,0 +1,28 @@
+module list
+
+import malloc
+
+type List<a> = class(e,n) extends Sequence<a> {
+  element: a:= e;
+  next: @List:= n;
+}
+
+function cons(element,next) {
+  malloc.malloc(pool => new(pool)(List(element,next)))
+}
+
+function car(lst: @List) {
+  match *lst {
+    case Cons(head,tail) => Some(head)
+    case Nil => None
+  }
+}
+
+function cdr(lst: @List) {
+  match *lst {
+    case Cons(head,tail) => tail
+    case Nil => Nil
+  }
+}
+
+end

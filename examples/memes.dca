@@ -1,0 +1,73 @@
+module memes
+
+/* type Option<a> = variant { Some(val a) None}
+type TwoTuple<a,b> = [val a,val b]
+type Either<a,b> = variant { Left(val a) Right(val b) }
+type Array<a> = a[3] */
+
+function troll(x,y: nat,z) {
+  x * (y - z) / 3
+}
+
+/*function harpdarp(a: byte,b: byte): TwoTuple<nat,nat> {
+  [a,b]
+}
+
+function itstime<a>(derp: Either<a,a>): nat {
+  derp.[0]
+}
+
+function son(n,x) {
+  if x then
+    n + 1
+  else
+    son(n-1,x)
+}
+
+function fib(n) {
+  if n = 0 then
+    n
+  else
+    fib(n-1) + fib(n-2)
+}
+
+function megusta(x) {
+  harpdarp(3,4);
+  Some(x);
+}
+
+function rage(): quadruple {
+  3
+}
+
+function melvin(x,y: boolean) {
+  if x then
+    megusta(x:= y)
+  else
+    None
+}
+
+function fffffffuuuuuuuuuuuu(x,y) {
+  if x then
+    Left(x)
+  else
+    Right(y - 1)
+}
+
+function ok<a>(x: a) {
+  x
+}
+
+function foreveralone(x,y: Either<boolean,nat>): boolean {
+  megusta(x);
+  foreveralone(x,Left(x));
+}
+
+function ilied(x) {
+  if x then
+    Some(x)
+  else
+    None
+} */
+
+end
