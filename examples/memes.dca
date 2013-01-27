@@ -1,15 +1,15 @@
 module memes
 
-/* type Option<a> = variant { Some(val a) None}
+type Option<a> = variant { Some(val a) None}
 type TwoTuple<a,b> = [val a,val b]
 type Either<a,b> = variant { Left(val a) Right(val b) }
-type Array<a> = a[3] */
+type Array<a> = a[3]
 
-function troll(x,y: nat,z) {
+/*function troll(x,y: nat,z) {
   x * (y - z) / 3
-}
+}*/
 
-/*function harpdarp(a: byte,b: byte): TwoTuple<nat,nat> {
+function harpdarp(a: byte,b: byte): TwoTuple<nat,nat> {
   [a,b]
 }
 
@@ -31,21 +31,21 @@ function fib(n) {
     fib(n-1) + fib(n-2)
 }
 
-function megusta(x) {
+/* function megusta(x) {
   harpdarp(3,4);
   Some(x);
-}
+} */
 
 function rage(): quadruple {
   3
 }
 
-function melvin(x,y: boolean) {
+/* function melvin(x,y: boolean) {
   if x then
     megusta(x:= y)
   else
     None
-}
+} */
 
 function fffffffuuuuuuuuuuuu(x,y) {
   if x then
@@ -58,16 +58,16 @@ function ok<a>(x: a) {
   x
 }
 
-function foreveralone(x,y: Either<boolean,nat>): boolean {
+/* function foreveralone(x,y: Either<boolean,nat>): boolean {
   megusta(x);
   foreveralone(x,Left(x));
-}
+} */
 
 function ilied(x) {
   if x then
     Some(x)
   else
     None
-} */
+}
 
 end
