@@ -386,7 +386,7 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     }
     case (fx: FunctionPointer,fy: FunctionPointer) => {
       val width = if(fx.domain.length == fy.domain.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = lt(fx.range,fy.range) :: fx.domain.zip(fy.domain).map(taus => lt(taus._2,taus._1))
+      val depths = PhysicalTypeRelation.lt(fx.range,fy.range) :: fx.domain.zip(fy.domain).map(taus => PhysicalTypeRelation.lt(taus._2,taus._1))
       depths.foldLeft(width)((res,depth) => (res,depth) match {
         case (Some(resset),Some(set)) => Some(resset union set)
         case _ => None
