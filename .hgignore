@@ -1,0 +1,6 @@
+syntax: glob
+
+build/*
+src/org/deca/compiler/parser/*
+examples/*.ll
+examples/*.bc
