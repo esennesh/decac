@@ -57,6 +57,7 @@ class ImplicitUpcast(val expression: Expression,upcast: MonoType) extends Expres
           //Return the entire new variant.
           new LLVMLoadInstruction(builder,result,"load")
         }
+        case (false,true) => throw new Exception("Cannot implicitly upcast a variant to an enumeration because such a subtyping relation is impossible.  What the fuck happened?")
       }
       
       case (px: PointerType,py: PointerType) => new LLVMBitCast(builder,child,py.compile,"pointer_cast")
