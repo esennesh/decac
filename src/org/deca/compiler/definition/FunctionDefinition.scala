@@ -66,28 +66,28 @@ class FunctionDefinition(val name: String,
       case Right(_) => throw new Exception("Attempting to specialize a function before its principal type has been inferred.")
     }
     val signature: FunctionPointer = funcType.represent(sigvars).asInstanceOf[FunctionPointer]
-    InitializedMemoize1(instantiation => new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile),
-                        (instantiation,func) => {
+    InitializedMemoize1(instantiation => {
+      val func = new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile)
       for(argument <- func.getParameters.toList.zip(this.signature.arguments ++ this.signature.implicits))
         argument._1.setValueName(argument._2._1)
-      body match {
-        case Some(b) if funcType.parameters != Nil || instantiation == scope => {
-          if(funcType.parameters != Nil)
-            func.setLinkage(LLVMLinkage.LLVMWeakODRLinkage)
-          val specialization = new SignatureSubstitution
-          for(spec <- (funcType.parameters zip sigvars)) {
-            System.err.println("Specializing: " + spec._1.toString + " |--> " + spec._2.toString)
-            specialization.substitute(spec._1,spec._2)
-          }
-          val entry = func.appendBasicBlock("entry")
-          val builder = new LLVMInstructionBuilder
-          builder.positionBuilderAtEnd(entry)
-          val specializedBody = b.specialize(specialization)
-          new LLVMReturnInstruction(builder,specializedBody.compile(instantiation,builder))
-        }
-        case _ => func.setLinkage(LLVMLinkage.LLVMExternalLinkage)
-      }
       func
+      },
+    (instantiation,func) => body match {
+      case Some(b) if funcType.parameters != Nil || instantiation == scope => {
+        if(funcType.parameters != Nil)
+          func.setLinkage(LLVMLinkage.LLVMWeakODRLinkage)
+        val specialization = new SignatureSubstitution
+        for(spec <- (funcType.parameters zip sigvars)) {
+          System.err.println("Specializing: " + spec._1.toString + " |--> " + spec._2.toString)
+          specialization.substitute(spec._1,spec._2)
+        }
+        val entry = func.appendBasicBlock("entry")
+        val builder = new LLVMInstructionBuilder
+        builder.positionBuilderAtEnd(entry)
+        val specializedBody = b.specialize(specialization)
+        new LLVMReturnInstruction(builder,specializedBody.compile(instantiation,builder))
+      }
+      case _ => func.setLinkage(LLVMLinkage.LLVMExternalLinkage)
     })
   })
   override val build: Memoize1[Module,Set[LLVMValue]] = Memoize1(instantiation => signature.arrow match {
