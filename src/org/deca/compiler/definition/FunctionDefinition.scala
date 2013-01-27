@@ -1,7 +1,7 @@
 package org.deca.compiler.definition
 
 import scala.collection.immutable.{Set,HashMap,Map}
-import scala.util.Memoize1
+import scala.util.{Memoize1,InitializedMemoize1}
 import org.jllvm._
 import org.jllvm.bindings._
 import org.deca.compiler.signature._
@@ -66,8 +66,8 @@ class FunctionDefinition(val name: String,
       case Right(_) => throw new Exception("Attempting to specialize a function before its principal type has been inferred.")
     }
     val signature: FunctionPointer = funcType.represent(sigvars).asInstanceOf[FunctionPointer]
-    Memoize1(instantiation => {
-      val func = new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile)
+    InitializedMemoize1(instantiation => new LLVMFunction(instantiation.compiledModule,name + signature.toString,signature.compile),
+                        (instantiation,func) => {
       for(argument <- func.getParameters.toList.zip(this.signature.arguments ++ this.signature.implicits))
         argument._1.setValueName(argument._2._1)
       body match {

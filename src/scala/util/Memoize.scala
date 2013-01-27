@@ -3,7 +3,7 @@ package scala.util
 import scala.collection.mutable.Map
 
 class Memoize1[T, R](f: T => R) extends (T => R) {
-  private var vals = Map.empty[T, R]
+  protected var vals = Map.empty[T, R]
 
   def values = vals.values
   def apply(x: T): R = 
@@ -11,13 +11,29 @@ class Memoize1[T, R](f: T => R) extends (T => R) {
       vals(x)
     else {
       val res = f(x)
-      vals + ((x, res))
+      vals += ((x, res))
       res
     }
 }
  
 object Memoize1 {
   def apply[T, R](f: T => R) = new Memoize1(f)
+}
+
+class InitializedMemoize1[T, R](f: T => R,init: (T,R) => Unit) extends Memoize1[T,R](f) {
+  override def apply(x: T): R = 
+    if (vals contains x) 
+      vals(x)
+    else {
+      val res = f(x)
+      vals += ((x, res))
+      init(x,res)
+      res
+    }
+}
+
+object InitializedMemoize1 {
+  def apply[T, R](f: T => R,init: (T,R) => Unit) = new InitializedMemoize1(f,init)
 }
 
 class Memoize2[T, U, R](f: (T,U) => R) extends ((T,U) => R) {
@@ -29,7 +45,7 @@ class Memoize2[T, U, R](f: (T,U) => R) extends ((T,U) => R) {
       vals((x,y))
     else {
       val res = f(x,y)
-      vals + (((x, y), res))
+      vals += (((x, y), res))
       res
     }
 }
