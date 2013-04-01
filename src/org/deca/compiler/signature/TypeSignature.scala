@@ -2,10 +2,11 @@ package org.deca.compiler.signature
 
 import org.jllvm._
 import scala.collection.mutable.Stack
-import scala.collection.immutable.HashSet
-import scala.collection.immutable.HashMap
+import scala.collection.immutable.{Set,Map,HashSet,HashMap}
 import scala.collection.mutable.LatticeOrdering
 import scala.collection.mutable.GraphLattice
+
+import org.deca.compiler.definition._
 
 object TopType extends MonoType {
   override def compile: LLVMType = throw TypeException("Top type indicates a type-inference error.")
@@ -31,20 +32,6 @@ object UnitType extends MonoType {
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = HashSet.empty
 }
 
-case class TypeConstructorCall(constructor: TypeConstructor,params: List[MonoSignature]) extends MonoType {
-  override def compile: LLVMType = constructor.compile(params)
-  override def filterT(pred: MonoType => Boolean): Set[MonoType] = constructor.represent(params).filterT(pred) ++ (if(pred(this)) Set.empty + this else Set.empty)
-  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = constructor.represent(params).filterR(pred)
-  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = constructor.represent(params).filterE(pred)
-  override def toString: String = constructor.name + "<" + params.tail.foldLeft(params.head.toString)((s,p) => s + "," + p.toString) + ">"
-  override def mapT(f: (MonoType) => MonoType): MonoType = f(new TypeConstructorCall(constructor,params.map(tau => tau.mapT(f))))
-  override def mapE(f: (MonoEffect) => MonoEffect): TypeConstructorCall = new TypeConstructorCall(constructor,params.map(tau => tau.mapE(f)))
-  override def mapR(f: (MonoRegion) => MonoRegion): TypeConstructorCall = new TypeConstructorCall(constructor,params.map(tau => tau.mapR(f)))
-  override def variables: Set[SignatureVariable] = {
-    params.foldLeft(HashSet.empty[SignatureVariable])((result,param) => result ++ param.variables)
-  }
-}
-
 case class TypeException(error: String) extends Exception("Type error: " + error)
 
 class OpaqueType(context: LLVMContext = LLVMContext.getGlobalContext) extends MonoType {
@@ -60,44 +47,6 @@ class OpaqueType(context: LLVMContext = LLVMContext.getGlobalContext) extends Mo
   def resolve(body: List[MonoType]): LLVMIdentifiedStructType = {
     compile.setBody(body.map(_.compile).toArray,true)
     compile
-  }
-}
-
-class RecursiveType(tau: MonoType,loopNode: Option[MonoType]) extends MonoType {
-  val innards: MonoType = loopNode match {
-    case None => tau
-    case Some(alpha) => tau.mapT((sig: MonoType) => if(sig == alpha) this else sig)
-  }
-  
-  def unfold: (OpaqueType,MonoType) = {
-    val loop = new OpaqueType
-    (loop,innards.mapT((tau: MonoType) => if(tau == this) loop else tau))
-  }
-  
-  override def filterT(pred: MonoType => Boolean): Set[MonoType] = unfold._2.filterT(pred) ++ (if(pred(this)) Set.empty + this else Set.empty)
-  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = unfold._2.filterR(pred)
-  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = unfold._2.filterE(pred)
-  
-  override def mapT(f: (MonoType) => MonoType): MonoType = f(new RecursiveType(innards.mapT((tau: MonoType) => if(tau == this) tau else f(tau)),Some(this)))
-  override def mapR(f: (MonoRegion) => MonoRegion): RecursiveType = {
-    val unfolded = unfold
-    new RecursiveType(unfolded._2.mapR(f),Some(unfolded._1))
-  }
-  override def mapE(f: (MonoEffect) => MonoEffect): RecursiveType = {
-    val unfolded = unfold
-    new RecursiveType(unfolded._2.mapE(f),Some(unfolded._1))
-  }
-  
-  override def variables: Set[SignatureVariable] = unfold._2.variables
-  
-  override def compile: LLVMIdentifiedStructType = {
-    val opaque = new OpaqueType
-    opaque.resolve(List(innards.mapT((tau: MonoType) => if(tau == this) opaque else tau)))
-  }
-  
-  override def toString: String = {
-    val alpha = new TypeVariable(false,None)
-    "mu " + alpha.toString + "." + innards.mapT((tau: MonoType) => if(tau == this) alpha else tau).toString
   }
 }
 
@@ -179,29 +128,9 @@ class FunctionPointer(val domain: List[MonoType],
   }
 }
 
-case class TaggedRecord(name: String,tag: Any,record: RecordType) {
-  def tagCode: Int = tag match {
-    case i: Int => i
-    case ref: AnyRef => tag.hashCode
-  }
-  def compileTag: LLVMConstantInteger = {
-    val tagSize = math.floor(math.log(tagCode) / math.log(2)).toInt + 1
-    assert(tagSize > 0)
-    val tagType = new LLVMIntegerType(tagSize)
-    LLVMConstantInteger.constantInteger(tagType,tagCode,false)
-  }
-  override def toString: String = {
-    val fields = record.fields.foldRight("")((field,result) => (field.name match {
-      case Some(str) => str + ": " + field.tau.toString
-      case None => field.tau.toString
-    }) + (if(result != "") "," else "") + result)
-    name + (if(fields != "") "(" + fields + ")" else "")
-  }
-}
-
-class ZippableMap[A,B](val m: Map[A,B]) {
-  def zipElements[C](that: Map[A,C]): Map[A,(B,C)] = {
-    val xys = m.map(xs => (xs._1,xs._2,that.get(xs._1)))
+object MapZipping {
+  def zipMaps[A,B,C](x: Map[A,B],y: Map[A,C]): Map[A,(B,C)] = {
+    val xys = x.map(xs => (xs._1,xs._2,y.get(xs._1)))
     val intersection = xys.foldRight(Nil : List[(A,(B,C))])((head: (A,B,Option[C]),rest: List[(A,(B,C))]) => head._3 match {
       case Some(c) => (head._1,(head._2,c)) :: rest
       case None => rest
@@ -210,114 +139,85 @@ class ZippableMap[A,B](val m: Map[A,B]) {
   }
 }
 
-class SumType(trs: Iterable[TaggedRecord]) extends MonoType {
-  assert(!trs.isEmpty)
-  val cases: Map[String,TaggedRecord] = HashMap.empty[String,TaggedRecord] ++ trs.map(tr => (tr.name,tr))
-  implicit def zippingMap[A,B](m: Map[A,B]): ZippableMap[A,B] = new ZippableMap[A,B](m)
+class ClassBrand(val name: String,r: RecordType,ms: Map[String,FunctionPointer],val parent: Option[ClassBrand],loopNode: Option[MonoType] = None) {
+  val record = loopNode match {
+    case None => r
+    case Some(mu) => r.mapT(tau => if(tau == mu) new BrandType(this,EmptyRecord) else tau).asInstanceOf[RecordType]
+  }
+  val methods: Map[String,FunctionPointer] = loopNode match {
+    case None => ms
+    case Some(mu) => ms.map(m => (m._1,m._2.mapT(tau => if(tau == mu) new BrandType(this,EmptyRecord) else tau).asInstanceOf[FunctionPointer]))
+  }
+  parent match {
+    case Some(parentBrand) => parentBrand.extend(this)
+  }
+  protected var subBrands: Map[String,ClassBrand] = Map(name -> this)
+  protected var sealingTags: Option[Map[ClassBrand,Int]] = None
+  def extend(child: ClassBrand): Unit = {
+    assert(!isSealed)
+    val methodsSafelyExtend = methods.forall(m => child.methods.get(m._1) match {
+      case Some(fp) => TypeOrdering.equiv(fp,m._2)
+      case None => false
+    })
+    assert(TypeOrdering.lteq(child.record,record) && methodsSafelyExtend)
+    subBrands = subBrands + ((child.name,child))
+    parent.map(_.extend(child))
+  }
+  def containedBrands: Map[String,ClassBrand] = subBrands
   
-  override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
-    val cs = cases.values.map(tr => tr.record.filterT(pred))
-    cs.foldLeft(Set.empty[MonoType])((res,c) => res ++ c) ++ (if(pred(this)) Set.empty + this else Set.empty)
-  }
-  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = {
-    val cs = cases.values.map(tr => tr.record.filterE(pred))
-    cs.foldLeft(Set.empty[MonoEffect])((res,c) => res ++ c)
-  }
-  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = {
-    val cs = cases.values.map(tr => tr.record.filterR(pred))
-    cs.foldLeft(Set.empty[MonoRegion])((res,c) => res ++ c)
-  }
-  override def mapT(f: MonoType => MonoType): MonoType = f(new SumType(cases.values.map(tr => TaggedRecord(tr.name,tr.tag,tr.record.mapT(f).asInstanceOf[RecordType]))))
-  override def mapE(f: (MonoEffect) => MonoEffect): SumType = new SumType(cases.values.map(tr => TaggedRecord(tr.name,tr.tag,tr.record.mapE(f))))
-  override def mapR(f: (MonoRegion) => MonoRegion): SumType = new SumType(cases.values.map(tr => TaggedRecord(tr.name,tr.tag,tr.record.mapR(f))))
-  override def variables: Set[SignatureVariable] = {
-    val empty: Set[SignatureVariable] = HashSet.empty
-    cases.foldLeft(empty)((result,tr) => result ++ tr._2.record.variables)
-  }
-  def enumeration: Boolean = cases.forall(trec => trec._2.record.length == 0)
+  def seal(tags: Map[String,Int]): Unit =
+    sealingTags = Some(tags.map(pair => (containedBrands(pair._1),pair._2)))
+  def isSealed: Boolean = sealingTags != None
   
-  def tagRepresentation: LLVMIntegerType = {
-    val tagSize = math.floor(math.log(cases.size) / math.log(2)).toInt + 1
-    if(tagSize <= 0)
-      throw new Exception("Size of sum-type tag in bits is non-positive: " + tagSize.toString)
-    new LLVMIntegerType(tagSize)
-  }
+  def enumeration: Boolean = isSealed && subBrands.forall(brand => brand._2.record.fields == Nil)
   
-  def minimalRecord: RecordType = {
-    val smallest = cases.toList.sortWith((x,y) => x._2.record.length <= y._2.record.length).head
-    if(cases.forall(c => TypeOrdering.lteq(c._2.record,smallest._2.record)))
-      smallest._2.record
-    else
-      EmptyRecord
-  }
-  
-  def caseRepresentation(which: Int): LLVMType = {
-    assert(which < cases.size)
-    if(enumeration)
-      tagRepresentation
-    else
-      new LLVMStructType(List(tagRepresentation,cases.toList.apply(which)._2.record.compile).toArray,true)
-  }
-  
-  override def compile: LLVMType = {
-    if(enumeration)
-      tagRepresentation
-    else {
-      val maxRecord = cases.toList.zipWithIndex.sortWith((x,y) => x._1._2.record.sizeOf >= y._1._2.record.sizeOf).head
-      caseRepresentation(maxRecord._2)
+  def tagRepresentation: MonoType =
+    if(enumeration) {
+      val tagSize = math.floor(math.log(subBrands.size) / math.log(2)).toInt + 1
+      assert(tagSize > 0 && tagSize <= 32)
+      if(tagSize <= 8)
+        Byte
+      else if(tagSize <= 16)
+        SNat
+      else if(tagSize <= 32)
+        Nat
+      else
+        LongNat
     }
-  }
-
-  override def toString: String = {
-    val sum = cases.values.foldRight("")((c,res: String) => c.toString + (if(res != "") " + " else "") + res)
-    "<" + sum + ">"
-  }
+    else
+      new PointerType(new BrandType(this,EmptyRecord),GlobalRegion,ReadOnlyMutability)
+  def sizeOf: Int = tagRepresentation.sizeOf + record.sizeOf
+  
+  def mapT(f: (MonoType) => MonoType): ClassBrand = new ClassBrand(name,record.mapT(f).asInstanceOf[RecordType],methods.map(m => (m._1,m._2.mapT(f).asInstanceOf[FunctionPointer])),parent.map(_.mapT(f)),Some(new BrandType(this,EmptyRecord)))
+  def mapE(f: (MonoEffect) => MonoEffect): ClassBrand = new ClassBrand(name,record.mapE(f),methods.map(m => (m._1,m._2.mapE(f))),parent.map(_.mapE(f)),Some(new BrandType(this,EmptyRecord)))
+  def mapR(f: (MonoRegion) => MonoRegion): ClassBrand = new ClassBrand(name,record.mapR(f),methods.map(m => (m._1,m._2.mapR(f))),parent.map(_.mapR(f)),Some(new BrandType(this,EmptyRecord)))
 }
 
-class ExistentialInterface(r: RecordType,abs: MonoType,w: Option[MonoType] = None) extends MonoType {
-  protected val witness = w
-  val effects: MonoEffect = witness match {
-    case Some(wit) => {
-      val effs = wit.filterE(eff => true)
-      SetEffect(effs)
+object ExceptionBrand extends ClassBrand("Exception",EmptyRecord,Map.empty,None) {
+  new TypeDefinition(new TypeExpressionConstructor(Nil,new BrandType(this,EmptyRecord)),"Exception",StandardLibrary)
+}
+
+class BrandType(val brand: ClassBrand,val extension: RecordType) extends MonoType {
+  def enumeration: Boolean = brand.enumeration && extension.fields == Nil
+  def represent: List[MonoType] = {
+    val tag: MonoType = brand.tagRepresentation
+    if(enumeration)
+      List(tag)
+    else {
+      val largestChild: ClassBrand = brand.containedBrands.values.toList.sort((x,y) => x.sizeOf >= y.sizeOf).head
+      tag :: largestChild.record.fields.map(_.tau) ++ extension.fields.map(_.tau)
     }
-    case None => PureEffect
   }
-  val skolem = {
-    val shape = r.replace(abs,TopType).asInstanceOf[RecordType]
-    val shapeVariables = shape.variables
-    val constructor = SkolemConstructors.get(shape)
-    witness match {
-      case Some(w) => {
-        assert(w.variables.forall(tvar => shapeVariables.contains(tvar)))
-        constructor.witness(w)
-      }
-      case None => Unit
-    }
-    //Remember: existential skolem-constructors have to reveal their "closed over" region and effect variables, not just their "closed over" type variables.
-    new TypeConstructorCall(constructor,shapeVariables.toList)
-  }
-  val shape = r.replace(abs,skolem).asInstanceOf[RecordType]
-  override def filterT(pred: MonoType => Boolean): Set[MonoType] = {
-    shape.filterT(pred) ++ (if(pred(this)) (Set.empty[MonoType] + this) else Set.empty[MonoType])
-  }
-  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = {
-    shape.filterR(pred) ++ (witness match {
-      case Some(w) => w.filterR(pred)
-      case None => Set.empty
-    })
-  }
-  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = {
-    shape.filterE(pred) ++ (witness match {
-      case Some(w) => w.filterE(pred)
-      case None => Set.empty
-    })
-  }
-  override def mapT(f: MonoType => MonoType) = f(new ExistentialInterface(shape.mapT(f).asInstanceOf[RecordType],skolem,witness.map(tau => tau.mapT(f))))
-  override def mapR(f: MonoRegion => MonoRegion) = new ExistentialInterface(shape.mapR(f),skolem,witness.map(tau => tau.mapR(f)))
-  override def mapE(f: MonoEffect => MonoEffect) = new ExistentialInterface(shape.mapE(f),skolem,witness.map(tau => tau.mapE(f)))
-  override def compile: LLVMType = shape.compile
-  override def variables: Set[SignatureVariable] = shape.variables
+  def resolve: Unit = compile.setBody(represent.map(_.compile).toArray,true)
+  val compile: LLVMIdentifiedStructType = (new OpaqueType).compile
+  override def sizeOf: Int = represent.foldLeft(0)((total: Int,tau: MonoType) => total + tau.sizeOf)
+  override def toString: String = "class " + brand.name + extension.toString
+  override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = brand.record.filterR(pred) ++ extension.filterR(pred)
+  override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = brand.record.filterE(pred) ++ extension.filterE(pred)
+  override def filterT(pred: MonoType => Boolean): Set[MonoType] = brand.record.filterT(pred) ++ extension.filterT(pred)
+  override def mapT(f: (MonoType) => MonoType): MonoType = f(new BrandType(brand.mapT(f),extension.mapT(f).asInstanceOf[RecordType]))
+  override def mapE(f: (MonoEffect) => MonoEffect): BrandType = new BrandType(brand.mapE(f),extension.mapE(f))
+  override def mapR(f: (MonoRegion) => MonoRegion): BrandType = new BrandType(brand.mapR(f),extension.mapR(f))
 }
 
 class TypeVariable(override val universal: Boolean,override val name: Option[String] = None) extends MonoType with SignatureVariable {
@@ -358,19 +258,6 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     case (_,TopType) => Some(HashSet.empty)
     case (BottomType,_) => Some(HashSet.empty)
     case (UnitType,UnitType) => Some(HashSet.empty)
-    case (TypeConstructorCall(cx,px),TypeConstructorCall(cy,py)) => lt(cx.represent(px),cy.represent(py))
-    case (TypeConstructorCall(cx,px),_) => lt(cx.represent(px),y)
-    case (_,TypeConstructorCall(cy,py)) => lt(x,cy.represent(py))
-    case (rx: RecursiveType,ry: RecursiveType) => {
-      val unfoldx = rx.unfold
-      val unfoldy = ry.unfold
-      assumptions.push(SubsumptionConstraint(unfoldx._1,unfoldy._1))
-      val result = lt(unfoldx._2,unfoldy._2)
-      assumptions.pop
-      result
-    }
-    case (_,ry: RecursiveType) => lt(x,ry.innards)
-    case (rx: RecursiveType,_) => lt(rx.innards,y)
     case (rx: RecordType,ry: RecordType) => {
       val width = if(rx.length >= ry.length) Some(Set.empty[InferenceConstraint]) else None
       val depths = rx.fields.zip(ry.fields).map(taus => {
@@ -384,28 +271,15 @@ object TypeRelation extends InferenceOrdering[MonoType] {
         case _ => None
       })
     }
-    case (fx: FunctionPointer,fy: FunctionPointer) => {
-      val width = if(fx.domain.length == fy.domain.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = PhysicalTypeRelation.lt(fx.range,fy.range) :: fx.domain.zip(fy.domain).map(taus => PhysicalTypeRelation.lt(taus._2,taus._1))
-      depths.foldLeft(width)((res,depth) => (res,depth) match {
-        case (Some(resset),Some(set)) => Some(resset union set)
-        case _ => None
-      })
-    }
-    case (sx: SumType,sy: SumType) => {
-      val width = if(sx.cases.size <= sy.cases.size) Some(Set.empty[InferenceConstraint]) else None
-      val depths = sx.cases.zip(sy.cases).map(cs =>
-        if(cs._1._1 == cs._2._1)
-          lt(cs._1._2.record,cs._2._2.record)
-        else
-          None
-      )
-      depths.foldLeft(width)((res,depth) => (res,depth) match {
-        case (Some(resset),Some(set)) => Some(resset union set)
-        case _ => None
-      })
-    }
-    case (ex: ExistentialInterface,ey: ExistentialInterface) => lt(ex.shape,ey.shape)
+    case (fx: FunctionPointer,fy: FunctionPointer) => PhysicalTypeRelation.lt(fx,fy)
+    case (bx: BrandType,by: BrandType) =>
+      if(by.brand.containedBrands(bx.brand.name) == by.brand)
+        (lt(bx.brand.record,by.brand.record),lt(bx.extension,by.extension)) match {
+          case (Some(cx),Some(cy)) => Some(cx ++ cy)
+          case _ => None
+        }
+      else
+        None
     case (nx: NumericalType,ny: NumericalType) => if((nx == ny) || (nx enclosedIn ny)) Some(Set.empty) else None
     case (vx: TypeVariable,vy: TypeVariable) => {
       val constraint: InferenceConstraint = SubsumptionConstraint(vx,vy)
@@ -433,19 +307,6 @@ object TypeRelation extends InferenceOrdering[MonoType] {
     }
   }
   override def equiv(x: MonoType,y: MonoType): Option[Set[InferenceConstraint]] = (x,y) match {
-    case (TypeConstructorCall(cx,px),TypeConstructorCall(cy,py)) => equiv(cx.represent(px),cy.represent(py))
-    case (TypeConstructorCall(cx,px),_) => equiv(cx.represent(px),y)
-    case (_,TypeConstructorCall(cy,py)) => equiv(x,cy.represent(py))
-    case (rx: RecursiveType,ry: RecursiveType) => {
-      val unfoldx = rx.unfold
-      val unfoldy = ry.unfold
-      assumptions.push(EqualityConstraint(unfoldx._1,unfoldy._1))
-      val result = equiv(unfoldx._2,unfoldy._2)
-      assumptions.pop
-      result
-    }
-    case (_,ry: RecursiveType) => equiv(x,ry.innards)
-    case (rx: RecursiveType,_) => equiv(rx.innards,y)
     case (rx: RecordType,ry: RecordType) => {
       val width = if(rx.length == ry.length) Some(HashSet.empty[InferenceConstraint]) else None
       val depths = rx.fields.zip(ry.fields).map(taus => equiv(taus._1.tau,taus._2.tau))
@@ -455,16 +316,12 @@ object TypeRelation extends InferenceOrdering[MonoType] {
       })
     }
     //Function pointers have to physiosubtype each other in a systems language, since there can be no implicit upcasts/coercions of arguments or results.
-    case (fx: FunctionPointer,fy: FunctionPointer) => PhysicalTypeRelation.lt(fx,fy)
-    case (sx: SumType,sy: SumType) => {
-      val width = if(sx.cases.size == sy.cases.size) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = sx.cases.zip(sy.cases).map(cs => if(cs._1._1 == cs._2._1) equiv(cs._1._2.record,cs._2._2.record) else None)
-      depths.foldLeft(width)((res,depth) => (res,depth) match {
-        case (Some(resset),Some(set)) => Some(resset union set)
-        case _ => None
-      })
-    }
-    case (ex: ExistentialInterface,ey: ExistentialInterface) => equiv(ex.shape,ey.shape)
+    case (fx: FunctionPointer,fy: FunctionPointer) => PhysicalTypeRelation.equiv(fx,fy)
+    case (bx: BrandType,by: BrandType) =>
+      if(bx.brand == by.brand)
+        equiv(bx.extension,by.extension)
+      else
+        None
     case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => equiv(bx.signature,bx.signature)
     case (vx: TypeVariable,vy: TypeVariable) => {
       val empty = HashSet.empty[InferenceConstraint]
@@ -498,19 +355,6 @@ object PhysicalTypeRelation extends InferenceOrdering[MonoType] {
     case (_,TopType) => Some(HashSet.empty)
     case (BottomType,_) => Some(HashSet.empty)
     case (UnitType,UnitType) => Some(HashSet.empty)
-    case (TypeConstructorCall(cx,px),TypeConstructorCall(cy,py)) => lt(cx.represent(px),cy.represent(py))
-    case (TypeConstructorCall(cx,px),_) => lt(cx.represent(px),y)
-    case (_,TypeConstructorCall(cy,py)) => lt(x,cy.represent(py))
-    case (rx: RecursiveType,ry: RecursiveType) => {
-      val unfoldx = rx.unfold
-      val unfoldy = ry.unfold
-      assumptions.push(SubsumptionConstraint(unfoldx._1,unfoldy._1))
-      val result = lt(unfoldx._2,unfoldy._2)
-      assumptions.pop
-      result
-    }
-    case (_,ry: RecursiveType) => lt(x,ry.innards)
-    case (rx: RecursiveType,_) => lt(rx.innards,y)
     case (rx: RecordType,ry: RecordType) => {
       val width = if(rx.length >= ry.length) Some(HashSet.empty[InferenceConstraint]) else None
       val depths = rx.fields.zip(ry.fields).map(taus => {
@@ -524,24 +368,16 @@ object PhysicalTypeRelation extends InferenceOrdering[MonoType] {
         case _ => None
       })
     }
+    case (bx: BrandType,by: BrandType) =>
+      if(by.brand.containedBrands(bx.brand.name) == by.brand)
+        (lt(bx.brand.record,by.brand.record),lt(bx.extension,by.extension)) match {
+          case (Some(cx),Some(cy)) => Some(cx ++ cy)
+          case _ => None
+        }
+      else
+        None
     //Physiosubtyping allows only width extension, not depth.  To physiosubtype each other, function pointers must equal each other.
-    case (fx: FunctionPointer,fy: FunctionPointer) => {
-      val width = if(fx.domain.length == fy.domain.length) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = equiv(fx.range,fy.range) :: fx.domain.zip(fy.domain).map(taus => equiv(taus._2,taus._1))
-      depths.foldLeft(width)((res,depth) => (res,depth) match {
-        case (Some(resset),Some(set)) => Some(resset union set)
-        case _ => None
-      })
-    }
-    case (sx: SumType,sy: SumType) => {
-      val width = if(sx.cases.size <= sy.cases.size) Some(HashSet.empty[InferenceConstraint]) else None
-      val depths = sx.cases.zip(sy.cases).map(cs => if(cs._1._1 == cs._2._1) equiv(cs._1._2.record,cs._2._2.record) else None)
-      depths.foldLeft(width)((res,depth) => (res,depth) match {
-        case (Some(resset),Some(set)) => Some(resset union set)
-        case _ => None
-      })
-    }
-    case (ex: ExistentialInterface,ey: ExistentialInterface) => lt(ex.shape,ey.shape)
+    case (fx: FunctionPointer,fy: FunctionPointer) => equiv(fx,fy)
     case (bx: BoundedTypeVariable,by: BoundedTypeVariable) => lt(bx.signature,by.signature)
     case (vx: TypeVariable,vy: TypeVariable) => {
       val empty = HashSet.empty[InferenceConstraint]
