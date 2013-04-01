@@ -20,14 +20,6 @@ class TypeDefinition(val constructor: TypeConstructor,val name: String,override 
   })
 }
 
-object BuiltInSums {
-  val BooleanSum = {
-    val result = new TypeExpressionConstructor(Nil,new SumType(List(TaggedRecord("false",0,EmptyRecord),TaggedRecord("true",1,EmptyRecord))))
-    new TypeDefinition(result,"boolean",GlobalScope)
-    result
-  }
-}
-
 abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
   assert(parameters.forall(_.universal))
   protected var strName: Option[String] = None
@@ -89,117 +81,26 @@ class TypeExpressionConstructor(alphas: List[SignatureVariable],protected val ta
   override def toString: String = "forall " + alphas.foldRight(".")((svar,res) => svar.toString + " " + res) + tau.toString
 }
 
-class OpenSumConstructor(alphas: List[TypeVariable],addends: List[TaggedRecord],loopNode: Option[MonoType]) extends TypeConstructor(alphas) {
-  protected val recurser = new OpaqueType
-  protected var cases: List[TaggedRecord] = loopNode match {
-    case Some(loop) =>
-      for(addend <- addends)
-        yield TaggedRecord(addend.name,addend.tag,addend.record.mapT(sig => if(sig == loop) recurser else sig).asInstanceOf[RecordType])
-    case None => addends
-  }
-  
-  def extend(addend: TaggedRecord,loopNode: Option[MonoType]): Unit = {
-    assert(addend.record.variables.forall(tvar => alphas.contains(tvar)))
-    if(!cases.contains((c: TaggedRecord) => c.name == addend.name))
-      cases = loopNode match {
-        case Some(loop) => TaggedRecord(addend.name,addend.tag,addend.record.mapT(sig => if(sig == loop) recurser else sig).asInstanceOf[RecordType]) :: cases
-        case None => addend :: cases
+object VariantTypes {
+  def variant(parent: String, alternatives: List[(String,RecordType)], loopNode: Option[MonoType] = None): ClassBrand = {
+    val result = new ClassBrand(parent,EmptyRecord,Map.empty,None)
+    val loop = new BrandType(result,EmptyRecord)
+    for(alternative <- alternatives) {
+      val record: RecordType = loopNode match {
+        case Some(hook) => alternative._2.mapT(tau => if(tau == hook) loop else tau).asInstanceOf[RecordType]
+        case None => alternative._2
       }
-  }
-  
-  protected val tagRepresentation = new LLVMPointerType(LLVMIntegerType.i8,0)
-  
-  override def compile(params: List[MonoSignature]): LLVMType = getSpecialization(params) match {
-    case Some(t) => t
-    case None => {
-      //TODO: The identified struct here is probably not actually appropriate.  What I want is a type the linker will resolve later.
-      val temporary = new LLVMStructType(List(tagRepresentation,new LLVMIdentifiedStructType(name + "contents")).toArray,true)
-      specializations.put(params,temporary)
-      temporary
+      new ClassBrand(alternative._1,record,Map.empty,Some(result))
     }
-  }
-  override def represent(params: List[MonoSignature]): MonoType = {
-    val sum = {
-      val sum = new SumType(cases)
-      val recursive = new RecursiveType(sum,Some(recurser))
-      if(TypeOrdering.equiv(recursive,sum))
-        sum
-      else
-        recursive
-    }
-    parameters.zip(params).foldLeft(sum)((result: MonoType,spec: Tuple2[SignatureVariable,MonoSignature]) => result.mapT((sig: MonoType) => if(sig == spec._1) spec._2.asInstanceOf[MonoType] else sig))
-  }
-  
-  protected def caseRepresentation(which: Int): LLVMType = {
-    assert(which < cases.length)
-    if(cases.forall(c => TypeOrdering.equiv(c.record,EmptyRecord)))
-      tagRepresentation
-    else
-      new LLVMStructType(List(tagRepresentation,cases.apply(which).record.compile).toArray,true)
-  }
-  
-  override def resolve(params: List[MonoSignature]): LLVMType = represent(params).compile
-}
-
-object ExceptionConstructor extends OpenSumConstructor(Nil,List(TaggedRecord("AnyException","AnyException",EmptyRecord)),None) {
-  new TypeDefinition(this,"Exception",StandardLibrary)
-}
-
-case class SkolemConstructor(shape: RecordType) extends TypeConstructor(shape.variables.toList) {
-  val witnesses = new HashSet[MonoType]
-  override def compile(params: List[MonoSignature]): LLVMType = getSpecialization(params) match {
-    case Some(op) => op
-    case None => {
-      val result = (new OpaqueType).compile
-      specializations.put(params,result)
-      result
-    }
-  }
-  override def resolve(params: List[MonoSignature]): LLVMType = represent(params).compile
-  override def represent(params: List[MonoSignature]): MonoType = {
-    val specialize = (spec: MonoType) => parameters.zip(params).foldLeft(spec)((result: MonoType,specs: Tuple2[SignatureVariable,MonoSignature]) => result.mapT((sig: MonoType) => if(sig == specs._1) specs._2.asInstanceOf[MonoType] else sig))
-    witnesses.toList.sortWith((x,y) => specialize(x).sizeOf >= specialize(y).sizeOf).head
-  }
-  def witness(w: MonoType): Unit = {
-    assert(w.variables.forall(svar => parameters.contains(svar)))
-    witnesses.add(w)
+    result
   }
 }
 
-object TopSkolem extends SkolemConstructor(EmptyRecord)
-object BottomSkolem extends SkolemConstructor(EmptyRecord)
-
-object SkolemOrdering extends PartialOrdering[SkolemConstructor] {
-  implicit val typeOrdering = TypeOrdering
-  override def lt(x: SkolemConstructor,y: SkolemConstructor): Boolean =  x == BottomSkolem || x.shape < y.shape
-  override def equiv(x: SkolemConstructor,y: SkolemConstructor): Boolean = x.shape == y.shape
-  override def gt(x: SkolemConstructor,y: SkolemConstructor): Boolean = y == BottomSkolem || x.shape > y.shape
-  override def lteq(x: SkolemConstructor,y: SkolemConstructor): Boolean = x == BottomSkolem || x.shape <= y.shape
-  override def gteq(x: SkolemConstructor,y: SkolemConstructor): Boolean = y == BottomSkolem || x.shape >= y.shape
-  override def tryCompare(x: SkolemConstructor,y: SkolemConstructor): Option[Int] = {
-    if(gt(x,y))
-      Some(1)
-    else if(lt(x,y))
-      Some(-1)
-    else if(equiv(x,y))
-      Some(0)
-    else
-      None
-  }
-}
-  
-object SkolemConstructors {
-  implicit val skolemOrdering = SkolemOrdering
-  protected val skolems = new GraphLattice[SkolemConstructor](TopSkolem,BottomSkolem)
-  protected val shapes = new HashMap[RecordType,SkolemConstructor]()
-  
-  def get(shape: RecordType): SkolemConstructor = shapes.get(shape) match {
-    case Some(skolem) => skolem
-    case None => {
-      val result = new SkolemConstructor(shape)
-      skolems.add(result)
-      shapes.put(shape,result)
-      result
-    }
+object BuiltInSums {
+  val BooleanSum: ClassBrand = {
+    val result = VariantTypes.variant("boolean", List(("false",EmptyRecord),("true",EmptyRecord)))
+    result.seal(Map("false" -> 0,"true" -> 1))
+    new TypeDefinition(new TypeExpressionConstructor(Nil,new BrandType(result,EmptyRecord)),"boolean",GlobalScope)
+    result
   }
 }
