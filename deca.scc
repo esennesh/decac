@@ -47,8 +47,6 @@ Tokens
   caret = '^';
   at_operator = '@';
   not_operator = 'not';
-  method = 'method';
-  override = 'override';
   comma = ',';
   assignment_operator = ':=';
   lparen = '(';
@@ -90,6 +88,8 @@ Tokens
   type = 'type';
   final = 'final';
   implicit = 'implicit';
+  class_token = 'class';
+  object = 'object';
   underscore = '_';
   firstclass_function_arrow = '->';
   function_pointer_arrow = '@->';
@@ -97,7 +97,6 @@ Tokens
   sizeof = 'sizeof';
   match = 'match';
   cast = 'cast';
-  interface = 'interface';
   abstract = 'abstract';
   regional_effect_name = '!read' | '!write' | '!destroy' | '!call';
   exceptional_effect_name = '!throw';
@@ -153,14 +152,8 @@ Productions
   effect_annotation = bang_colon effect_signature;
   
   variant_case_parameters = lparen tuple_component_list rparen;
-    
-  variant_case =
-    {simple} unqualified_identifier variant_case_parameters? |
-    {complex} unqualified_identifier lparen [parameters]:argument_list rparen lbracket [members]:member_declaration+ rbracket;
-    
-  interface_component_form = 
-    {named} unqualified_identifier colon firstclass_function_form |
-    {unnamed} firstclass_function_form;
+  
+  variant_case = unqualified_identifier variant_case_parameters?;
     
   pointer_type_form =
     {simple} at_operator lower_type_form |
@@ -170,9 +163,19 @@ Productions
     {function} function_type_form |
     {variant} final? variant extension_clause? lbracket variant_case+ rbracket |
     {pointer} pointer_type_form |
-    {interface} interface labracket [argument]:unqualified_identifier rabracket lbracket tuple_component+ rbracket |
+    {class} class_token qualified_identifier structural_extension_form? |
     {exception} exception variant_case_parameters [extension]:extension_clause? |
     {others} lower_type_form;
+    
+  structural_extension_form = lsbracket structural_extension_list rsbracket;
+  
+  structural_extension_list =
+    {one} structural_extension |
+    {many} structural_extension comma structural_extension_list;
+    
+  structural_extension =
+    {field} slot_mutability [name]:unqualified_identifier type_annotation |
+    {method} function [name]:unqualified_identifier [formals]:arguments_form [implicits]:arguments_form? type_annotation;
     
   arguments_form = lparen type_form_list? rparen;
     
@@ -181,10 +184,10 @@ Productions
     {firstclass} firstclass_function_form;
     
   firstclass_function_form =
-    [formals]:arguments_form [implicits]:arguments_form? firstclass_function_arrow [effect]:effect_annotation? [result]:type_form;
+    [formals]:arguments_form [implicits]:arguments_form? firstclass_function_arrow [effect]:effect_annotation [result]:type_form;
     
   function_pointer_form = 
-    [formals]:arguments_form [implicits]:arguments_form? function_pointer_arrow [effect]:effect_annotation? [result]:type_form;
+    [formals]:arguments_form [implicits]:arguments_form? function_pointer_arrow [effect]:effect_annotation [result]:type_form;
     
   tuple_component =
     {type} slot_mutability type_form |
@@ -209,8 +212,17 @@ Productions
     {globaldef} implicit_annotation? slot_declaration assignment_operator expression |
     {extglobaldef} import implicit_annotation? slot_mutability unqualified_identifier type_annotation |
     {typedef} type unqualified_identifier [parameters]:type_form_arguments? equals type_form |
+    {classdef} class_definition |
     {moduledef} module_definition |
     {fundef} function_definition;
+  
+  class_definition = 
+    {class} class_token unqualified_identifier function_arguments? class_extension_clause? lbracket class_member+ rbracket |
+    {object} object unqualified_identifier class_extension_clause? lbracket class_member+ rbracket;
+    
+  class_member =
+    {field} member_declaration |
+    {method} function_definition;
   
   type_form_arguments =
     labracket [arguments]:identifier_list rabracket;  
@@ -229,10 +241,10 @@ Productions
     extends lower_type_form;
     
   class_extension_clause =
-    extends lower_type_form function_arguments?;
+    extends lower_type_form actual_parameters?;
     
   argument =
-    [name]:unqualified_identifier [type]:type_annotation?;
+    [name]:unqualified_identifier [type]:type_annotation;
     
   argument_list = 
     {one} argument |
@@ -245,10 +257,8 @@ Productions
   function_arguments = lparen [arguments]:argument_list? rparen implicit_arguments?;
     
   function_definition = 
-    {method} implicit_annotation? method [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [effect]:effect_annotation? [body]:block_expression |
-    {override} override [name]:qualified_identifier function_arguments [body]:block_expression |
-    {function} implicit_annotation? function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation? [effect]:effect_annotation? [body]:block_expression |
-    {external} import implicit_annotation? function [name]:unqualified_identifier function_arguments [type]:type_annotation [effect]:effect_annotation;
+    {function} function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [effect]:effect_annotation [body]:block_expression |
+    {external} import function [name]:unqualified_identifier function_arguments [type]:type_annotation [effect]:effect_annotation;
 
   expression =
     {assignmentexp} exp1 assignment_operator expression |
@@ -283,13 +293,9 @@ Productions
     {string} string_constant;
     
   member_selector = {name} unqualified_identifier | {index} lsbracket integer_constant rsbracket;
-  
-  interface_component =
-    {named} unqualified_identifier assignment_operator lambda_expression |
-    {unnamed} lambda_expression;
 
   lambda_arguments =
-    {one} unqualified_identifier type_annotation? |
+    {one} unqualified_identifier type_annotation |
     {many} function_arguments;
 
   lambda_expression = lambda_slash lambda_arguments? firstclass_function_arrow block_expression;
@@ -302,7 +308,7 @@ Productions
     {tuple} lsbracket expression_list rsbracket |
     {record} lsbracket member_assignment_list rsbracket |
     {lambda} lambda_expression |
-    {interface} interface lbracket interface_component+ rbracket |
+    {object} object class_extension_clause? lbracket class_member+ rbracket |
     {call} function_call_expression |
     {cast} cast labracket type_form rabracket lparen expression rparen |
     {parenthetical} parenthetical_expression |
@@ -353,7 +359,7 @@ Productions
   function_call_expression =
     {named} [function]:qualified_identifier actual_parameters |
     {expr} [function]:parenthetical_expression actual_parameters |
-    {interface} [interface]:exp1 dot [method]:member_selector actual_parameters;
+    {method} [object]:exp1 dot [method]:member_selector actual_parameters;
     
   except_case_clause =
     case [name]:unqualified_identifier type_annotation firstclass_function_arrow [body]:expression;
@@ -379,7 +385,7 @@ Productions
   else_clause = 
     else [else_body]:expression;
   
-  slot_declaration = slot_mutability unqualified_identifier type_annotation?;
+  slot_declaration = slot_mutability unqualified_identifier type_annotation;
       
   member_assignment =
     slot_declaration assignment_operator expression;
