@@ -97,10 +97,21 @@ object VariantTypes {
 }
 
 object BuiltInSums {
-  val BooleanSum: ClassBrand = {
+  val BooleanBrand: ClassBrand = {
     val result = VariantTypes.variant("boolean", List(("false",EmptyRecord),("true",EmptyRecord)))
     result.seal(Map("false" -> 0,"true" -> 1))
-    new TypeDefinition(new TypeExpressionConstructor(Nil,new BrandType(result,EmptyRecord)),"boolean",GlobalScope)
     result
   }
+  val BooleanSum: TypeExpressionConstructor = {
+    val result = new TypeExpressionConstructor(Nil,new BrandType(BooleanBrand,EmptyRecord))
+    new TypeDefinition(result,"boolean",GlobalScope)
+    result
+  }
+}
+
+object ClosureTypes {
+  val apply = Memoize1((fp: FunctionPointer) => {
+    val brand = new ClassBrand("Closure" + fp.toString, EmptyRecord, Map("apply" -> fp), None)
+    new BrandType(brand,EmptyRecord)
+  })
 }

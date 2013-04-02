@@ -35,17 +35,17 @@ class ImplicitUpcast(val expression: Expression,upcast: MonoType) extends Expres
       
       case (realx: RealType,realy: RealType) => new LLVMExtendCast(LLVMExtendCast.ExtendType.FLOAT,builder,child,realy.compile,"cast")
       
-      //TODO: Fill in the rest of these cases.
-      case (sumx: SumType,sumy: SumType) => (sumx.enumeration,sumy.enumeration) match {
-        case (true,true) => new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,child,sumy.compile,"cast")
-        case (true,false) => new LLVMInsertValueInstruction(builder,new LLVMUndefinedValue(sumy.compile),new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,child,sumy.tagRepresentation,"cast"),0,"variant")
+      //TODO: Fill in the rest of these cases. 
+      case (brandx: BrandType,brandy: BrandType) => (brandx.enumeration,brandy.enumeration) match {
+        case (true,true) => new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,child,brandy.compile,"cast")
+        case (true,false) => new LLVMInsertValueInstruction(builder,new LLVMUndefinedValue(brandy.compile),new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,child,brandy.brand.tagRepresentation.compile,"cast"),0,"variant")
         case (false,false) => {
           //Insert the tag into the resulting variant.
           val tag = new LLVMExtractValueInstruction(builder,child,0,"extract")
-          val variant = new LLVMInsertValueInstruction(builder,new LLVMUndefinedValue(sumy.compile),tag,0,"insert")
+          val variant = new LLVMInsertValueInstruction(builder,new LLVMUndefinedValue(brandy.compile),tag,0,"insert")
           
           //Allocate memory space for the resulting variant into which to stuff the old data.
-          val result = new LLVMStackAllocation(builder,sumy.compile,LLVMConstantInteger.constantInteger(Nat.compile,1,false),"nonsense")
+          val result = new LLVMStackAllocation(builder,brandy.compile,LLVMConstantInteger.constantInteger(Nat.compile,1,false),"nonsense")
           new LLVMStoreInstruction(builder,variant,result)
           
           //Get the pointer to the new variant's contents, fetch the old variant's contents, cast the pointer, and store the old into the new.
