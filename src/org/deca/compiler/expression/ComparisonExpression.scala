@@ -71,8 +71,8 @@ class ComparisonExpression(val operator: ComparisonOperator,
           case real: RealType => new LLVMFloatComparison(builder,if(same) LLVMRealPredicate.LLVMRealOEQ else LLVMRealPredicate.LLVMRealONE,compLeft,compRight,"comparison")
           case integer: IntegerType => new LLVMIntegerComparison(builder,if(same) LLVMIntPredicate.LLVMIntEQ else LLVMIntPredicate.LLVMIntNE,compLeft,compRight,"comparison")
         }
-        case sum: SumType => {
-          assert(sum.enumeration)
+        case brand: BrandType => {
+          assert(brand.enumeration)
           new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,compLeft,compRight,"comparison")
         }
         case pointer: PointerType => new LLVMIntegerComparison(builder,LLVMIntPredicate.LLVMIntEQ,compLeft,compRight,"comparison")

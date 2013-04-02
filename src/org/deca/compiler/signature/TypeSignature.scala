@@ -139,7 +139,7 @@ object MapZipping {
   }
 }
 
-class ClassBrand(val name: String,r: RecordType,ms: Map[String,FunctionPointer],val parent: Option[ClassBrand],loopNode: Option[MonoType] = None) {
+class ClassBrand(val name: String, r: RecordType, ms: Map[String,FunctionPointer], val parent: Option[ClassBrand], loopNode: Option[MonoType] = None) {
   val record = loopNode match {
     case None => r
     case Some(mu) => r.mapT(tau => if(tau == mu) new BrandType(this,EmptyRecord) else tau).asInstanceOf[RecordType]
@@ -169,6 +169,7 @@ class ClassBrand(val name: String,r: RecordType,ms: Map[String,FunctionPointer],
     sealingTags = Some(tags.map(pair => (containedBrands(pair._1),pair._2)))
   def isSealed: Boolean = sealingTags != None
   
+  /* TODO: Reprogram enumeration detection and brand representation to include a method table. */
   def enumeration: Boolean = isSealed && subBrands.forall(brand => brand._2.record.fields == Nil)
   
   def tagRepresentation: MonoType =
@@ -186,6 +187,9 @@ class ClassBrand(val name: String,r: RecordType,ms: Map[String,FunctionPointer],
     }
     else
       new PointerType(new BrandType(this,EmptyRecord),GlobalRegion,ReadOnlyMutability)
+  protected def largestChild: ClassBrand = containedBrands.values.toList.sort((x,y) => x.sizeOf >= y.sizeOf).head
+  def fieldsRepresentation: List[MonoType] = largestChild.record.fields.map(field => field.tau)
+  def methodsRepresentation: List[(String,FunctionPointer)] = largestChild.methods.toList
   def sizeOf: Int = tagRepresentation.sizeOf + record.sizeOf
   
   def mapT(f: (MonoType) => MonoType): ClassBrand = new ClassBrand(name,record.mapT(f).asInstanceOf[RecordType],methods.map(m => (m._1,m._2.mapT(f).asInstanceOf[FunctionPointer])),parent.map(_.mapT(f)),Some(new BrandType(this,EmptyRecord)))
@@ -193,28 +197,40 @@ class ClassBrand(val name: String,r: RecordType,ms: Map[String,FunctionPointer],
   def mapR(f: (MonoRegion) => MonoRegion): ClassBrand = new ClassBrand(name,record.mapR(f),methods.map(m => (m._1,m._2.mapR(f))),parent.map(_.mapR(f)),Some(new BrandType(this,EmptyRecord)))
 }
 
-object ExceptionBrand extends ClassBrand("Exception",EmptyRecord,Map.empty,None) {
-  new TypeDefinition(new TypeExpressionConstructor(Nil,new BrandType(this,EmptyRecord)),"Exception",StandardLibrary)
+object ExceptionBrand extends ClassBrand("Exception",EmptyRecord,Map.empty,None)
+
+object ExceptionConstructor extends TypeExpressionConstructor(Nil,new BrandType(ExceptionBrand,EmptyRecord)) {
+  new TypeDefinition(this,"Exception",StandardLibrary)
 }
 
 class BrandType(val brand: ClassBrand,val extension: RecordType) extends MonoType {
+  assert(extension.fields.forall(field => !brand.record.fields.contains((brandField: RecordMember) => brandField.name == field.name)))
+  val fields: List[RecordMember] = brand.record.fields ++ extension.fields
+  
   def enumeration: Boolean = brand.enumeration && extension.fields == Nil
+  
+  def representMethod(name: String): (FunctionPointer,Int) = {
+    val method: ((String,FunctionPointer),Int) = brand.methodsRepresentation.zipWithIndex.find((mem: ((String,FunctionPointer),Int)) => mem._1._1 == name).get
+    (method._1._2,method._2 + brand.fieldsRepresentation.length)
+  }
   def represent: List[MonoType] = {
     val tag: MonoType = brand.tagRepresentation
     if(enumeration)
       List(tag)
-    else {
-      val largestChild: ClassBrand = brand.containedBrands.values.toList.sort((x,y) => x.sizeOf >= y.sizeOf).head
-      tag :: largestChild.record.fields.map(_.tau) ++ extension.fields.map(_.tau)
-    }
+    else
+      tag :: brand.fieldsRepresentation ++ brand.methodsRepresentation.map(_._2) ++ extension.fields.map(_.tau)
   }
+  
   def resolve: Unit = compile.setBody(represent.map(_.compile).toArray,true)
   val compile: LLVMIdentifiedStructType = (new OpaqueType).compile
   override def sizeOf: Int = represent.foldLeft(0)((total: Int,tau: MonoType) => total + tau.sizeOf)
+  
   override def toString: String = "class " + brand.name + extension.toString
+  
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = brand.record.filterR(pred) ++ extension.filterR(pred)
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = brand.record.filterE(pred) ++ extension.filterE(pred)
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = brand.record.filterT(pred) ++ extension.filterT(pred)
+  
   override def mapT(f: (MonoType) => MonoType): MonoType = f(new BrandType(brand.mapT(f),extension.mapT(f).asInstanceOf[RecordType]))
   override def mapE(f: (MonoEffect) => MonoEffect): BrandType = new BrandType(brand.mapE(f),extension.mapE(f))
   override def mapR(f: (MonoRegion) => MonoRegion): BrandType = new BrandType(brand.mapR(f),extension.mapR(f))

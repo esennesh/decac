@@ -23,15 +23,15 @@ class MemberExpression(val structure: Expression,
       val mem = rec.fields.apply(index)
       (mem.tau,index)
     }
-    case (sum: SumType,NameSelector(field)) => {
-      val mem = sum.minimalRecord.fields.zipWithIndex.find(f => f._1.name == Some(field)).get
+    case (brand: BrandType,NameSelector(field)) => {
+      val mem = brand.fields.zipWithIndex.find(f => f._1.name == Some(field)).get
       (mem._1.tau,mem._2)
     }
-    case (sum: SumType,IndexSelector(index)) => {
-      val mem = sum.minimalRecord.fields.apply(index)
+    case (brand: BrandType,IndexSelector(index)) => {
+      val mem = brand.fields.apply(index)
       (mem.tau,index)
     }
-    case _ => throw new TypeException("Cannot select fields of non-variant, non-record type.")
+    case _ => throw new TypeException("Cannot select fields of non-class, non-record type.")
   }
   override def constrain(lui: LatticeUnificationInstance): Unit = structure.constrain(lui)
   override def check(lui: LatticeUnificationInstance): Unit = {
@@ -53,11 +53,11 @@ class MemberExpression(val structure: Expression,
     val struct = structure.compile(builder,scope,instantiation)
     structure.expType match {
       case record: RecordType => new LLVMExtractValueInstruction(builder,struct,checkedSelector.get,"extract")
-      case sum: SumType => {
+      case brand: BrandType => {
         val contents = new LLVMExtractValueInstruction(builder,struct,1,"extract")
         val p = new LLVMStackAllocation(builder,contents.typeOf,LLVMConstantInteger.constantInteger(Nat.compile,1,false),"cast_alloc")
         new LLVMStoreInstruction(builder,contents,p)
-        val casted = new LLVMLoadInstruction(builder,new LLVMBitCast(builder,p,new LLVMPointerType(sum.minimalRecord.compile,0),"pointer_cast"),"bit_casted")
+        val casted = new LLVMLoadInstruction(builder,new LLVMBitCast(builder,p,new LLVMPointerType(brand.compile,0),"pointer_cast"),"bit_casted")
         new LLVMExtractValueInstruction(builder,casted,checkedSelector.get,"extract")
       }
       case _ => throw new Exception("How to evaluate a member expression having a base other than a variant or a record?")
@@ -77,9 +77,9 @@ class MemberExpression(val structure: Expression,
     }
     val struct = structure.expType match {
       case record: RecordType => original
-      case sum: SumType => {
-        val contents = new LLVMGetElementPointerInstruction(builder,original,List(LLVMConstantInteger.constantInteger(Nat.compile,1,false)).toArray,"sum_internal_gep")
-        new LLVMBitCast(builder,contents,new LLVMPointerType(sum.minimalRecord.compile,0),"sum_internal_cast")
+      case brand: BrandType => {
+        val contents = new LLVMGetElementPointerInstruction(builder,original,List(LLVMConstantInteger.constantInteger(Nat.compile,1,false)).toArray,"brand_internal_gep")
+        new LLVMBitCast(builder,contents,new LLVMPointerType(brand.compile,0),"brand_internal_cast")
       }
     }
     new LLVMGetElementPointerInstruction(builder,struct,List(LLVMConstantInteger.constantInteger(Nat.compile,checkedSelector.get,false)).toArray,"member_element_gep")

@@ -83,13 +83,7 @@ class ExpressionCall(val expression: Expression,override val arguments: List[Exp
   expType = arrow.range
   expEffect = EffectPair(arrow.positive,arrow.negative)
   assert(arguments.length == arrow.domain.length)
-  val closureType = {
-    val tau = new OpaqueType
-    //It might be completely wrong to create a new region variable here.  The region of the environment has to be the region in which the closure itself is stored.
-    val funcPointer = new FunctionPointer(new PointerType(tau,new RegionVariable(false),ImmutableMutability) :: arrow.domain,arrow.range,arrow.positive,arrow.negative)
-    val shape = new RecordType(List(RecordMember(None,ImmutableMutability,tau),RecordMember(None,ImmutableMutability,funcPointer)))
-    new ExistentialInterface(shape,tau)
-  }
+  val closureType: BrandType = ClosureTypes.apply(arrow)
   
   override def constrain(lui: LatticeUnificationInstance): Unit = {
     super.constrain(lui)
@@ -101,8 +95,10 @@ class ExpressionCall(val expression: Expression,override val arguments: List[Exp
   
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
     val closure = expression.compile(builder,scope,instantiation)
-    val environment = new LLVMExtractValueInstruction(builder,closure,0,"extract_closure_environment")
-    val function = new LLVMExtractValueInstruction(builder,closure,1,"extract_closure_function")
-    new LLVMCallInstruction(builder,function,(environment :: arguments.map(_.compile(builder,scope,instantiation))).toArray,"expression_call")
+    /*TODO: Rewrite this to compile according to the representation of method tables. */
+    val method: (FunctionPointer,Int) = closureType.representMethod("apply")
+    val function = new LLVMExtractValueInstruction(builder,closure,method._2,"extract_closure_function")
+    val closureAddress: LLVMValue = null //TODO: Get the address or temporarily store the closure object itself.
+    new LLVMCallInstruction(builder,function,(closureAddress :: arguments.map(_.compile(builder,scope,instantiation))).toArray,"expression_call")
   }
 }
