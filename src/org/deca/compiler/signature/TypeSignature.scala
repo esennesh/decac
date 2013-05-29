@@ -140,7 +140,7 @@ object MapZipping {
 }
 
 class ClassBrand(val name: String, r: RecordType, ms: Map[String,FunctionPointer], val parent: Option[ClassBrand], loopNode: Option[MonoType] = None) {
-  val record = loopNode match {
+  val record: RecordType = loopNode match {
     case None => r
     case Some(mu) => r.mapT(tau => if(tau == mu) new BrandType(this,EmptyRecord) else tau).asInstanceOf[RecordType]
   }
@@ -169,8 +169,7 @@ class ClassBrand(val name: String, r: RecordType, ms: Map[String,FunctionPointer
     sealingTags = Some(tags.map(pair => (containedBrands(pair._1),pair._2)))
   def isSealed: Boolean = sealingTags != None
   
-  /* TODO: Reprogram enumeration detection and brand representation to include a method table. */
-  def enumeration: Boolean = isSealed && subBrands.forall(brand => brand._2.record.fields == Nil)
+  def enumeration: Boolean = isSealed && subBrands.forall(brand => brand._2.record.fields == Nil && brand._2.methods.isEmpty)
   
   def tagRepresentation: MonoType =
     if(enumeration) {
@@ -187,7 +186,7 @@ class ClassBrand(val name: String, r: RecordType, ms: Map[String,FunctionPointer
     }
     else
       new PointerType(new BrandType(this,EmptyRecord),GlobalRegion,ReadOnlyMutability)
-  protected def largestChild: ClassBrand = containedBrands.values.toList.sort((x,y) => x.sizeOf >= y.sizeOf).head
+  protected def largestChild: ClassBrand = containedBrands.values.toList.sortWith((x,y) => x.sizeOf >= y.sizeOf).head
   def fieldsRepresentation: List[MonoType] = largestChild.record.fields.map(field => field.tau)
   def methodsRepresentation: List[(String,FunctionPointer)] = largestChild.methods.toList
   def sizeOf: Int = tagRepresentation.sizeOf + record.sizeOf
@@ -203,6 +202,7 @@ object ExceptionConstructor extends TypeExpressionConstructor(Nil,new BrandType(
   new TypeDefinition(this,"Exception",StandardLibrary)
 }
 
+// TODO: Enable method extensions of brand types, structural ones.
 class BrandType(val brand: ClassBrand,val extension: RecordType) extends MonoType {
   assert(extension.fields.forall(field => !brand.record.fields.contains((brandField: RecordMember) => brandField.name == field.name)))
   val fields: List[RecordMember] = brand.record.fields ++ extension.fields
