@@ -40,6 +40,7 @@ trait Expression {
 trait WritableExpression extends Expression {
   override val writable: Boolean = true
   def region: MonoRegion
+  def mutability: MonoMutability
   def specialize(spec: SignatureSubstitution,specScope: Scope): WritableExpression
   def pointer(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue
 }

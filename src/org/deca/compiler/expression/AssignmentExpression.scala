@@ -15,6 +15,7 @@ class AssignmentExpression(val slot: WritableExpression,val value: Expression) e
     slot.constrain(lui)
     value.constrain(lui)
     lui.constrain(new SubsumptionConstraint(value.expType,slot.expType))
+    lui.constrain(new SubsumptionConstraint(slot.mutability, MutableMutability))
   }
   override def check(lui: LatticeUnificationInstance): Unit = {
     slot.check(lui)

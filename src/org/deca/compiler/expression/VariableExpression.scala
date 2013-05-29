@@ -8,7 +8,8 @@ class VariableExpression(val name: List[String],val scope: Scope) extends Writab
   val binding = scope.typedLookup[VariableBinding](name)
   expType = binding.variableType
   expEffect = EffectPair(PureEffect,PureEffect)
-  override val region: MonoRegion = scope.region
+  override val region: MonoRegion = binding.scope.region
+  override val mutability: MonoMutability = binding.mutability
   override val children: List[Expression] = Nil
   override def substitute(sub: SignatureSubstitution): Unit = {
     expType = sub.solve[MonoType](expType)

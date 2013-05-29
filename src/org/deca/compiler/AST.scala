@@ -60,33 +60,11 @@ object ASTProcessor {
       new TypeVariable(false,None)
     (name,tau,processSlotMutability(adecl.getSlotMutability))
   }
-  def processMemberAssignment(decl: PMemberAssignment,scope: TypeDefinitionScope): MemberConstructor = {
+  def processMemberAssignment(decl: PMemberAssignment,scope: TypeDefinitionScope): MemberDeclaration = {
     val slot: (String,MonoType,MonoMutability) = processSlotDeclaration(decl.asInstanceOf[AMemberAssignment].getSlotDeclaration,scope)
     val builder = (lexical: LexicalScope) => processExpression(decl.asInstanceOf[AMemberAssignment].getExpression,lexical)
-    MemberConstructor(slot._1,slot._3,slot._2,builder)
+    new MemberDeclaration(slot._1,slot._3,slot._2,builder)
   }
-  def processVariantComponent(component: PVariantCase,scope: TypeDefinitionScope): VariantCase = component match {
-    case simple: ASimpleVariantCase => simple.getVariantCaseParameters match {
-      case null => EnumVariant(simple.getUnqualifiedIdentifier.getText)
-      case params: AVariantCaseParameters => {
-        val name = simple.getUnqualifiedIdentifier.getText
-        val components = processTupleComponents(params.getTupleComponentList,scope)
-        DataConstructor(name,components)
-      }
-    }
-    case complex: AComplexVariantCase => {
-      val name = complex.getUnqualifiedIdentifier.getText
-      val params = processArguments(complex.getParameters,scope)
-      val members = convertList(complex.getMembers).map(decl => processMemberAssignment(decl.asInstanceOf[AMemberDeclaration].getMemberAssignment,scope))
-      new RecordConstructor(name,params,scope,members)
-    }
-  }
-  def processVariantComponents(components: List[PVariantCase],scope: TypeDefinitionScope): List[VariantCase] = 
-    for(component <- components) yield {
-      val comp = processVariantComponent(component,scope)
-      comp.defineSelf(scope.owner)
-      comp
-    }
   def processBasicTypeForm(form: PBasicTypeForm,scope: TypeDefinitionScope): MonoType = form match {
     case named: ANamedBasicTypeForm => {
       val name = processQualifiedIdentifier(named.getTypename)
@@ -175,18 +153,9 @@ object ASTProcessor {
         val closure = c.getFirstclassFunctionForm.asInstanceOf[AFirstclassFunctionForm]
         val effect = processEffectAnnotation(closure.getEffect.asInstanceOf[AEffectAnnotation].getEffectSignature,scope)
         val result = processTypeForm(closure.getResult,scope)
-        val closedOver: MonoType = new TypeVariable(false)
-        val formals = {
-          val args = closure.getFormals.asInstanceOf[AArgumentsForm].getTypeFormList
-          new PointerType(closedOver,new RegionVariable(true),MutableMutability) :: processTypeForms(args,scope)
-        }
-        val implicits = {
-          val args = closure.getImplicits.asInstanceOf[AArgumentsForm].getTypeFormList
-          processTypeForms(args,scope)
-        }
-        val function = new FunctionPointer(formals ++ implicits,result,effect._1,effect._2)
-        val record = new RecordType(RecordMember(None,MutableMutability,closedOver) :: RecordMember(None,ReadOnlyMutability,function) :: Nil)
-        new ExistentialInterface(record,closedOver)
+        val formals = processTypeForms(closure.getFormals.asInstanceOf[AArgumentsForm].getTypeFormList,scope)
+        val implicits = processTypeForms(closure.getImplicits.asInstanceOf[AArgumentsForm].getTypeFormList,scope)
+        ClosureTypes.apply(new FunctionPointer(formals ++ implicits,result,effect._1,effect._2))
       }
     }
     case pointer: APointerTypeForm => {
@@ -197,10 +166,7 @@ object ASTProcessor {
       //TODO: Shouldn't this region be a region variable?
       new PointerType(pointerForm._2,scope.owner.region,pointerForm._1)
     }
-    case variant: AVariantTypeForm => {
-      val components: List[VariantCase] = processVariantComponents(convertList(variant.getVariantCase),scope)
-      new SumType(components.map(comp => TaggedRecord(comp.name,comp,comp.taggedRecord.record)))
-    }
+    //TODO: Brand types!
     //case exception: AExceptionTypeForm
     case lower: AOthersTypeForm => processLowerTypeForm(lower.getLowerTypeForm,scope)
   }
@@ -323,8 +289,6 @@ object ASTProcessor {
       else
         new FunctionDefinition(name,scope,FunctionSignature(arguments,Nil),Some(sig => new ExpressionBody(sig,scope,lexical => processBlock(normal.getBody,lexical))))
     }
-    case method: AMethodFunctionDefinition => null
-    case over: AOverrideFunctionDefinition => null
     /*case external: AExternalFunctionDefinition => {
       val name = external.getName.getText
       val tscope = new TypeDefinitionScope(scope)
@@ -422,8 +386,7 @@ object ASTProcessor {
       val alpha = new TypeVariable(false,Some(name))
       tscope.bind(name,Some(alpha))
       val sigma = processTypeForm(atypedef.getTypeForm,tscope)
-      val mu = if(sigma.filterT(tau => tau == alpha).empty == false) new RecursiveType(sigma,Some(alpha)) else sigma
-      new TypeDefinition(new TypeExpressionConstructor(tparams,mu),name,scope)
+      new TypeDefinition(new TypeExpressionConstructor(tparams,sigma),name,scope)
     }
     case avardef: AGlobaldefDefinition => {
       val slot = processSlotDeclaration(avardef.getSlotDeclaration,new TypeDefinitionScope(Nil,scope))

@@ -30,20 +30,7 @@ abstract class LexicalBinding(override val name: String,
     else
       initialize(builder,instantiation)
   })
-  override def compile(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = compiled match {
-    case Some(alloc) => alloc
-    case None => {
-      val result = if(mutability == MutableMutability) {
-        val alloc = new LLVMStackAllocation(builder,variableType.compile,null,name)
-        new LLVMStoreInstruction(builder,initialize(builder,instantiation),alloc)
-        alloc
-      }
-      else
-        initialize(builder,instantiation)
-      compiled = Some(result)
-      result
-    }
-  }
+  override def compile(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = build(builder, instantiation)
   def initialize(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue
   override def load(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = {
     if(mutability == MutableMutability)

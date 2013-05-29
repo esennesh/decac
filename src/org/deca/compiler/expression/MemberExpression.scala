@@ -11,25 +11,26 @@ case class IndexSelector(index: Int) extends MemberSelector
 class MemberExpression(val structure: Expression,
                        val selector: MemberSelector) extends WritableExpression {
   expType = new TypeVariable(false,None)
+  protected var expMutability = new MutabilityVariable
   override val children = Nil
   protected var checkedSelector: Option[Int] = None
   
-  def checkMember(sub: SignatureSubstitution): (MonoType,Int) = (sub.solve(structure.expType),selector) match {
+  def checkMember(sub: SignatureSubstitution): (MonoType,Int,MonoMutability) = (sub.solve(structure.expType),selector) match {
     case (rec: RecordType,NameSelector(field)) => {
       val mem = rec.fields.zipWithIndex.find(f => f._1.name == Some(field)).get
-      (mem._1.tau,mem._2)
+      (mem._1.tau,mem._2,mem._1.mutable)
     }
     case (rec: RecordType,IndexSelector(index)) => {
       val mem = rec.fields.apply(index)
-      (mem.tau,index)
+      (mem.tau,index,mem.mutable)
     }
     case (brand: BrandType,NameSelector(field)) => {
       val mem = brand.fields.zipWithIndex.find(f => f._1.name == Some(field)).get
-      (mem._1.tau,mem._2)
+      (mem._1.tau,mem._2,mem._1.mutable)
     }
     case (brand: BrandType,IndexSelector(index)) => {
       val mem = brand.fields.apply(index)
-      (mem.tau,index)
+      (mem.tau,index,mem.mutable)
     }
     case _ => throw new TypeException("Cannot select fields of non-class, non-record type.")
   }
@@ -40,11 +41,13 @@ class MemberExpression(val structure: Expression,
     val member = checkMember(substitution)
     checkedSelector = Some(member._2)
     lui.constrain(EqualityConstraint(member._1,substitution.solve(expType)))
+    lui.constrain(EqualityConstraint(member._3,expMutability))
   }
   
   override def substitute(sub: SignatureSubstitution): Unit = {
     super.substitute(sub)
     structure.substitute(sub)
+    expType = sub.solve(expType)
   }
   override def specialize(spec: SignatureSubstitution,specScope: Scope): MemberExpression =
     new MemberExpression(structure.specialize(spec,specScope),selector)
@@ -60,10 +63,11 @@ class MemberExpression(val structure: Expression,
         val casted = new LLVMLoadInstruction(builder,new LLVMBitCast(builder,p,new LLVMPointerType(brand.compile,0),"pointer_cast"),"bit_casted")
         new LLVMExtractValueInstruction(builder,casted,checkedSelector.get,"extract")
       }
-      case _ => throw new Exception("How to evaluate a member expression having a base other than a variant or a record?")
+      case _ => throw new Exception("How to evaluate a member expression having a base other than a brand or a record?")
     }
   }
   
+  override def mutability: MonoMutability = expMutability
   override def region: MonoRegion = structure.asInstanceOf[WritableExpression].region
   override def pointer(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
     val original = structure match {
