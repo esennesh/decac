@@ -114,8 +114,7 @@ class ExpressionBody(override val signature: FunctionSignature,
     inference.constrain(new SubsumptionConstraint(body.expEffect.negative,signature.effect.negative))
     inference.solve
     body.check(inference)
-    val substitution = inference.solve
-    substitution
+    inference.solve
   }
   override def substitute(substitution: SignatureSubstitution): Unit = {
     scope.substitute(substitution)
