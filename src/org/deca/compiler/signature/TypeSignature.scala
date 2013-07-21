@@ -150,6 +150,7 @@ class ClassBrand(val name: String, r: RecordType, ms: Map[String,FunctionPointer
   }
   parent match {
     case Some(parentBrand) => parentBrand.extend(this)
+    case None => Unit
   }
   protected var subBrands: Map[String,ClassBrand] = Map(name -> this)
   protected var sealingTags: Option[Map[ClassBrand,Int]] = None
@@ -191,6 +192,8 @@ class ClassBrand(val name: String, r: RecordType, ms: Map[String,FunctionPointer
   def methodsRepresentation: List[(String,FunctionPointer)] = largestChild.methods.toList
   def sizeOf: Int = tagRepresentation.sizeOf + record.sizeOf
   
+  def variables: Set[SignatureVariable] = r.variables ++ ms.map(_._2.variables).foldLeft[List[SignatureVariable]](Nil)((x,y) => x ++ y)
+  
   def mapT(f: (MonoType) => MonoType): ClassBrand = new ClassBrand(name,record.mapT(f).asInstanceOf[RecordType],methods.map(m => (m._1,m._2.mapT(f).asInstanceOf[FunctionPointer])),parent.map(_.mapT(f)),Some(new BrandType(this,EmptyRecord)))
   def mapE(f: (MonoEffect) => MonoEffect): ClassBrand = new ClassBrand(name,record.mapE(f),methods.map(m => (m._1,m._2.mapE(f))),parent.map(_.mapE(f)),Some(new BrandType(this,EmptyRecord)))
   def mapR(f: (MonoRegion) => MonoRegion): ClassBrand = new ClassBrand(name,record.mapR(f),methods.map(m => (m._1,m._2.mapR(f))),parent.map(_.mapR(f)),Some(new BrandType(this,EmptyRecord)))
@@ -206,6 +209,8 @@ object ExceptionConstructor extends TypeExpressionConstructor(Nil,new BrandType(
 class BrandType(val brand: ClassBrand,val extension: RecordType) extends MonoType {
   assert(extension.fields.forall(field => !brand.record.fields.contains((brandField: RecordMember) => brandField.name == field.name)))
   val fields: List[RecordMember] = brand.record.fields ++ extension.fields
+  
+  override def variables = brand.variables ++ extension.variables
   
   def enumeration: Boolean = brand.enumeration && extension.fields == Nil
   
