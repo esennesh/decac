@@ -17,7 +17,6 @@ trait VariableBinding extends Scopeable {
   var variableType: MonoType
   var mutability: MonoMutability
   def compile(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue
-  def load(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue
   def pointer(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue
   def substitute(sub: SignatureSubstitution): Unit
   def specialize(spec: SignatureSubstitution): VariableBinding
