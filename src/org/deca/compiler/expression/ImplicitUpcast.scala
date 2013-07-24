@@ -35,7 +35,6 @@ class ImplicitUpcast(val expression: Expression,upcast: MonoType) extends Expres
       
       case (realx: RealType,realy: RealType) => new LLVMExtendCast(LLVMExtendCast.ExtendType.FLOAT,builder,child,realy.compile,"cast")
       
-      //TODO: Fill in the rest of these cases. 
       case (brandx: BrandType,brandy: BrandType) => (brandx.enumeration,brandy.enumeration) match {
         case (true,true) => new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,child,brandy.compile,"cast")
         case (true,false) => new LLVMInsertValueInstruction(builder,new LLVMUndefinedValue(brandy.compile),new LLVMExtendCast(LLVMExtendCast.ExtendType.ZERO,builder,child,brandy.brand.tagRepresentation.compile,"cast"),0,"variant")

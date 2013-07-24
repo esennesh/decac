@@ -50,7 +50,7 @@ class OpaqueType(context: LLVMContext = LLVMContext.getGlobalContext) extends Mo
   }
 }
 
-case class RecordMember(name: Option[String],mutable: MonoMutability,tau: MonoType)
+case class RecordMember(name: Option[String], mutable: MonoMutability, tau: MonoType)
 
 class RecordType(val fields: List[RecordMember]) extends MonoType {
   val length: Int = fields.length
@@ -206,7 +206,7 @@ object ExceptionConstructor extends TypeExpressionConstructor(Nil,new BrandType(
 }
 
 // TODO: Enable method extensions of brand types, structural ones.
-class BrandType(val brand: ClassBrand,val extension: RecordType) extends MonoType {
+class BrandType(val brand: ClassBrand, val extension: RecordType) extends MonoType {
   assert(extension.fields.forall(field => !brand.record.fields.contains((brandField: RecordMember) => brandField.name == field.name)))
   val fields: List[RecordMember] = brand.record.fields ++ extension.fields
   

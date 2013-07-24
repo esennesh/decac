@@ -65,6 +65,19 @@ object ASTProcessor {
     val builder = (lexical: LexicalScope) => processExpression(decl.asInstanceOf[AMemberAssignment].getExpression,lexical)
     new MemberDeclaration(slot._1,slot._3,slot._2,builder)
   }
+  def processStructuralExtension(extension: PStructuralExtension, scope: TypeDefinitionScope): RecordMember = extension match {
+    case field: AFieldStructuralExtension => {
+      val tau = processTypeForm(field.getTypeAnnotation.asInstanceOf[ATypeAnnotation].getType, scope)
+      val mut = processSlotMutability(field.getSlotMutability)
+      RecordMember(Some(field.getName.getText), mut, tau)
+    }
+    case method: AMethodStructuralExtension => throw new Exception("TODO: method structural extension ASTs and semantic support")
+  }
+  def processStructuralExtensionList(list: PStructuralExtensionList, scope: TypeDefinitionScope): List[RecordMember] = list match {
+    case one: AOneStructuralExtensionList => processStructuralExtension(one.getStructuralExtension, scope) :: Nil
+    case many: AManyStructuralExtensionList =>
+      processStructuralExtension(many.getStructuralExtension, scope) :: processStructuralExtensionList(many.getStructuralExtensionList, scope)
+  }
   def processBasicTypeForm(form: PBasicTypeForm,scope: TypeDefinitionScope): MonoType = form match {
     case named: ANamedBasicTypeForm => {
       val name = processQualifiedIdentifier(named.getTypename)
@@ -133,7 +146,7 @@ object ASTProcessor {
       (SetEffect(processEffectForms(plusForms,scope).toSet),SetEffect(processEffectForms(minusForms,scope).toSet))
     }
   }
-  def processTypeForm(annotation: PTypeForm,scope: TypeDefinitionScope): MonoType = annotation match {
+  def processTypeForm(annotation: PTypeForm, scope: TypeDefinitionScope): MonoType = annotation match {
     case function: AFunctionTypeForm => function.getFunctionTypeForm match {
       case p: APointerFunctionTypeForm => {
         val pointer = p.getFunctionPointerForm.asInstanceOf[AFunctionPointerForm]
@@ -164,9 +177,20 @@ object ASTProcessor {
         case complex: AComplexPointerTypeForm => (processSlotMutability(complex.getSlotMutability),processTypeForm(complex.getTypeForm,scope))
       }
       //TODO: Shouldn't this region be a region variable?
-      new PointerType(pointerForm._2,scope.owner.region,pointerForm._1)
+      new PointerType(pointerForm._2, scope.owner.region, pointerForm._1)
     }
-    //TODO: Brand types!
+    case brandType: AClassTypeForm => {
+      val brand = scope.owner.lookup(processQualifiedIdentifier(brandType.getQualifiedIdentifier)).asInstanceOf[ClassDefinition].brand
+      scope.bind("#" + brand.toString, Some(new OpaqueType))
+      val extension: RecordType = if(brandType.getStructuralExtensionForm != null) {
+          val members = processStructuralExtensionList(brandType.getStructuralExtensionForm.asInstanceOf[AStructuralExtensionForm].getStructuralExtensionList, scope)
+          new RecordType(members)
+        }
+        else
+          EmptyRecord
+      //TODO: Enable methodwise structural extension of brands, see: TypeSignature.scala
+      new BrandType(brand, extension)
+    }
     //case exception: AExceptionTypeForm
     case lower: AOthersTypeForm => processLowerTypeForm(lower.getLowerTypeForm,scope)
   }
