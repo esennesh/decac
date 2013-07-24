@@ -21,23 +21,13 @@ abstract class LexicalBinding(override val name: String,
     mutability = sub.solve(mutability)
   }
   def specialize(spec: SignatureSubstitution): LexicalBinding
-  protected val build = Memoize2((builder: LLVMInstructionBuilder,instantiation: Module) => {
-    if(mutability == MutableMutability) {
-      val alloc = new LLVMStackAllocation(builder,variableType.compile,null,name)
-      new LLVMStoreInstruction(builder,initialize(builder,instantiation),alloc)
-      alloc
-    }
-    else
-      initialize(builder,instantiation)
+  protected val build: Memoize2[LLVMInstructionBuilder, Module, LLVMValue] = Memoize2((builder: LLVMInstructionBuilder,instantiation: Module) => {
+    val alloc = new LLVMStackAllocation(builder,variableType.compile,null,name)
+    new LLVMStoreInstruction(builder,initialize(builder,instantiation),alloc)
+    alloc
   })
   override def compile(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = build(builder, instantiation)
   def initialize(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue
-  override def load(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = {
-    if(mutability == MutableMutability)
-      new LLVMLoadInstruction(builder,compile(builder,instantiation),"load" + name)
-    else
-      compile(builder,instantiation)
-  }
   override def pointer(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = {
     assert(mutability == MutableMutability)
     compile(builder,instantiation)

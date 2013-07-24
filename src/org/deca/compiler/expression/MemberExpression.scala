@@ -52,21 +52,6 @@ class MemberExpression(val structure: Expression,
   override def specialize(spec: SignatureSubstitution,specScope: Scope): MemberExpression =
     new MemberExpression(structure.specialize(spec,specScope),selector)
   
-  override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
-    val struct = structure.compile(builder,scope,instantiation)
-    structure.expType match {
-      case record: RecordType => new LLVMExtractValueInstruction(builder,struct,checkedSelector.get,"extract")
-      case brand: BrandType => {
-        val contents = new LLVMExtractValueInstruction(builder,struct,1,"extract")
-        val p = new LLVMStackAllocation(builder,contents.typeOf,LLVMConstantInteger.constantInteger(Nat.compile,1,false),"cast_alloc")
-        new LLVMStoreInstruction(builder,contents,p)
-        val casted = new LLVMLoadInstruction(builder,new LLVMBitCast(builder,p,new LLVMPointerType(brand.compile,0),"pointer_cast"),"bit_casted")
-        new LLVMExtractValueInstruction(builder,casted,checkedSelector.get,"extract")
-      }
-      case _ => throw new Exception("How to evaluate a member expression having a base other than a brand or a record?")
-    }
-  }
-  
   override def mutability: MonoMutability = expMutability
   override def region: MonoRegion = structure.asInstanceOf[WritableExpression].region
   override def pointer(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {

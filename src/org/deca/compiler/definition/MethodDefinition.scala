@@ -30,12 +30,7 @@ class InMethodFieldBinding(name: String,
                            tau: MonoType,
                            mut: MonoMutability) extends LexicalBinding(name,scope,tau,mut) {
   protected var member: MemberExpression = new MemberExpression(new VariableExpression(List("this"), scope), NameSelector(name))
-  override protected val build = Memoize2((builder: LLVMInstructionBuilder,instantiation: Module) => {
-    if(mutability == MutableMutability)
-      member.pointer(builder, scope, instantiation)
-    else
-      initialize(builder, instantiation)
-  })
+  override protected val build = Memoize2((builder: LLVMInstructionBuilder, instantiation: Module) => member.pointer(builder, scope, instantiation))
   override def initialize(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = member.compile(builder, scope, instantiation)
   override def substitute(sub: SignatureSubstitution): Unit = {
     variableType = sub.solve(variableType)

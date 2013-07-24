@@ -20,14 +20,12 @@ class VariableExpression(val name: List[String],val scope: Scope) extends Writab
   override def constrain(lui: LatticeUnificationInstance): Unit = Unit
   override def check(lui: LatticeUnificationInstance): Unit = Unit
 
-  override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue =
-    binding.load(builder,instantiation)
   override def pointer(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue =
     binding.pointer(builder,instantiation)
 }
 
 class ImplicitResolutionExpression(val tau: MonoType,val scope: Scope) extends Expression {
-  val binding: VariableBinding = scope.implicitLookup(tau)
+  def binding: VariableBinding = scope.implicitLookup(tau)
   expType = tau
   expEffect = EffectPair(ReadEffect(scope.region),PureEffect)
   override val children: List[Expression] = Nil
@@ -41,5 +39,5 @@ class ImplicitResolutionExpression(val tau: MonoType,val scope: Scope) extends E
   override def check(lui: LatticeUnificationInstance): Unit = Unit
   
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue =
-    binding.load(builder,instantiation)
+    new LLVMLoadInstruction(builder, binding.pointer(builder, instantiation), "implicit_load")
 }
