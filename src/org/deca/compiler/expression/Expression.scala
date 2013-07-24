@@ -41,8 +41,9 @@ trait WritableExpression extends Expression {
   override val writable: Boolean = true
   def region: MonoRegion
   def mutability: MonoMutability
-  def specialize(spec: SignatureSubstitution,specScope: Scope): WritableExpression
-  def pointer(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue
+  def specialize(spec: SignatureSubstitution, specScope: Scope): WritableExpression
+  def pointer(builder: LLVMInstructionBuilder, scope: Scope, instantiation: Module): LLVMValue
+  override final def compile(builder: LLVMInstructionBuilder, scope: Scope, instantiation: Module) = new LLVMLoadInstruction(builder, pointer(builder, scope, instantiation), "load_lvalue")
 }
 
 trait ConstantExpression extends Expression {
