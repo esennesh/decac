@@ -1,9 +1,6 @@
 package org.deca.compiler.expression
 
-import org.jllvm.LLVMValue
-import org.jllvm.LLVMFunction
-import org.jllvm.LLVMInstructionBuilder
-import org.jllvm.{LLVMCallInstruction,LLVMExtractValueInstruction}
+import org.jllvm._
 import org.deca.compiler.definition._
 import org.deca.compiler.signature._
 
@@ -79,7 +76,7 @@ class DefinitionCall(val definition: FunctionDefinition,
 
 class ExpressionCall(val expression: Expression,override val arguments: List[Expression]) extends CallExpression {
   override val children: List[Expression] = expression :: arguments
-  var arrow: FunctionPointer = new FunctionPointer(arguments.map(arg => new TypeVariable(false,None)),new TypeVariable(false,None),new EffectVariable(false),new EffectVariable(false))
+  var arrow: FunctionPointer = new FunctionPointer(arguments.map(arg => new TypeVariable(false, None)), new TypeVariable(false, None), new EffectVariable(false), new EffectVariable(false))
   expType = arrow.range
   expEffect = EffectPair(arrow.positive,arrow.negative)
   assert(arguments.length == arrow.domain.length)
@@ -92,13 +89,25 @@ class ExpressionCall(val expression: Expression,override val arguments: List[Exp
   
   override def specialize(spec: SignatureSubstitution,specScope: Scope): ExpressionCall = 
     new ExpressionCall(expression.specialize(spec,specScope),arguments.map(_.specialize(spec,specScope)))
-  
-  override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
-    val closure = expression.compile(builder,scope,instantiation)
-    /*TODO: Rewrite this to compile according to the representation of method tables. */
-    val method: (FunctionPointer,Int) = closureType.representMethod("apply")
-    val function = new LLVMExtractValueInstruction(builder,closure,method._2,"extract_closure_function")
-    val closureAddress: LLVMValue = null //TODO: Get the address or temporarily store the closure object itself.
-    new LLVMCallInstruction(builder,function,(closureAddress :: arguments.map(_.compile(builder,scope,instantiation))).toArray,"expression_call")
+    
+  override def compile(builder: LLVMInstructionBuilder, scope: Scope, instantiation: Module): LLVMValue = {
+    val closure = expression.compile(builder, scope, instantiation)
+    val pointer: LLVMValue = expression match {
+      case writable: WritableExpression => writable.pointer(builder, scope, instantiation)
+      case _ => {
+        val result = new LLVMStackAllocation(builder, closureType.compile, LLVMConstantInteger.constantInteger(Nat.compile, 1, false), "temp_closure")
+        new LLVMStoreInstruction(builder, expression.compile(builder, scope, instantiation), result)
+        result
+      }
+    }
+    val function: LLVMValue = expression match {
+      case writable: WritableExpression => {
+        val indices = List(LLVMConstantInteger.constantInteger(Nat.compile, 0, false), LLVMConstantInteger.constantInteger(Nat.compile, closureType.representMethod("apply")._2, false))
+        val gep = new LLVMGetElementPointerInstruction(builder, pointer, indices.toArray, "closure_function_pointer")
+        new LLVMLoadInstruction(builder, gep, "load_closure_function")
+      }
+      case _ => new LLVMExtractValueInstruction(builder, closure, closureType.representMethod("apply")._2, "extract_closure_function")
+    }
+    new LLVMCallInstruction(builder, function, (pointer :: arguments.map(_.compile(builder, scope, instantiation))).toArray, "expression_call")
   }
 }

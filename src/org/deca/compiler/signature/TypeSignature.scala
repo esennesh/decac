@@ -215,8 +215,8 @@ class BrandType(val brand: ClassBrand,val extension: RecordType) extends MonoTyp
   def enumeration: Boolean = brand.enumeration && extension.fields == Nil
   
   def representMethod(name: String): (FunctionPointer,Int) = {
-    val method: ((String,FunctionPointer),Int) = brand.methodsRepresentation.zipWithIndex.find((mem: ((String,FunctionPointer),Int)) => mem._1._1 == name).get
-    (method._1._2,method._2 + brand.fieldsRepresentation.length)
+    val method: ((String, FunctionPointer), Int) = brand.methodsRepresentation.zipWithIndex.find((mem: ((String, FunctionPointer), Int)) => mem._1._1 == name).get
+    (method._1._2, method._2 + brand.fieldsRepresentation.length + 1)
   }
   def represent: List[MonoType] = {
     val tag: MonoType = brand.tagRepresentation
