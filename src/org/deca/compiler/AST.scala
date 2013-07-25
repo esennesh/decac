@@ -297,6 +297,7 @@ object ASTProcessor {
     case many: AManyExpressionList => processExpressionList(many.getExpressionList,scope) ++ (processExpression(many.getExpression,scope) :: Nil)
   }
   
+  //TODO: Enable syntactic processing of implicit parameters
   def processFunctionDefinition(func: PFunctionDefinition,scope: Module): Definition = func match {
     case normal: AFunctionFunctionDefinition => {
       val name = normal.getName.getText
@@ -306,26 +307,18 @@ object ASTProcessor {
         Nil
       val tscope = new TypeDefinitionScope(typeParameters,scope)
       val arguments: List[(String,MonoType)] = processArguments(normal.getFunctionArguments.asInstanceOf[AFunctionArguments].getArguments,tscope)
-      if(normal.getType != null) {
-        val resultType = processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)
-        new FunctionDefinition(name,scope,FunctionSignature(arguments,Nil,resultType),Some(sig => new ExpressionBody(sig,scope,lexical => processBlock(normal.getBody,lexical))))
-      }
-      else
-        new FunctionDefinition(name,scope,FunctionSignature(arguments,Nil),Some(sig => new ExpressionBody(sig,scope,lexical => processBlock(normal.getBody,lexical))))
+      val resultType = Option.apply(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) getOrElse (new TypeVariable(false, None))
+      new FunctionDefinition(name, scope, FunctionSignature(arguments, Nil, resultType), Some(sig => new ExpressionBody(sig, scope, lexical => processBlock(normal.getBody, lexical))))
     }
-    /*case external: AExternalFunctionDefinition => {
+    case external: AExternalFunctionDefinition => {
       val name = external.getName.getText
-      val tscope = new TypeDefinitionScope(scope)
-      val arguments = processArguments(external.getFunctionArguments match {case args: AFunctionArguments => args.getArguments},tscope).map(arg => (arg._1,arg._2.asInstanceOf[GammaType]))
-      assert(arguments.forall(arg => arg match {
-        case rho: RhoType => rho.filter(tau => !tau.isInstanceOf[GammaType]) == Nil
-        case gamma: GammaType => true
-        case _ => false
-      }))
-      val resultType = processTypeForm(external.getType.asInstanceOf[ATypeAnnotation].getType,tscope).asInstanceOf[GammaType]
-      val function = new ExternalFunction(tscope,name,arguments,resultType)
-      function
-    }*/
+      val tscope = new TypeDefinitionScope(Nil, scope)
+      val arguments = processArguments(external.getFunctionArguments.asInstanceOf[AFunctionArguments].getArguments, tscope)
+      assert(arguments.forall(arg => arg._2.variables.isEmpty))
+      val resultType = processTypeForm(external.getType.asInstanceOf[ATypeAnnotation].getType, tscope)
+      assert(resultType.variables.isEmpty)
+      new FunctionDefinition(name, scope, FunctionSignature(arguments, Nil, resultType), None)
+    }
   }
   def processExp1(exp: PExp1,scope: LexicalScope): Expression = exp match {
     case variable: AIdentifierExp1 => new VariableExpression(processQualifiedIdentifier(variable.getQualifiedIdentifier),scope)
