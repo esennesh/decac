@@ -297,7 +297,7 @@ object ASTProcessor {
     case many: AManyExpressionList => processExpressionList(many.getExpressionList,scope) ++ (processExpression(many.getExpression,scope) :: Nil)
   }
   
-  //TODO: Enable syntactic processing of implicit parameters
+  //TODO: enable syntactic processing of effect annotations
   def processFunctionDefinition(func: PFunctionDefinition,scope: Module): Definition = func match {
     case normal: AFunctionFunctionDefinition => {
       val name = normal.getName.getText
@@ -306,9 +306,14 @@ object ASTProcessor {
       else
         Nil
       val tscope = new TypeDefinitionScope(typeParameters,scope)
-      val arguments: List[(String,MonoType)] = processArguments(normal.getFunctionArguments.asInstanceOf[AFunctionArguments].getArguments,tscope)
+      val arguments: List[(String,MonoType)] = processArguments(normal.getFunctionArguments.asInstanceOf[AFunctionArguments].getArguments, tscope)
+      val implicits = Option.apply(normal.getFunctionArguments.asInstanceOf[AFunctionArguments].getImplicitArguments) match {
+        case Some(implArgs) => processArguments(implArgs.asInstanceOf[AImplicitArguments].getImplicits, tscope)
+        case None => Nil
+      }
       val resultType = Option.apply(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) getOrElse (new TypeVariable(false, None))
-      new FunctionDefinition(name, scope, FunctionSignature(arguments, Nil, resultType), Some(sig => new ExpressionBody(sig, scope, lexical => processBlock(normal.getBody, lexical))))
+      val body = sig => new ExpressionBody(sig, scope, lexical => processBlock(normal.getBody, lexical))
+      new FunctionDefinition(name, scope, FunctionSignature(arguments, implicits, resultType), Some(body))
     }
     case external: AExternalFunctionDefinition => {
       val name = external.getName.getText
