@@ -128,7 +128,9 @@ Productions
   import_declaration = 
     import [name]:qualified_identifier;
   
-  effect_set = labracket effect_form_list rabracket;
+  effect_set =
+    {nonempty} labracket effect_form_list rabracket |
+    {empty} different;
   
   positive_effect = plus effect_set;
   

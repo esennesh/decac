@@ -32,8 +32,6 @@ class VariableDefinition(override val scope: Module,override val name: String,va
   override val build = Memoize1((instantiation: Module) => Set.empty + declare(instantiation))
   override def compile(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue =
     declare(instantiation)
-  override def load(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = 
-    new LLVMLoadInstruction(builder,declare(instantiation),"load")
   override def pointer(builder: LLVMInstructionBuilder,instantiation: Module): LLVMValue = declare(instantiation)
 }
 

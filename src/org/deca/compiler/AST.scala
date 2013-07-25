@@ -131,19 +131,23 @@ object ASTProcessor {
     case one: AOneEffectFormList => processEffectForm(one.getEffectForm,scope) :: Nil
     case many: AManyEffectFormList => processEffectForms(many.getEffectFormList,scope) ++ List(processEffectForm(many.getEffectForm,scope))
   }
+  def processEffectSet(set: PEffectSet, scope: TypeDefinitionScope): List[MonoEffect] = set match {
+    case nonempty: ANonemptyEffectSet => processEffectForms(nonempty.getEffectFormList, scope)
+    case empty: AEmptyEffectSet => Nil
+  }
   def processEffectAnnotation(effect: PEffectSignature,scope: TypeDefinitionScope): (MonoEffect,MonoEffect) = effect match {
     case plus: APlusEffectSignature => {
-      val effectForms = plus.getPositiveEffect.asInstanceOf[APositiveEffect].getEffectSet.asInstanceOf[AEffectSet].getEffectFormList
-      (SetEffect(processEffectForms(effectForms,scope).toSet),PureEffect)
+      val effectForms = processEffectSet(plus.getPositiveEffect.asInstanceOf[APositiveEffect].getEffectSet, scope)
+      (SetEffect(effectForms.toSet),PureEffect)
     }
     case minus: AMinusEffectSignature => {
-      val effectForms = minus.getNegativeEffect.asInstanceOf[APositiveEffect].getEffectSet.asInstanceOf[AEffectSet].getEffectFormList
-      (PureEffect,SetEffect(processEffectForms(effectForms,scope).toSet))
+      val effectForms = processEffectSet(minus.getNegativeEffect.asInstanceOf[APositiveEffect].getEffectSet, scope)
+      (PureEffect,SetEffect(effectForms.toSet))
     }
     case both: ABothEffectSignature => {
-      val plusForms = both.getPositiveEffect.asInstanceOf[APositiveEffect].getEffectSet.asInstanceOf[AEffectSet].getEffectFormList
-      val minusForms = both.getNegativeEffect.asInstanceOf[APositiveEffect].getEffectSet.asInstanceOf[AEffectSet].getEffectFormList
-      (SetEffect(processEffectForms(plusForms,scope).toSet),SetEffect(processEffectForms(minusForms,scope).toSet))
+      val plusForms = processEffectSet(both.getPositiveEffect.asInstanceOf[APositiveEffect].getEffectSet, scope)
+      val minusForms = processEffectSet(both.getNegativeEffect.asInstanceOf[APositiveEffect].getEffectSet, scope)
+      (SetEffect(plusForms.toSet),SetEffect(minusForms.toSet))
     }
   }
   def processTypeForm(annotation: PTypeForm, scope: TypeDefinitionScope): MonoType = annotation match {
@@ -244,7 +248,7 @@ object ASTProcessor {
           }
           new DefinitionCall(func,arguments,(implicits,scope))
         }
-        case binding: LexicalBinding => new ExpressionCall(new VariableExpression(name,scope),arguments)
+        case binding: LexicalBinding => new ExpressionCall(new VariableExpression(name,scope), arguments)
       }
     }
     case expr: AExprFunctionCallExpression => {
@@ -255,7 +259,7 @@ object ASTProcessor {
       else
         Nil
       val func = processExpression(expr.getFunction.asInstanceOf[AParentheticalExpression].getExpression,scope)
-      new ExpressionCall(func,arguments)
+      new ExpressionCall(func, arguments)
     }
   }
   def processIfThen(ifthen: AIfwithoutelseexpExpression,scope: LexicalScope): IfExpression = {
@@ -312,7 +316,7 @@ object ASTProcessor {
         case None => Nil
       }
       val resultType = Option.apply(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) getOrElse (new TypeVariable(false, None))
-      val body = sig => new ExpressionBody(sig, scope, lexical => processBlock(normal.getBody, lexical))
+      val body = (sig: FunctionSignature) => new ExpressionBody(sig, scope, (lexical: LexicalScope) => processBlock(normal.getBody, lexical))
       new FunctionDefinition(name, scope, FunctionSignature(arguments, implicits, resultType), Some(body))
     }
     case external: AExternalFunctionDefinition => {
