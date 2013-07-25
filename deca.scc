@@ -259,7 +259,7 @@ Productions
   function_arguments = lparen [arguments]:argument_list? rparen implicit_arguments?;
     
   function_definition = 
-    {function} function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [effect]:effect_annotation [body]:block_expression |
+    {function} function [name]:unqualified_identifier type_form_arguments? function_arguments [type]:type_annotation [effect]:effect_annotation assignment_operator [body]:expression |
     {external} import function [name]:unqualified_identifier function_arguments [type]:type_annotation [effect]:effect_annotation;
 
   expression =
