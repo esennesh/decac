@@ -316,7 +316,7 @@ object ASTProcessor {
         case None => Nil
       }
       val resultType = Option.apply(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) getOrElse (new TypeVariable(false, None))
-      val body = (sig: FunctionSignature) => new ExpressionBody(sig, scope, (lexical: LexicalScope) => processBlock(normal.getBody, lexical))
+      val body = (sig: FunctionSignature) => new ExpressionBody(sig, scope, (lexical: LexicalScope) => processExpression(normal.getBody, lexical))
       new FunctionDefinition(name, scope, FunctionSignature(arguments, implicits, resultType), Some(body))
     }
     case external: AExternalFunctionDefinition => {
