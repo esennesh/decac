@@ -9,15 +9,11 @@ type Array<a> = a[3]
   x * (y - z) / 3
 }*/
 
-function harpdarp(a: byte, b: byte): TwoTuple<nat, nat> !: +<> -<> {
-  [a,b]
-}
+function harpdarp(a: byte, b: byte): TwoTuple<nat, nat> !: +<> := [a,b]
 
-function itstime<a>(derp: Either<a,a>): nat {
-  derp.[0]
-}
+function itstime<a>(derp: Either<a, a>): nat !: +<> := derp.[0]
 
-function son(n,x) {
+function son(n: nat, x: boolean): nat !:<> := {
   if x then
     n + 1
   else

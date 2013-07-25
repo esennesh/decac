@@ -65,6 +65,8 @@ object ASTProcessor {
     val builder = (lexical: LexicalScope) => processExpression(decl.asInstanceOf[AMemberAssignment].getExpression,lexical)
     new MemberDeclaration(slot._1,slot._3,slot._2,builder)
   }
+  def processExtensionClause(extension: PExtensionClause, scope: Module): ClassDefinition =
+    scope.lookup(processQualifiedIdentifier(extension.asInstanceOf[AExtensionClause].getQualifiedIdentifier)).asInstanceOf[ClassDefinition]
   def processStructuralExtension(extension: PStructuralExtension, scope: TypeDefinitionScope): RecordMember = extension match {
     case field: AFieldStructuralExtension => {
       val tau = processTypeForm(field.getTypeAnnotation.asInstanceOf[ATypeAnnotation].getType, scope)
@@ -376,10 +378,12 @@ object ASTProcessor {
     case one:  AOneBlockExpression => List(one.getExpression)
     case many: AManyBlockExpression => processBlockSteps(many.getBlockStep)
   }
+  
   def processBlock(expr: PBlockExpression,scope: LexicalScope): BlockExpression = {
     val exprs: List[Expression] = processBlockContents(expr).map(processExpression(_,scope))
     new BlockExpression(exprs)
   }
+  
   def processExpression(expression: PExpression,scope: LexicalScope): Expression = expression match {
     case assignment: AAssignmentexpExpression => {
       val left = processExp1(assignment.getExp1,scope).asInstanceOf[WritableExpression]
@@ -391,6 +395,23 @@ object ASTProcessor {
     case ifthen: AIfwithoutelseexpExpression => processIfThen(ifthen,scope)
     case ifelse: AIfwithelseexpExpression => processIfElse(ifelse,scope)
   }
+  
+  def processClassDefinition(classDef: PClassDefinition, scope: Module): ClassDefinition = classDef match {
+    case variant: AVariantClassDefinition => {
+      val isFinal = variant.getFinal != null
+      val tscope = new TypeDefinitionScope(Nil, scope)
+      val parent: Option[ClassDefinition] = Option.apply(variant.getExtensionClause).map((ext: PExtensionClause) => processExtensionClause(ext, scope))
+      val root: ClassDefinition = new ClassDefinition(scope, variant.getUnqualifiedIdentifier.getText, Nil, Nil, parent, Nil, Nil)
+      for(varCase <- scala.collection.JavaConversions.collectionAsScalaIterable(variant.getVariantCase)) {
+        val name = varCase.asInstanceOf[AVariantCase].getUnqualifiedIdentifier.getText
+        val args: List[RecordMember] = Option.apply(varCase.asInstanceOf[AVariantCase].getVariantCaseParameters).map(vcp => 
+          processTupleComponents(vcp.asInstanceOf[AVariantCaseParameters].getTupleComponentList, tscope)) getOrElse Nil
+        new DataConstructorDefinition(scope, name, args.map(arg => (arg.name.get, arg.mutable, arg.tau)), root)
+      }
+      root
+    }
+  }
+  
   def processModuleDefinition(amoddef: AModuledefDefinition,scope: Module): Module = {
     val moddef: AModuleDefinition = amoddef.getModuleDefinition() match {case real: AModuleDefinition => real}
     val result = new Module(moddef.getName().getText(),scope)
@@ -398,6 +419,7 @@ object ASTProcessor {
     convertList(moddef.getDefinitions).foreach(definition => processDefinition(definition,result))
     result
   }
+  
   def processDefinition(adef: PDefinition,scope: Module): Definition = adef match {
     case amoddef: AModuledefDefinition => processModuleDefinition(amoddef,scope)
     case afuncdef: AFundefDefinition => processFunctionDefinition(afuncdef.getFunctionDefinition(),scope)
@@ -412,7 +434,7 @@ object ASTProcessor {
       val alpha = new TypeVariable(false,Some(name))
       tscope.bind(name,Some(alpha))
       val sigma = processTypeForm(atypedef.getTypeForm,tscope)
-      new TypeDefinition(new TypeExpressionConstructor(tparams,sigma),name,scope)
+      new TypeDefinition(new TypeExpressionConstructor(tparams, sigma), name, scope)
     }
     case avardef: AGlobaldefDefinition => {
       val slot = processSlotDeclaration(avardef.getSlotDeclaration,new TypeDefinitionScope(Nil,scope))
