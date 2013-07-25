@@ -30,8 +30,6 @@
 		<mkdir dir="build/"/>
 		<scalac sourcepath="" srcdir="src/" unchecked="false" destdir="build" classpathref="scala.classpath" deprecation="yes">
 			<include name="**/*.scala"/>
-			<exclude name="**/jllvm"/>
-			<exclude name="**/decasyntax"/>
 		</scalac>
 		<jar destfile="decac.jar" basedir="build/">
 			<manifest>
