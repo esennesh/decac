@@ -163,7 +163,6 @@ Productions
     
   type_form =
     {function} function_type_form |
-    {variant} final? variant extension_clause? lbracket variant_case+ rbracket |
     {pointer} pointer_type_form |
     {class} class_token qualified_identifier structural_extension_form? |
     {exception} exception variant_case_parameters [extension]:extension_clause? |
@@ -219,8 +218,9 @@ Productions
     {fundef} function_definition;
   
   class_definition = 
-    {class} class_token unqualified_identifier function_arguments? class_extension_clause? lbracket class_member+ rbracket |
-    {object} object unqualified_identifier class_extension_clause? lbracket class_member+ rbracket;
+    {class} final? class_token unqualified_identifier function_arguments? class_extension_clause? lbracket class_member+ rbracket |
+    {object} final? object unqualified_identifier class_extension_clause? lbracket class_member+ rbracket |
+    {variant} final? variant unqualified_identifier extension_clause? lbracket variant_case+ rbracket;
     
   class_member =
     {field} member_declaration |
@@ -240,10 +240,10 @@ Productions
     member_assignment expression_end;
     
   extension_clause = 
-    extends lower_type_form;
+    extends qualified_identifier;
     
   class_extension_clause =
-    extends lower_type_form actual_parameters?;
+    extension_clause actual_parameters?;
     
   argument =
     [name]:unqualified_identifier [type]:type_annotation;
