@@ -1,12 +1,10 @@
 package org.deca.compiler.signature
 
 import org.jllvm._
-import scala.collection.mutable.Stack
 import scala.collection.immutable.{Set,Map,HashSet,HashMap}
-import scala.collection.mutable.LatticeOrdering
-import scala.collection.mutable.GraphLattice
 
 import org.deca.compiler.definition._
+import scala.collection.mutable
 
 object TopType extends MonoType {
   override def compile: LLVMType = throw TypeException("Top type indicates a type-inference error.")
@@ -35,7 +33,7 @@ object UnitType extends MonoType {
 case class TypeException(error: String) extends Exception("Type error: " + error)
 
 class OpaqueType(context: LLVMContext = LLVMContext.getGlobalContext) extends MonoType {
-  override def toString: String = getClass().getName() + '@' + Integer.toHexString(hashCode())
+  override def toString: String = getClass.getName + '@' + Integer.toHexString(hashCode())
   override def mapT(f: (MonoType) => MonoType): MonoType = f(this)
   override def mapE(f: (MonoEffect) => MonoEffect): MonoType = this
   override def mapR(f: (MonoRegion) => MonoRegion): MonoType = this
@@ -139,12 +137,16 @@ object MapZipping {
   }
 }
 
-class ClassBrand(val name: String, r: RecordType, ms: Map[String,FunctionPointer], val parent: Option[ClassBrand], loopNode: Option[MonoType] = None) {
+class ClassBrand(val name: String,
+                 r: RecordType,
+                 ms: Map[String,FunctionPointer],
+                 val parent: Option[ClassBrand],
+                 loopNode: Option[MonoType] = None) {
   val record: RecordType = loopNode match {
     case None => r
     case Some(mu) => r.mapT(tau => if(tau == mu) new BrandType(this,EmptyRecord) else tau).asInstanceOf[RecordType]
   }
-  val methods: Map[String,FunctionPointer] = loopNode match {
+  val methods: Map[String, FunctionPointer] = loopNode match {
     case None => ms
     case Some(mu) => ms.map(m => (m._1,m._2.mapT(tau => if(tau == mu) new BrandType(this,EmptyRecord) else tau).asInstanceOf[FunctionPointer]))
   }
@@ -166,7 +168,7 @@ class ClassBrand(val name: String, r: RecordType, ms: Map[String,FunctionPointer
   }
   def containedBrands: Map[String,ClassBrand] = subBrands
   
-  def seal(tags: Map[String,Int]): Unit =
+  def seal(tags: Map[String, Int]): Unit =
     sealingTags = Some(tags.map(pair => (containedBrands(pair._1),pair._2)))
   def isSealed: Boolean = sealingTags != None
   
@@ -226,7 +228,7 @@ class BrandType(val brand: ClassBrand, val extension: RecordType) extends MonoTy
       tag :: brand.fieldsRepresentation ++ brand.methodsRepresentation.map(_._2) ++ extension.fields.map(_.tau)
   }
   
-  def resolve: Unit = compile.setBody(represent.map(_.compile).toArray,true)
+  def resolve(): Unit = compile.setBody(represent.map(_.compile).toArray,true)
   val compile: LLVMIdentifiedStructType = (new OpaqueType).compile
   override def sizeOf: Int = represent.foldLeft(0)((total: Int,tau: MonoType) => total + tau.sizeOf)
   
@@ -244,7 +246,7 @@ class BrandType(val brand: ClassBrand, val extension: RecordType) extends MonoTy
 class TypeVariable(override val universal: Boolean,override val name: Option[String] = None) extends MonoType with SignatureVariable {
   override def compile: LLVMType = throw new TypeException("Cannot compile type variable " + name.toString + ".")
   override def sizeOf: Int = 1
-  override def toString: String = name.getOrElse(getClass().getName()) + ':' + universal.toString + '@' + Integer.toHexString(hashCode)
+  override def toString: String = name.getOrElse(getClass.getName) + ':' + universal.toString + '@' + Integer.toHexString(hashCode)
   
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = Set.empty
   override def filterE(pred: MonoEffect => Boolean): Set[MonoEffect] = Set.empty
@@ -271,9 +273,9 @@ class BoundedTypeVariable(tau: MonoType,bnd: SignatureBound,univ: Boolean,overri
 }
 
 object TypeRelation extends InferenceOrdering[MonoType] {
-  protected val assumptions = new Stack[InferenceConstraint]()
+  protected val assumptions = new mutable.Stack[InferenceConstraint]()
   
-  override protected val lattice = new GraphLattice(TopType,BottomType)(TypeOrdering)
+  override protected val lattice = new mutable.GraphLattice(TopType,BottomType)(TypeOrdering)
 
   override def lt(x: MonoType,y: MonoType): Option[Set[InferenceConstraint]] = (x,y) match {
     case (_,TopType) => Some(HashSet.empty)
@@ -368,9 +370,9 @@ object TypeRelation extends InferenceOrdering[MonoType] {
 }
 
 object PhysicalTypeRelation extends InferenceOrdering[MonoType] {
-  protected val assumptions = new Stack[InferenceConstraint]()
+  protected val assumptions = new mutable.Stack[InferenceConstraint]()
   
-  override protected val lattice = new GraphLattice(BottomType,TopType)(PhysicalTypeOrdering)
+  override protected val lattice = new mutable.GraphLattice(BottomType,TopType)(PhysicalTypeOrdering)
 
   override def lt(x: MonoType,y: MonoType): Option[Set[InferenceConstraint]] = (x,y) match {
     case (_,TopType) => Some(HashSet.empty)

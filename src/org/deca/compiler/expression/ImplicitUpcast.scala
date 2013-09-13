@@ -1,7 +1,6 @@
 package org.deca.compiler.expression
 
 import org.jllvm._
-import org.jllvm.bindings._
 
 import org.deca.compiler.definition._
 import org.deca.compiler.signature._
@@ -15,15 +14,15 @@ class ImplicitUpcast(val expression: Expression,upcast: MonoType) extends Expres
   
   override def substitute(sub: SignatureSubstitution): Unit = {
     expression.substitute(sub)
-    expType = sub.solve(expType).asInstanceOf[MonoType]
+    expType = sub.solve(expType)
   }
   override def specialize(spec: SignatureSubstitution,specScope: Scope): Expression =
-    new ImplicitUpcast(expression.specialize(spec,specScope),spec.solve(upcast).asInstanceOf[MonoType])
-  override val children: List[Expression] = (expression :: Nil)
+    new ImplicitUpcast(expression.specialize(spec,specScope),spec.solve(upcast))
+  override val children: List[Expression] = expression :: Nil
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = if(TypeOrdering.lt(expression.expType,expType)) {
     val child = expression.compile(builder,scope,instantiation)
     (expression.expType,expType) match {
-      case (unsignedx: UnsignedIntegerType,realy: RealType) => {
+      case (unsignedx: UnsignedIntegerType, realy: RealType) => {
         val doubled = new LLVMIntegerToFloatCast(builder,child,DoubleType.compile,"cast",LLVMIntegerToFloatCast.IntCastType.UNSIGNED)
         new LLVMExtendCast(LLVMExtendCast.ExtendType.FLOAT,builder,doubled,realy.compile,"cast")
       }

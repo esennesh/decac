@@ -1,10 +1,9 @@
 package org.deca.compiler.signature
 
-import scala.collection.mutable.{Map,HashMap,Queue,Stack,Lattice}
-import org.deca.compiler.definition._
+import scala.collection.mutable
 
 class SignatureSubstitution {
-  protected val substitutions: Map[SignatureVariable,MonoSignature] = new HashMap[SignatureVariable,MonoSignature]
+  protected val substitutions: mutable.Map[SignatureVariable,MonoSignature] = new mutable.HashMap[SignatureVariable,MonoSignature]
   
   def substitute(x: SignatureVariable,y: MonoSignature,specialize: Boolean = false): Unit = {
     assert(specialize == x.universal)
@@ -47,15 +46,15 @@ class SignatureSubstitution {
 }
 
 class SignatureConstraints extends Iterable[InferenceConstraint] {
-  protected val current = new Stack[InferenceConstraint]
-  protected val polyHypotheses = new Queue[InferenceConstraint]
+  protected val current = new mutable.Stack[InferenceConstraint]
+  protected val polyHypotheses = new mutable.Queue[InferenceConstraint]
   
   def substitute(x: SignatureVariable,y: MonoSignature): Unit = {
     for(constraint <- current)
       constraint.substitute(x,y)
     for(hypothesis <- polyHypotheses)
       hypothesis.substitute(x,y)
-    polyHypotheses.dequeueAll(!_.polymorphic).map(current.push(_))
+    polyHypotheses.dequeueAll(!_.polymorphic).map(current.push)
   }
   
   def push(c: InferenceConstraint): Unit =
@@ -66,11 +65,11 @@ class SignatureConstraints extends Iterable[InferenceConstraint] {
   
   def pop: InferenceConstraint =
     if(current.isEmpty) {
-      val sub = polyHypotheses.dequeue
+      val sub = polyHypotheses.dequeue()
       EqualityConstraint(sub.alpha,sub.beta)
     }
     else
-      current.pop
+      current.pop()
   
   override def isEmpty = current.isEmpty && polyHypotheses.isEmpty
   

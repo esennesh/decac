@@ -27,7 +27,7 @@ object IntegerConstants {
   val min_unsigned = 0
 }
 
-abstract class NumericalType(val name: String,val parent: Option[NumericalType]) extends MonoType {
+abstract class NumericalType(val name: String, val parent: Option[NumericalType]) extends MonoType {
   def signed: Boolean
   new TypeDefinition(new TypeExpressionConstructor(Nil,this),name,GlobalScope)
   
@@ -41,28 +41,28 @@ abstract class NumericalType(val name: String,val parent: Option[NumericalType])
   override def filterR(pred: MonoRegion => Boolean): Set[MonoRegion] = HashSet.empty
 }
 
-abstract class RealType(n: String,p: Option[RealType]) extends NumericalType(n,p) {
+abstract class RealType(n: String,p: Option[RealType]) extends NumericalType(n, p) {
   override val parent: Option[RealType] = p
   override def signed: Boolean = true
 }
 
 object FP128Type extends RealType("quadruple",None) {
-  override val compile = new LLVMFP128Type
+  override def compile = new LLVMFP128Type
 }
 
 object DoubleType extends RealType("double",Some(FP128Type)) {
-  override val compile = new LLVMDoubleType
+  override def compile = new LLVMDoubleType
 }
 
 object FloatType extends RealType("float",Some(DoubleType)) {
-  override val compile = new LLVMFloatType
+  override def compile = new LLVMFloatType
 }
 
 abstract class IntegerType(n: String,p: Option[NumericalType]) extends NumericalType(n,p) {
   def floor: Long
   def ceiling: Long
   override def signed = true
-  override val compile: LLVMIntegerType = new LLVMIntegerType(math.floor(math.log(ceiling - floor) / math.log(2)).toInt + 1)
+  override def compile: LLVMIntegerType = new LLVMIntegerType(math.floor(math.log(ceiling - floor) / math.log(2)).toInt + 1)
 }
 
 object IntegerTypeConstants {

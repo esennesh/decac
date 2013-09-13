@@ -1,8 +1,7 @@
 package org.deca.compiler.signature
 
 import scala.collection.immutable.Set
-import scala.collection.mutable.GraphLattice
-import org.deca.compiler.definition._
+import scala.collection.mutable
 
 object ReadOnlyMutability extends MonoMutability {
   override def variables: Set[SignatureVariable] = Set.empty
@@ -25,7 +24,7 @@ class BoundedMutabilityVariable(mu: MonoMutability,bnd: SignatureBound,univ: Boo
 }
 
 object MutabilityRelation extends InferenceOrdering[MonoMutability] {
-  override val lattice = new GraphLattice(ReadOnlyMutability,BottomMutability)(MutabilityOrdering)
+  override val lattice = new mutable.GraphLattice(ReadOnlyMutability,BottomMutability)(MutabilityOrdering)
   override def lt(x: MonoMutability,y: MonoMutability): Option[Set[InferenceConstraint]] = (x,y) match {
     case (_,ReadOnlyMutability) => Some(Set.empty)
     case (mx: MonoMutability,vy: MutabilityVariable) => if(vy.universal) Some(Set.empty) else Some(Set.empty + SubsumptionConstraint(mx,vy))

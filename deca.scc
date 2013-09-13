@@ -218,9 +218,9 @@ Productions
     {fundef} function_definition;
   
   class_definition = 
-    {class} final? class_token unqualified_identifier function_arguments? class_extension_clause? lbracket class_member+ rbracket |
-    {object} final? object unqualified_identifier class_extension_clause? lbracket class_member+ rbracket |
-    {variant} final? variant unqualified_identifier extension_clause? lbracket variant_case+ rbracket;
+    {class} final? class_token unqualified_identifier type_form_arguments? function_arguments? class_extension_clause? lbracket class_member+ rbracket |
+    {object} object unqualified_identifier class_extension_clause? lbracket class_member+ rbracket |
+    {variant} final? variant unqualified_identifier type_form_arguments? extension_clause? lbracket variant_case+ rbracket;
     
   class_member =
     {field} member_declaration |

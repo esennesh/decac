@@ -1,12 +1,10 @@
 package org.deca.compiler.definition
 
 import org.jllvm._
-import org.jllvm.bindings._
 import org.deca.compiler.signature._
 import org.deca.compiler.expression._
 
-import scala.collection.mutable.{Map,HashMap}
-import scala.collection.immutable
+import scala.collection.{mutable, immutable}
 import scala.util.Memoize2
 
 abstract class LexicalBinding(override val name: String,
@@ -60,7 +58,7 @@ class LetBinding(name: String,scope: LexicalScope,tau: Option[MonoType],var init
 }
 
 class LexicalScope(par: Scope,arguments: Iterable[(String,MonoType)]) extends Scope(Some(par)) {
-  val bindings: Map[String,LexicalBinding] = new HashMap[String,LexicalBinding]
+  val bindings: mutable.Map[String,LexicalBinding] = new mutable.HashMap[String,LexicalBinding]
   for(arg <- arguments) {
     val binding = new ArgumentBinding(arg._1,this,arg._2,ImmutableMutability)
     bindings.put(arg._1,binding)

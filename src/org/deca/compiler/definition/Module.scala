@@ -1,13 +1,11 @@
 package org.deca.compiler.definition
 
-import scala.collection.mutable.Map
-import scala.collection.mutable.HashMap
 import scala.collection.immutable.Set
 import scala.util.Memoize1
 import org.jllvm._
 import org.jllvm.bindings._
 import org.deca.compiler.signature._
-import org.deca.compiler.expression.{Expression,ConstantExpression}
+import org.deca.compiler.expression.ConstantExpression
 
 trait Definition extends Scopeable {
   override val scope: Module
@@ -66,7 +64,7 @@ class Module(val name: String,p: Module = GlobalScope) extends Scope(Some(p)) wi
     compiledModule
   }
   
-  def writeBitcode: Unit = compile.writeBitcodeToFile(path + name + ".bc")
+  def writeBitcode(): Unit = compile.writeBitcodeToFile(path + name + ".bc")
 }
 
 object GlobalScope extends Module("") {

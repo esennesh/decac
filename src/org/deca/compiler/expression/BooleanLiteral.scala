@@ -4,7 +4,7 @@ import org.jllvm.LLVMConstantBoolean
 import org.deca.compiler.definition._
 import org.deca.compiler.signature._
 
-class BooleanLiteralExpression(val value: Boolean) extends ConstantExpression {
+class BooleanLiteral(val value: Boolean) extends ConstantExpression {
   expType = BuiltInSums.BooleanSum.represent(Nil)
   override val children: List[ConstantExpression] = Nil
   override val writable = false

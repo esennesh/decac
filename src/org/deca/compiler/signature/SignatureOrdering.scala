@@ -1,7 +1,6 @@
 package org.deca.compiler.signature
 
-import scala.collection.mutable.Lattice
-import scala.collection.mutable.Stack
+import scala.collection.mutable
 import scala.collection.immutable.Set
 import scala.math.PartialOrdering
 
@@ -43,7 +42,7 @@ case class EqualityConstraint(var x: MonoSignature,var y: MonoSignature) extends
 }
 
 trait InferenceOrdering[T <: MonoSignature] {
-  protected val lattice: Lattice[T]
+  protected val lattice: mutable.Lattice[T]
   def lt(x: T,y: T): Option[Set[InferenceConstraint]]
   def equiv(x: T,y: T): Option[Set[InferenceConstraint]]
   def lteq(x: T,y: T): Option[Set[InferenceConstraint]] = lt(x,y) orElse equiv(x,y)

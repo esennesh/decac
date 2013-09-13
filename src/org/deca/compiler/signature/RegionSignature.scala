@@ -1,8 +1,8 @@
 package org.deca.compiler.signature
 
 import scala.collection.immutable.HashSet
-import scala.collection.mutable.GraphLattice
 import org.deca.compiler.definition._
+import scala.collection.mutable
 
 case class ScopeRegion(scope: Scope) extends MonoRegion {
   override def variables: Set[SignatureVariable] = HashSet.empty[SignatureVariable]
@@ -29,7 +29,7 @@ class BoundedRegionVariable(rho: MonoRegion,bnd: SignatureBound,univ: Boolean,ov
  * over all signature elements.  This ordering is "upside-down", so that data flows up the lattice.
  */
 object RegionRelation extends InferenceOrdering[MonoRegion] {
-  override protected val lattice = new GraphLattice(GlobalRegion,BottomRegion)(RegionOrdering)
+  override protected val lattice = new mutable.GraphLattice(GlobalRegion,BottomRegion)(RegionOrdering)
   def lt(x: MonoRegion,y: MonoRegion): Option[Set[InferenceConstraint]] = (x,y) match {
     case (BottomRegion,_) => Some(Set.empty)
     case (_,GlobalRegion) => Some(Set.empty)

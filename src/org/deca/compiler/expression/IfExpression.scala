@@ -44,11 +44,11 @@ class IfExpression(val condition: Expression,
       new LLVMBranchInstruction(builder,comparator,thenBlock,elseBlock)
       
       builder.positionBuilderAtEnd(thenBlock)
-      val thenValue = (new ImplicitUpcast(then,expType)).compile(builder,scope,instantiation)
+      val thenValue = new ImplicitUpcast(then,expType).compile(builder,scope,instantiation)
       new LLVMBranchInstruction(builder,merge)
       
       builder.positionBuilderAtEnd(elseBlock)
-      val elseValue = (new ImplicitUpcast(expr,expType)).compile(builder,scope,instantiation)
+      val elseValue = new ImplicitUpcast(expr,expType).compile(builder,scope,instantiation)
       new LLVMBranchInstruction(builder,merge)
       
       builder.positionBuilderAtEnd(merge)
@@ -63,7 +63,7 @@ class IfExpression(val condition: Expression,
       new LLVMBranchInstruction(builder,comparator,thenBlock,merge)
       
       builder.positionBuilderAtEnd(thenBlock)
-      val value = (new ImplicitUpcast(then,expType)).compile(builder,scope,instantiation)
+      val value = new ImplicitUpcast(then,expType).compile(builder,scope,instantiation)
       new LLVMBranchInstruction(builder,merge)
       
       builder.positionBuilderAtEnd(merge)

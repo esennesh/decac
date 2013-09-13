@@ -4,7 +4,7 @@ import org.jllvm._
 import org.deca.compiler.signature._
 import org.deca.compiler.definition._
 
-case class EffectPair(positive: MonoEffect,negative: MonoEffect) {
+case class EffectPair(positive: MonoEffect, negative: MonoEffect) {
   def safe(previous: MonoEffect): Boolean =
     positive == PureEffect || !SetEffect(Set.empty + negative + previous).contains(positive)
   def ++(pair: EffectPair) = EffectPair(positive ++ pair.positive,negative ++ pair.negative)
@@ -30,9 +30,9 @@ trait Expression {
    * variables and functions will need to be emitted into instantiation.compiledModule as externals. */
   def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue
   
-  def dump: Unit = {
+  def dump(): Unit = {
     for(child <- children)
-      child.dump
+      child.dump()
     System.err.println(toString + ": " + expType.toString + " !: " + expEffect.toString)
   }
 }
