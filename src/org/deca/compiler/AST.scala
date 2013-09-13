@@ -1,16 +1,11 @@
 package org.deca.compiler
 
-import org.deca.compiler.parser.parser._
-import org.deca.compiler.parser.lexer._
 import org.deca.compiler.parser.node._
 import org.deca.compiler.definition._
 import org.deca.compiler.expression._
 import org.deca.compiler.signature._
-import java.util.LinkedList
-import scala.collection.mutable.Map
-import scala.collection.mutable.HashMap
 
-object ASTProcessor {
+object AST {
   def convertList[T](list: java.util.List[T]): List[T] = {
     if(list == null || list.size == 0)
       Nil
@@ -19,12 +14,12 @@ object ASTProcessor {
   }
   
   def processQualifiedIdentifier(name: PQualifiedIdentifier): List[String] = name match {
-    case simple: ASimpleQualifiedIdentifier => simple.getUnqualifiedIdentifier.getText() :: Nil
-    case imported: AImportedQualifiedIdentifier => processQualifiedIdentifier(imported.getQualifiedIdentifier) ++ (imported.getUnqualifiedIdentifier.getText() :: Nil)
+    case simple: ASimpleQualifiedIdentifier => simple.getUnqualifiedIdentifier.getText :: Nil
+    case imported: AImportedQualifiedIdentifier => processQualifiedIdentifier(imported.getQualifiedIdentifier) ++ (imported.getUnqualifiedIdentifier.getText :: Nil)
   }
   
   def declareImportDeclaration(where: Module,imp: PImportDeclaration): Option[Scopeable] = imp match {
-    case imp: AImportDeclaration => where.define(where.lookup(processQualifiedIdentifier(imp.getName())))
+    case imp: AImportDeclaration => where.define(where.lookup(processQualifiedIdentifier(imp.getName)))
   }
   
   def processTypeParameters(parameters: PIdentifierList): List[String] = parameters match {
@@ -44,14 +39,14 @@ object ASTProcessor {
     case binding: ABindingTupleComponent => {
       val annotation = binding.getTypeAnnotation.asInstanceOf[ATypeAnnotation].getType
       val mutability = processSlotMutability(binding.getSlotMutability)
-      RecordMember(Some(binding.getName.getText()),mutability,processTypeForm(annotation,scope))
+      RecordMember(Some(binding.getName.getText),mutability,processTypeForm(annotation,scope))
     }
   }
   def processTupleComponents(components: PTupleComponentList,scope: TypeDefinitionScope): List[RecordMember] = components match {
     case one: AOneTupleComponentList => processTupleComponent(one.getTupleComponent,scope) :: Nil
     case many: AManyTupleComponentList => processTupleComponent(many.getTupleComponent,scope) :: processTupleComponents(many.getTupleComponentList,scope)
   }
-  def processSlotDeclaration(decl: PSlotDeclaration,scope: TypeDefinitionScope): (String,MonoType,MonoMutability) = {
+  def processSlotDeclaration(decl: PSlotDeclaration, scope: TypeDefinitionScope): (String, MonoType, MonoMutability) = {
     val adecl = decl.asInstanceOf[ASlotDeclaration]
     val name = adecl.getUnqualifiedIdentifier.getText
     val tau = if(adecl.getTypeAnnotation != null)
@@ -60,13 +55,18 @@ object ASTProcessor {
       new TypeVariable(false,None)
     (name,tau,processSlotMutability(adecl.getSlotMutability))
   }
-  def processMemberAssignment(decl: PMemberAssignment,scope: TypeDefinitionScope): MemberDeclaration = {
+  def processMemberAssignment(decl: PMemberAssignment,scope: TypeDefinitionScope): ImplementedMemberDeclaration = {
     val slot: (String,MonoType,MonoMutability) = processSlotDeclaration(decl.asInstanceOf[AMemberAssignment].getSlotDeclaration,scope)
     val builder = (lexical: LexicalScope) => processExpression(decl.asInstanceOf[AMemberAssignment].getExpression,lexical)
-    new MemberDeclaration(slot._1,slot._3,slot._2,builder)
+    new ImplementedMemberDeclaration(slot._1,slot._3,slot._2,builder)
   }
   def processExtensionClause(extension: PExtensionClause, scope: Module): ClassDefinition =
     scope.lookup(processQualifiedIdentifier(extension.asInstanceOf[AExtensionClause].getQualifiedIdentifier)).asInstanceOf[ClassDefinition]
+  def processClassExtensionClause(extension: AClassExtensionClause, scope: Module): (ClassDefinition, UnscopedActualParameters) = {
+    val classDef = processExtensionClause(extension.getExtensionClause, scope)
+    val params = processActualParameters(extension.getActualParameters)
+    (classDef, params)
+  }
   def processStructuralExtension(extension: PStructuralExtension, scope: TypeDefinitionScope): RecordMember = extension match {
     case field: AFieldStructuralExtension => {
       val tau = processTypeForm(field.getTypeAnnotation.asInstanceOf[ATypeAnnotation].getType, scope)
@@ -194,14 +194,13 @@ object ASTProcessor {
         }
         else
           EmptyRecord
-      //TODO: Enable methodwise structural extension of brands, see: TypeSignature.scala
       new BrandType(brand, extension)
     }
     //case exception: AExceptionTypeForm
     case lower: AOthersTypeForm => processLowerTypeForm(lower.getLowerTypeForm,scope)
   }
   
-  def processArgument(arg: AArgument,scope: TypeDefinitionScope): Tuple2[String,MonoType] = {
+  def processArgument(arg: AArgument,scope: TypeDefinitionScope): (String, MonoType) = {
     val name = arg.getName.getText
     val argType = arg.getType match {
       case null => new TypeVariable(false,Some("'" + name))
@@ -217,7 +216,7 @@ object ASTProcessor {
   
   def processLiteral(exp: PLiteralExpression,scope: LexicalScope): Expression = exp match {
     case integer: AIntegerLiteralExpression => new IntegerLiteralExpression(integer.getIntegerConstant.getText.toInt)
-    case bool: ABooleanLiteralExpression => new BooleanLiteralExpression(bool.getBooleanConstant.getText == "true")
+    case bool: ABooleanLiteralExpression => new BooleanLiteral(bool.getBooleanConstant.getText == "true")
   }
   def processActualImplicit(impl: PActualImplicit,scope: LexicalScope): Option[Expression] = impl match {
     case explicit: AExplicitActualImplicit => Some(processExpression(explicit.getExpression,scope))
@@ -227,40 +226,41 @@ object ASTProcessor {
     case one: AOneActualImplicitList => processActualImplicit(one.getActualImplicit,scope) :: Nil
     case many: AManyActualImplicitList => processActualImplicit(many.getActualImplicit,scope) :: processActualImplicitList(many.getActualImplicitList,scope)
   }
-  def processCallExpression(call: PFunctionCallExpression,scope: LexicalScope): CallExpression = call match {
-    case named: ANamedFunctionCallExpression => {
-      val name = processQualifiedIdentifier(named.getFunction)
-      val actualParameters = if(named.getActualParameters != null) {
-        val actuals = named.getActualParameters.asInstanceOf[AActualParameters]
-        val arguments = if(actuals.getArguments != null) Some(actuals.getArguments) else None
-        val implicits = if(actuals.getActualImplicitParameters != null) Some(actuals.getActualImplicitParameters.asInstanceOf[AActualImplicitParameters].getActualImplicitList) else None
-        (arguments,implicits)
-      }
-      else
-        (None,None)
-      val arguments = actualParameters._1 match {
-        case Some(args) => processExpressionList(args,scope)
+  def processActualParameters(prms: PActualParameters): UnscopedActualParameters = prms match {
+    case null => UnscopedActualParameters(s => Nil, s => Nil)
+    case params: AActualParameters => {
+      val regularArgs = (s: LexicalScope) => Option.apply(params.getArguments) match {
+        case Some(args) => processExpressionList(args, s)
         case None => Nil
       }
+      val implicitArgs = (s: LexicalScope) => Option.apply(params.getActualImplicitParameters) match {
+        case Some(implicits) =>
+          processActualImplicitList(implicits.asInstanceOf[AActualImplicitParameters].getActualImplicitList, s)
+        case None => Nil
+      }
+
+      UnscopedActualParameters(regularArgs, implicitArgs)
+    }
+  }
+  def processCallExpression(call: PFunctionCallExpression, scope: LexicalScope): CallExpression = call match {
+    case named: ANamedFunctionCallExpression => {
+      val name = processQualifiedIdentifier(named.getFunction)
+      val actualParameters = processActualParameters(named.getActualParameters)
+      val arguments = actualParameters.formals(scope)
       scope.lookup(name) match {
         case func: FunctionDefinition => {
-          val implicits: List[Option[Expression]] = actualParameters._2 match {
-            case Some(impls) => processActualImplicitList(impls,scope)
-            case None => func.signature.implicits.map(impl => None)
+          val implicits: List[Option[Expression]] = actualParameters.implicits(scope) match {
+            case Nil => func.signature.implicits.map(impl => None)
+            case impls: List[Option[Expression]] => impls
           }
-          new DefinitionCall(func,arguments,(implicits,scope))
+          new DefinitionCall(func, arguments, implicits)
         }
         case binding: LexicalBinding => new ExpressionCall(new VariableExpression(name,scope), arguments)
       }
     }
     case expr: AExprFunctionCallExpression => {
-      val arguments = if(expr.getActualParameters != null) {
-        val actuals = expr.getActualParameters.asInstanceOf[AActualParameters]
-        if(actuals.getArguments != null) processExpressionList(actuals.getArguments,scope) else Nil
-      }
-      else
-        Nil
-      val func = processExpression(expr.getFunction.asInstanceOf[AParentheticalExpression].getExpression,scope)
+      val arguments = processActualParameters(expr.getActualParameters).formals(scope)
+      val func = processExpression(expr.getFunction.asInstanceOf[AParentheticalExpression].getExpression, scope)
       new ExpressionCall(func, arguments)
     }
   }
@@ -303,8 +303,14 @@ object ASTProcessor {
     case many: AManyExpressionList => processExpressionList(many.getExpressionList,scope) ++ (processExpression(many.getExpression,scope) :: Nil)
   }
   
-  //TODO: enable syntactic processing of effect annotations
-  def processFunctionDefinition(func: PFunctionDefinition,scope: Module): Definition = func match {
+  def processFunctionArguments(args: PFunctionArguments, scope: TypeDefinitionScope): (List[(String, MonoType)], List[(String, MonoType)]) = {
+    val explicits = processArguments(args.asInstanceOf[AFunctionArguments].getArguments, scope)
+    val implicits = Option.apply(args.asInstanceOf[AFunctionArguments].getImplicitArguments).
+                           map(impls => processArguments(impls.asInstanceOf[AImplicitArguments].getImplicits, scope)) getOrElse Nil
+    (explicits, implicits)
+  }
+  
+  def processFunctionDefinition(func: PFunctionDefinition, scope: Module): (String, Module, FunctionSignature, Option[PExpression]) = func match {
     case normal: AFunctionFunctionDefinition => {
       val name = normal.getName.getText
       val typeParameters: List[String] = if(normal.getTypeFormArguments != null)
@@ -312,14 +318,11 @@ object ASTProcessor {
       else
         Nil
       val tscope = new TypeDefinitionScope(typeParameters,scope)
-      val arguments: List[(String,MonoType)] = processArguments(normal.getFunctionArguments.asInstanceOf[AFunctionArguments].getArguments, tscope)
-      val implicits = Option.apply(normal.getFunctionArguments.asInstanceOf[AFunctionArguments].getImplicitArguments) match {
-        case Some(implArgs) => processArguments(implArgs.asInstanceOf[AImplicitArguments].getImplicits, tscope)
-        case None => Nil
-      }
-      val resultType = Option.apply(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) getOrElse (new TypeVariable(false, None))
-      val body = (sig: FunctionSignature) => new ExpressionBody(sig, scope, (lexical: LexicalScope) => processExpression(normal.getBody, lexical))
-      new FunctionDefinition(name, scope, FunctionSignature(arguments, implicits, resultType), Some(body))
+      val arguments = processFunctionArguments(normal.getFunctionArguments, tscope)
+      val resultType = Option.apply(processTypeForm(normal.getType.asInstanceOf[ATypeAnnotation].getType,tscope)) getOrElse new TypeVariable(false, None)
+      val effect = processEffectAnnotation(normal.getEffect.asInstanceOf[AEffectAnnotation].getEffectSignature, tscope)
+      (name, scope, FunctionSignature(arguments._1, arguments._2, resultType, EffectPair(effect._1, effect._2)),
+        Some(normal.getBody))
     }
     case external: AExternalFunctionDefinition => {
       val name = external.getName.getText
@@ -328,7 +331,7 @@ object ASTProcessor {
       assert(arguments.forall(arg => arg._2.variables.isEmpty))
       val resultType = processTypeForm(external.getType.asInstanceOf[ATypeAnnotation].getType, tscope)
       assert(resultType.variables.isEmpty)
-      new FunctionDefinition(name, scope, FunctionSignature(arguments, Nil, resultType), None)
+      (name, scope, FunctionSignature(arguments, Nil, resultType), None)
     }
   }
   def processExp1(exp: PExp1,scope: LexicalScope): Expression = exp match {
@@ -365,15 +368,15 @@ object ASTProcessor {
     case others: AOthersExp4 => processExp3(others.getExp3,scope)
   }
   def processExp5(exp: PExp5,scope: LexicalScope): Expression = exp match {
-    case greater: AGreaterExp5 => new ComparisonExpression(OrdinalComparison(true,false),processExp4(greater.getExp1,scope),processExp4(greater.getExp2,scope))
-    case greatereq: AGreatereqExp5 => new ComparisonExpression(OrdinalComparison(true,true),processExp4(greatereq.getExp1,scope),processExp4(greatereq.getExp2,scope))
-    case lesser: ALessExp5 => new ComparisonExpression(OrdinalComparison(false,false),processExp4(lesser.getExp1,scope),processExp4(lesser.getExp2,scope))
-    case lessereq: ALessereqExp5 => new ComparisonExpression(OrdinalComparison(false,true),processExp4(lessereq.getExp1,scope),processExp4(lessereq.getExp2,scope))
-    case equals: AEqualsExp5 => new ComparisonExpression(IdentityComparison(true),processExp4(equals.getExp1,scope),processExp4(equals.getExp2,scope))
-    case different: ADifferentExp5 => new ComparisonExpression(IdentityComparison(false),processExp4(different.getExp1,scope),processExp4(different.getExp2,scope))
+    case greater: AGreaterExp5 => new ComparisonExpression(OrdinalComparison(greater = true,oreq = false),processExp4(greater.getExp1,scope),processExp4(greater.getExp2,scope))
+    case greatereq: AGreatereqExp5 => new ComparisonExpression(OrdinalComparison(greater = true,oreq = true),processExp4(greatereq.getExp1,scope),processExp4(greatereq.getExp2,scope))
+    case lesser: ALessExp5 => new ComparisonExpression(OrdinalComparison(greater = false,oreq = false),processExp4(lesser.getExp1,scope),processExp4(lesser.getExp2,scope))
+    case lessereq: ALessereqExp5 => new ComparisonExpression(OrdinalComparison(greater = false,oreq = true),processExp4(lessereq.getExp1,scope),processExp4(lessereq.getExp2,scope))
+    case equals: AEqualsExp5 => new ComparisonExpression(IdentityComparison(same = true),processExp4(equals.getExp1,scope),processExp4(equals.getExp2,scope))
+    case different: ADifferentExp5 => new ComparisonExpression(IdentityComparison(same = false),processExp4(different.getExp1,scope),processExp4(different.getExp2,scope))
     case others: AOthersExp5 => processExp4(others.getExp4,scope)
   }
-  def processBlockSteps(contents: LinkedList[PBlockStep]): List[PExpression] = convertList(contents).map(step => step.asInstanceOf[ABlockStep].getExpression)
+  def processBlockSteps(contents: java.util.LinkedList[PBlockStep]): List[PExpression] = convertList(contents).map(step => step.asInstanceOf[ABlockStep].getExpression)
   def processBlockContents(contents: PBlockExpression): List[PExpression] = contents match {
     case one:  AOneBlockExpression => List(one.getExpression)
     case many: AManyBlockExpression => processBlockSteps(many.getBlockStep)
@@ -384,45 +387,79 @@ object ASTProcessor {
     new BlockExpression(exprs)
   }
   
-  def processExpression(expression: PExpression,scope: LexicalScope): Expression = expression match {
+  def processExpression(expression: PExpression, scope: LexicalScope): Expression = expression match {
     case assignment: AAssignmentexpExpression => {
       val left = processExp1(assignment.getExp1,scope).asInstanceOf[WritableExpression]
-      val right = processExpression(assignment.getExpression,scope)
-      new AssignmentExpression(left,right)
+      val right = processExpression(assignment.getExpression, scope)
+      new AssignmentExpression(left, right)
     }
-    case blockexp: ABlockexpExpression => processBlock(blockexp.getBlockExpression,scope)
-    case exp5: AOthersExpression => processExp5(exp5.getExp5,scope)
-    case ifthen: AIfwithoutelseexpExpression => processIfThen(ifthen,scope)
-    case ifelse: AIfwithelseexpExpression => processIfElse(ifelse,scope)
+    case blockexp: ABlockexpExpression => processBlock(blockexp.getBlockExpression, scope)
+    case exp5: AOthersExpression => processExp5(exp5.getExp5, scope)
+    case ifthen: AIfwithoutelseexpExpression => processIfThen(ifthen, scope)
+    case ifelse: AIfwithelseexpExpression => processIfElse(ifelse, scope)
   }
   
   def processClassDefinition(classDef: PClassDefinition, scope: Module): ClassDefinition = classDef match {
+    case classDef: AClassClassDefinition => {
+      val name = classDef.getUnqualifiedIdentifier.getText
+      val typeParameters: List[String] = if(classDef.getTypeFormArguments != null)
+        processTypeParameters(classDef.getTypeFormArguments.asInstanceOf[ATypeFormArguments].getArguments)
+      else
+        Nil
+      val tscope = new TypeDefinitionScope(typeParameters, scope)
+      val args = Option.apply(classDef.getFunctionArguments).map(processFunctionArguments(_, tscope)).getOrElse((Nil, Nil))
+      val parent = Option.apply(classDef.getClassExtensionClause).map((ext: PClassExtensionClause) =>
+        processClassExtensionClause(ext.asInstanceOf[AClassExtensionClause], scope))
+      var revMembers: List[ImplementedMemberDeclaration] = Nil
+      var revMethods: List[MethodDeclaration] = Nil
+      for(member <- scala.collection.JavaConversions.collectionAsScalaIterable(classDef.getClassMember)) member match {
+        case field: AFieldClassMember => {
+          val decl: AMemberAssignment = field.getMemberDeclaration.asInstanceOf[AMemberDeclaration].getMemberAssignment.asInstanceOf[AMemberAssignment]
+          val slot = processSlotDeclaration(decl.getSlotDeclaration, tscope)
+          revMembers = new ImplementedMemberDeclaration(slot._1, slot._3, slot._2, (lex: LexicalScope) => processExpression(decl.getExpression, lex)) :: revMembers
+        }
+        case method: AMethodClassMember => {
+          val (name, owner, sig, body) = processFunctionDefinition(method.getFunctionDefinition, scope)
+          revMethods = new MethodDeclaration(name, sig, (mscope: MethodScope) => processExpression(body.get, mscope)) :: revMethods
+        }
+      }
+      new ClassDefinition(scope, name, args._1, args._2, parent, revMembers.reverse, revMethods.reverse)
+    }
     case variant: AVariantClassDefinition => {
-      val isFinal = variant.getFinal != null
       val tscope = new TypeDefinitionScope(Nil, scope)
-      val parent: Option[ClassDefinition] = Option.apply(variant.getExtensionClause).map((ext: PExtensionClause) => processExtensionClause(ext, scope))
+      val parent: Option[(ClassDefinition, UnscopedActualParameters)] =
+        for(ext <- Option.apply(variant.getExtensionClause)) yield
+          (processExtensionClause(ext, scope), UnscopedActualParameters(s => Nil, s => Nil))
       val root: ClassDefinition = new ClassDefinition(scope, variant.getUnqualifiedIdentifier.getText, Nil, Nil, parent, Nil, Nil)
+      var tags: List[String] = Nil
       for(varCase <- scala.collection.JavaConversions.collectionAsScalaIterable(variant.getVariantCase)) {
         val name = varCase.asInstanceOf[AVariantCase].getUnqualifiedIdentifier.getText
+        tags = name :: tags
         val args: List[RecordMember] = Option.apply(varCase.asInstanceOf[AVariantCase].getVariantCaseParameters).map(vcp => 
           processTupleComponents(vcp.asInstanceOf[AVariantCaseParameters].getTupleComponentList, tscope)) getOrElse Nil
         new DataConstructorDefinition(scope, name, args.map(arg => (arg.name.get, arg.mutable, arg.tau)), root)
       }
+      if(variant.getFinal != null)
+        root.brand.seal(tags.reverse.zipWithIndex.toMap)
       root
     }
   }
   
   def processModuleDefinition(amoddef: AModuledefDefinition,scope: Module): Module = {
-    val moddef: AModuleDefinition = amoddef.getModuleDefinition() match {case real: AModuleDefinition => real}
-    val result = new Module(moddef.getName().getText(),scope)
-    convertList(moddef.getImports()).foreach(imp => declareImportDeclaration(result,imp))
+    val moddef: AModuleDefinition = amoddef.getModuleDefinition match {case real: AModuleDefinition => real}
+    val result = new Module(moddef.getName.getText,scope)
+    convertList(moddef.getImports).foreach(imp => declareImportDeclaration(result,imp))
     convertList(moddef.getDefinitions).foreach(definition => processDefinition(definition,result))
     result
   }
   
   def processDefinition(adef: PDefinition,scope: Module): Definition = adef match {
     case amoddef: AModuledefDefinition => processModuleDefinition(amoddef,scope)
-    case afuncdef: AFundefDefinition => processFunctionDefinition(afuncdef.getFunctionDefinition(),scope)
+    case afuncdef: AFundefDefinition => {
+      val (name, owner, sig, bodyExp) = processFunctionDefinition(afuncdef.getFunctionDefinition, scope)
+      val body = bodyExp.map(b => (sig: FunctionSignature) => new ExpressionBody(sig, scope, (lexical: LexicalScope) => processExpression(b, lexical)))
+      new FunctionDefinition(name, owner, sig, body)
+    }
     case atypedef: ATypedefDefinition => {
       val name = atypedef.getUnqualifiedIdentifier.getText
       val params = if(atypedef.getParameters != null)

@@ -1,9 +1,9 @@
 package scala.util
 
-import scala.collection.mutable.Map
+import scala.collection.mutable
 
 class Memoize1[T, R](f: T => R) extends (T => R) {
-  protected var vals = Map.empty[T, R]
+  protected var vals = mutable.Map.empty[T, R]
 
   def values = vals.values
   def apply(x: T): R = 
@@ -20,24 +20,24 @@ object Memoize1 {
   def apply[T, R](f: T => R) = new Memoize1(f)
 }
 
-class InitializedMemoize1[T, R](f: T => R,init: (T,R) => Unit) extends Memoize1[T,R](f) {
+class InitializedMemoize1[T, R](f: T => R, init: (T, R) => Unit) extends Memoize1[T,R](f) {
   override def apply(x: T): R = 
     if (vals contains x) 
       vals(x)
     else {
       val res = f(x)
       vals += ((x, res))
-      init(x,res)
+      init(x, res)
       res
     }
 }
 
 object InitializedMemoize1 {
-  def apply[T, R](f: T => R,init: (T,R) => Unit) = new InitializedMemoize1(f,init)
+  def apply[T, R](f: T => R, init: (T,R) => Unit) = new InitializedMemoize1(f, init)
 }
 
 class Memoize2[T, U, R](f: (T,U) => R) extends ((T,U) => R) {
-  private var vals = Map.empty[(T,U), R]
+  private var vals = mutable.Map.empty[(T,U), R]
   
   def values = vals.values
   def apply(x: T,y: U): R =
@@ -55,7 +55,7 @@ object Memoize2 {
 }
 
 class Memoize3[S, T, U, R](f: (S, T, U) => R) extends ((S, T, U) => R) {
-  private var vals = Map.empty[(S, T, U), R]
+  private var vals = mutable.Map.empty[(S, T, U), R]
   
   def values = vals.values
   def apply(x: S, y: T, z: U): R =
@@ -73,7 +73,7 @@ object Memoize3 {
 }
 
 class Memoize4[A, B, C, D, R](f: (A, B, C, D) => R) extends ((A, B, C, D) => R) {
-  private var vals = Map.empty[(A, B, C, D), R]
+  private var vals = mutable.Map.empty[(A, B, C, D), R]
   
   def values = vals.values
   def apply(x: A, y: B, z: C, w: D): R =
@@ -91,7 +91,7 @@ object Memoize4 {
 }
 
 class Memoize5[A, B, C, D, E, R](f: (A, B, C, D, E) => R) extends ((A, B, C, D, E) => R) {
-  private var vals = Map.empty[(A, B, C, D, E), R]
+  private var vals = mutable.Map.empty[(A, B, C, D, E), R]
   
   def values = vals.values
   def apply(x: A, y: B, z: C, w: D, u: E): R =

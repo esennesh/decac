@@ -1,12 +1,9 @@
 package org.deca.compiler.definition
 
-import scala.collection.mutable.Map
-import scala.collection.mutable.HashMap
-import scala.util.Memoize1
 import org.jllvm.LLVMInstructionBuilder
-import org.jllvm.LLVMArgument
 import org.jllvm.LLVMValue
 import org.deca.compiler.signature._
+import scala.collection.mutable
 
 trait Scopeable {
   val name: String
@@ -23,8 +20,8 @@ trait VariableBinding extends Scopeable {
 }
 
 abstract class Scope(val parent: Option[Scope]) {
-  val symbols: Map[String,Scopeable] = new HashMap[String,Scopeable]
-  val implicits: Map[MonoType,VariableBinding] = new HashMap[MonoType,VariableBinding]
+  val symbols: mutable.Map[String,Scopeable] = new mutable.HashMap[String,Scopeable]
+  val implicits: mutable.Map[MonoType,VariableBinding] = new mutable.HashMap[MonoType,VariableBinding]
   val region = ScopeRegion(this)
 
   def lookup(name: String): Scopeable = symbols.get(name) match {

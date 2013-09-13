@@ -1,10 +1,9 @@
 package org.deca.compiler.definition
 
-import scala.collection.immutable.{Set,HashMap,Map}
+import scala.collection.immutable.HashMap
 import scala.util._
 import org.jllvm._
 import org.deca.compiler.signature._
-import org.deca.compiler.definition._
 import org.deca.compiler.expression._
 
 class MethodDeclaration(val name: String, sig: FunctionSignature, val body: MethodScope => Expression) {
@@ -52,39 +51,63 @@ class MethodScope(parent: LexicalScope, val brand: BrandType) extends LexicalSco
 }
 
 class ClassConstructorBody(override val signature: FunctionSignature,
-                           val members: List[MemberDeclaration],
+                           val members: List[ImplementedMemberDeclaration],
                            parent: Module,
-                           brand: ClassBrand) extends FunctionBody {
-  override val scope: LexicalScope = new LexicalScope(parent,signature.arguments ++ signature.implicits)
+                           owner: ClassDefinition) extends FunctionBody {
+  override val scope: LexicalScope = new LexicalScope(parent, signature.arguments ++ signature.implicits)
   for(member <- members)
     member.initialize(scope)
+  val nextSuper: Option[CallExpression] =
+    for ((parent, args) <- owner.parent) yield
+      new DefinitionCall(parent.constructor, args.formals(scope), args.implicits(scope))
   
   override def infer: SignatureSubstitution = {
     val inference = new LatticeUnificationInstance
-    for((decl, field) <- members.zip(brand.record.fields)) {
+    for(call <- nextSuper)
+      call.constrain(inference)
+    val membersAndFields = members.reverse.zip(owner.brand.record.fields.reverse).reverse
+    for((decl, field) <- membersAndFields) {
       decl.initializer.constrain(inference)
       inference.constrain(new SubsumptionConstraint(decl.initializer.expType, field.tau))
       inference.constrain(new SubsumptionConstraint(decl.initializer.expEffect.positive, signature.effect.positive))
       inference.constrain(new SubsumptionConstraint(decl.initializer.expEffect.negative, signature.effect.negative))
     }
     inference.solve
-    for(member <- members.zip(brand.record.fields))
+    for(call <- nextSuper)
+      call.check(inference)
+    for(member <- membersAndFields)
       member._1.initializer.check(inference)
     inference.solve
   }
   override def substitute(substitution: SignatureSubstitution): Unit = {
     signature.substitute(substitution)
+    for(call <- nextSuper)
+      call.substitute(substitution)
     for(member <- members)
       member.initializer.substitute(substitution)
   }
   override def specialize(spec: SignatureSubstitution) =
-    new ClassConstructorBody(signature.specialize(spec), members.map(member => new MemberDeclaration(member.name, member.mutability, spec.solve(member.tau), specScope => member.initializer.specialize(spec, specScope))), parent, brand)
+    new ClassConstructorBody(signature.specialize(spec), members.map(member => new ImplementedMemberDeclaration(member.name, member.mutability, spec.solve(member.tau), specScope => member.initializer.specialize(spec, specScope))), parent, owner)
   
-  override def compile(instantiation: Module,builder: LLVMInstructionBuilder): LLVMValue = {
+  override def compile(instantiation: Module, builder: LLVMInstructionBuilder): LLVMValue = {
     val llvmArguments = new HashMap ++ builder.getInsertBlock.getParent.getParameters.toList.map(arg => (arg.getValueName,arg))
     scope.setArguments(llvmArguments)
-    val struct = new LLVMUndefinedValue(signature.result.compile)
-    members.zipWithIndex.foldLeft[LLVMValue](struct)((res: LLVMValue, member: (MemberDeclaration, Int)) => 
-      new LLVMInsertValueInstruction(builder,res,member._1.initializer.compile(builder, scope, instantiation),member._2,"insert"))
+    val resultType: LLVMStructType = signature.result.asInstanceOf[RecordType].compile
+    val undef = new LLVMUndefinedValue(resultType)
+    val struct: (LLVMValue, Int) = nextSuper match {
+      case Some(call) => {
+        val parentContents: LLVMValue = call.compile(builder, scope, instantiation)
+        val inherited = parentContents.typeOf.asInstanceOf[LLVMStructType].getElementTypes.toList.zipWithIndex
+        val parent = inherited.foldLeft[LLVMValue](undef)((res: LLVMValue, tau: (LLVMType, Int)) => {
+          val inheritedMember = new LLVMExtractValueInstruction(builder, parentContents, tau._2, "extract")
+          new LLVMInsertValueInstruction(builder, res, inheritedMember, tau._2, "insert")
+        })
+        (parent, inherited.length)
+      }
+      case None => (undef, 0)
+    }
+    members.zipWithIndex.foldLeft[LLVMValue](struct._1)((res: LLVMValue, member: (ImplementedMemberDeclaration, Int)) =>
+      new LLVMInsertValueInstruction(builder, res, member._1.initializer.compile(builder, scope, instantiation),
+        struct._2 + member._2, "insert"))
   }
 }

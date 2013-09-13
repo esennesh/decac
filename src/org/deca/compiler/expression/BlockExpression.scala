@@ -1,11 +1,7 @@
 package org.deca.compiler.expression
 
 import org.jllvm.LLVMValue
-import org.jllvm.LLVMBasicBlock
-import org.jllvm.LLVMFunction
 import org.jllvm.LLVMInstructionBuilder
-import scala.collection.mutable.Map
-import scala.collection.mutable.HashMap
 import org.deca.compiler.definition._
 import org.deca.compiler.signature._
 
@@ -25,7 +21,7 @@ class BlockExpression(val steps: List[Expression]) extends Expression {
   override def substitute(sub: SignatureSubstitution): Unit = {
     for(step <- steps)
       step.substitute(sub)
-    expType = sub.solve(expType).asInstanceOf[MonoType]
+    expType = sub.solve(expType)
     expEffect = EffectPair(sub.solve[MonoEffect](expEffect.positive),sub.solve[MonoEffect](expEffect.negative))
   }
   override def specialize(spec: SignatureSubstitution,specScope: Scope): BlockExpression =

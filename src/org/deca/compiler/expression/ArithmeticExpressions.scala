@@ -63,8 +63,8 @@ class ArithmeticOperatorExpression(val operator: Char,val left: Expression,val r
     new ArithmeticOperatorExpression(operator,left.specialize(spec,specScope),right.specialize(spec,specScope),spec.solve(expType))
   
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
-    val lhs = (new ImplicitUpcast(left,expType)).compile(builder,scope,instantiation)
-    val rhs = (new ImplicitUpcast(right,expType)).compile(builder,scope,instantiation)
+    val lhs = new ImplicitUpcast(left,expType).compile(builder,scope,instantiation)
+    val rhs = new ImplicitUpcast(right,expType).compile(builder,scope,instantiation)
     operator match {
       case '+' => new LLVMAddInstruction(builder,lhs,rhs,!expType.isInstanceOf[IntegerType],"add")
       case '-' => new LLVMSubtractInstruction(builder,lhs,rhs,!expType.isInstanceOf[IntegerType],"subtract")

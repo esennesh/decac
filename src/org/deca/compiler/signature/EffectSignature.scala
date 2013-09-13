@@ -1,9 +1,7 @@
 package org.deca.compiler.signature
 
-import scala.collection.immutable.HashSet
 import scala.collection.immutable.Set
-import scala.collection.mutable.GraphLattice
-import org.deca.compiler.definition._
+import scala.collection.mutable
 
 class EffectVariable(override val universal: Boolean,override val name: Option[String] = None) extends MonoEffect with SignatureVariable {
   override def filterT(pred: MonoType => Boolean): Set[MonoType] = Set.empty
@@ -71,7 +69,7 @@ class BoundedEffectVariable(epsilon: MonoEffect,bnd: SignatureBound,univ: Boolea
 }
 
 object EffectRelation extends InferenceOrdering[MonoEffect] {
-  override protected val lattice = new GraphLattice(TopEffect,PureEffect)(EffectOrdering)
+  override protected val lattice = new mutable.GraphLattice(TopEffect,PureEffect)(EffectOrdering)
   def lt(x: MonoEffect,y: MonoEffect): Option[Set[InferenceConstraint]] = (x,y) match {
     case (bx: BoundedEffectVariable,by: BoundedEffectVariable) => lt(bx.signature,by.signature)
     case (_,by: BoundedEffectVariable) => lt(x,by.signature)
@@ -96,7 +94,7 @@ object EffectRelation extends InferenceOrdering[MonoEffect] {
   }
   def equiv(x: MonoEffect,y: MonoEffect): Option[Set[InferenceConstraint]] = (x,y) match {
     case (TopEffect,TopEffect) => Some(Set.empty)
-    case (SetEffect(ex),SetEffect(ey)) => if(ex.forall(ey.contains(_)) && ey.forall(ex.contains(_))) Some(Set.empty) else None
+    case (SetEffect(ex),SetEffect(ey)) => if(ex.forall(ey.contains) && ey.forall(ex.contains)) Some(Set.empty) else None
     case (ReadEffect(rx),ReadEffect(ry)) => RegionRelation.equiv(rx,ry)
     case (WriteEffect(rx),WriteEffect(ry)) => RegionRelation.equiv(rx,ry)
     case (ThrowEffect(tx),ThrowEffect(ty)) => TypeRelation.equiv(tx,ty)

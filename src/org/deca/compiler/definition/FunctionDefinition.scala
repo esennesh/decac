@@ -1,6 +1,6 @@
 package org.deca.compiler.definition
 
-import scala.collection.immutable.{Set,HashMap,Map}
+import scala.collection.immutable.{Set,HashMap}
 import scala.util.{Memoize1,InitializedMemoize1}
 import org.jllvm._
 import org.jllvm.bindings._
@@ -33,7 +33,7 @@ case class FunctionSignature(var arguments: List[(String,MonoType)],
                       implicits.map(impl => (impl._1,spec.solve(impl._2))),
                       spec.solve(result),
                       EffectPair(spec.solve(effect.positive),spec.solve(effect.negative)))
-  def arrow: Either[TypeExpressionConstructor,FunctionPointer] = {
+  def arrow: Either[TypeExpressionConstructor, FunctionPointer] = {
     val func = new FunctionPointer(arguments.map(_._2) ++ implicits.map(_._2),result,effect.positive,effect.negative)
     val argVariables: List[SignatureVariable] = func.variables.toList
     if(argVariables.forall(_.universal))
@@ -62,7 +62,7 @@ class FunctionDefinition(val name: String,
   }
   val specialize: Memoize1[List[MonoSignature],Memoize1[Module,LLVMFunction]] = Memoize1(sigvars => {
     val funcType: TypeConstructor = this.signature.arrow match {
-      case Left(funcType) => funcType
+      case Left(f) => f
       case Right(_) => throw new Exception("Attempting to specialize a function before its principal type has been inferred.")
     }
     val signature: FunctionPointer = funcType.represent(sigvars).asInstanceOf[FunctionPointer]
@@ -71,13 +71,13 @@ class FunctionDefinition(val name: String,
       for(argument <- func.getParameters.toList.zip(this.signature.arguments ++ this.signature.implicits))
         argument._1.setValueName(argument._2._1)
       func
-      },
-    (instantiation,func) => body match {
+    },
+    (instantiation, func) => body match {
       case Some(b) if funcType.parameters != Nil || instantiation == scope => {
         if(funcType.parameters != Nil)
           func.setLinkage(LLVMLinkage.LLVMWeakODRLinkage)
         val specialization = new SignatureSubstitution
-        for(spec <- (funcType.parameters zip sigvars)) {
+        for(spec <- funcType.parameters zip sigvars) {
           System.err.println("Specializing: " + spec._1.toString + " |--> " + spec._2.toString)
           specialization.substitute(spec._1,spec._2)
         }

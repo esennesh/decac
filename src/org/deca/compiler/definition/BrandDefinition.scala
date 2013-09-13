@@ -1,10 +1,9 @@
 package org.deca.compiler.definition
 
-import scala.collection.immutable.{Set,HashMap,Map}
+import scala.collection.immutable.{Set,Map}
 import scala.util._
 import org.jllvm._
 import org.deca.compiler.signature._
-import org.deca.compiler.definition._
 import org.deca.compiler.expression._
 
 object EnumerationClasses {
@@ -32,7 +31,9 @@ class EnumerationValue(scope: Module, val enum: String, val tag: Int, val parent
     LLVMConstantInteger.constantInteger(expType.compile.asInstanceOf[LLVMIntegerType],tag,false)
 }
 
-class MemberDeclaration(val name: String, val mutability: MonoMutability, val tau: MonoType, init: LexicalScope => Expression) {
+class MemberDeclaration(val name: String, val mutability: MonoMutability, val tau: MonoType)
+
+class ImplementedMemberDeclaration(name: String, mutability: MonoMutability, tau: MonoType, init: LexicalScope => Expression) extends MemberDeclaration(name, mutability, tau) {
   protected var initializerOpt: Option[Expression] = None
   
   def initialize(scope: LexicalScope): Unit =
@@ -41,33 +42,48 @@ class MemberDeclaration(val name: String, val mutability: MonoMutability, val ta
   def initializer: Expression = initializerOpt.get
 }
 
-object MemberDeclaration {
-  def dataConstructors(args: List[(String, MonoMutability, MonoType)]): List[MemberDeclaration] =
-    args.map(arg => new MemberDeclaration(arg._1, arg._2, arg._3, (scope: LexicalScope) => new VariableExpression(List(arg._1), scope)))
+object ImplementedMemberDeclaration {
+  def dataConstructors(args: List[(String, MonoMutability, MonoType)]): List[ImplementedMemberDeclaration] =
+    for(arg <- args) yield {
+      val init = (scope: LexicalScope) => new VariableExpression(List(arg._1), scope)
+      new ImplementedMemberDeclaration(arg._1, arg._2, arg._3, init)
+    }
 }
 
 class ClassDefinition(override val scope: Module,
                       override val name: String,
                       arguments: List[(String, MonoType)],
                       implicits: List[(String, MonoType)],
-                      val parent: Option[ClassDefinition],
-                      val fields: List[MemberDeclaration],
-                      methodDeclarations: List[MethodDeclaration]) extends Definition {
-  val brand: ClassBrand = ClassBrands.apply(scope, name, parent.map(_.brand), fields, methodDeclarations)
-  for(method <- methodDeclarations)
-    method.addThis(brand)
+                      val parent: Option[(ClassDefinition, UnscopedActualParameters)],
+                      fs: List[ImplementedMemberDeclaration],
+                      methodDeclarations: List[MethodDeclaration],
+                      val isFinal: Boolean = false) extends Definition {
+  val fields: List[MemberDeclaration] = parent.map(_._1.fields).getOrElse(Nil) ++ fs
+  val brand: ClassBrand = ClassBrands.apply(scope, name, parent.map(_._1.brand), fields, methodDeclarations)
   def thisPointer: PointerType = new PointerType(new BrandType(brand, EmptyRecord), new RegionVariable(false), ReadOnlyMutability)
   
-  val constructor: FunctionDefinition =
-    new FunctionDefinition(name + "_constructor", scope, new FunctionSignature(arguments, implicits, new BrandType(brand, EmptyRecord), EffectPair(PureEffect, PureEffect)), Some(signature => new ClassConstructorBody(signature, fields, scope, brand)))
+  val constructor: FunctionDefinition = {
+    val signature = new FunctionSignature(arguments, implicits, new BrandType(brand, EmptyRecord), EffectPair(PureEffect, PureEffect))
+    val body = (sig: FunctionSignature) => new ClassConstructorBody(sig, fs, scope, this)
+    new FunctionDefinition(name + "_constructor", scope, signature, Some(body))
+  }
     
   val methods: List[FunctionDefinition] =
     for(method <- methodDeclarations) yield {
-      val methodSig = new FunctionSignature(("this", thisPointer) :: method.signature.arguments, method.signature.implicits, method.signature.result, method.signature.effect)
+      method.addThis(brand)
+      val methodSig = method.signature
       new FunctionDefinition(name + method.name, scope, methodSig, Some(signature => new MethodBody(methodSig, brand, scope, method.body)))
     }
   
   override val build: Memoize1[Module, Set[LLVMValue]] = constructor.build
 }
 
-class DataConstructorDefinition(scope: Module, name: String, arguments: List[(String, MonoMutability, MonoType)], parent: ClassDefinition) extends ClassDefinition(scope, name, arguments.map(arg => (arg._1, arg._3)), Nil, Some(parent), MemberDeclaration.dataConstructors(arguments), Nil)
+class DataConstructorDefinition(scope: Module,
+                                name: String,
+                                arguments: List[(String, MonoMutability, MonoType)],
+                                parent: ClassDefinition)
+  extends ClassDefinition(scope,
+    name,
+    arguments.map(arg => (arg._1, arg._3)),
+    Nil, Some((parent, UnscopedActualParameters(s => Nil, s => Nil))),
+    ImplementedMemberDeclaration.dataConstructors(arguments), Nil)

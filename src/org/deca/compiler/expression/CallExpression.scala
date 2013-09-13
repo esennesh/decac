@@ -4,6 +4,9 @@ import org.jllvm._
 import org.deca.compiler.definition._
 import org.deca.compiler.signature._
 
+case class UnscopedActualParameters(formals: LexicalScope => List[Expression],
+				    implicits: LexicalScope => List[Option[Expression]])
+
 abstract class CallExpression extends Expression {
   val arguments: List[Expression]
   var arrow: FunctionPointer
@@ -12,13 +15,13 @@ abstract class CallExpression extends Expression {
   override def constrain(lui: LatticeUnificationInstance): Unit = {
     for(argument <- arguments)
       argument.constrain(lui)
-    for(actual <- (arguments.map(_.expType) zip arrow.domain))
+    for(actual <- arguments.map(_.expType) zip arrow.domain)
       lui.constrain(new SubsumptionConstraint(actual._1,actual._2))
   }
   override def check(lui: LatticeUnificationInstance): Unit = {
     for(argument <- arguments)
       argument.check(lui)
-    for(actual <- (arguments.map(_.expType) zip arrow.domain))
+    for(actual <- arguments.map(_.expType) zip arrow.domain)
       lui.constrain(new SubsumptionConstraint(actual._1,actual._2))
   }
   override def substitute(sub: SignatureSubstitution): Unit = {
@@ -35,7 +38,7 @@ abstract class CallExpression extends Expression {
 
 class DefinitionCall(val definition: FunctionDefinition,
                      args: List[Expression],
-                     val implicits: (List[Option[Expression]],Scope),
+                     val implicits: List[Option[Expression]],
                      spec: Option[List[MonoSignature]] = None) extends CallExpression {
   val specialization: List[MonoSignature] = spec getOrElse (definition.signature.arrow match {
     case Left(funcType) => funcType.freshlySpecialize
@@ -44,33 +47,33 @@ class DefinitionCall(val definition: FunctionDefinition,
   override val arguments: List[Expression] = {
     val specializeSubstitution = definition.signature.arrow match {
       case Left(funcType) => funcType.substitution(specialization)
-      case Right(arrow) => new SignatureSubstitution
+      case Right(_) => new SignatureSubstitution
     }
-    val specializedImplicits = definition.signature.implicits.map(impl => (impl._1,specializeSubstitution.solve(impl._2)))
-    val actualImplicits = implicits._1.zip(specializedImplicits).map(impl =>
-      impl._1 getOrElse new ImplicitResolutionExpression(impl._2._2,implicits._2))
+    val specializedImplicits = definition.signature.implicits.map(impl => (impl._1, specializeSubstitution.solve(impl._2)))
+    val actualImplicits = implicits.zip(specializedImplicits).map(impl =>
+      impl._1 getOrElse new ImplicitResolutionExpression(impl._2._2))
     args ++ actualImplicits
   }
   assert(definition.signature.arguments.length == args.length)
-  assert(definition.signature.implicits.length == implicits._1.length)
+  assert(definition.signature.implicits.length == implicits.length)
   var arrow: FunctionPointer = definition.signature.arrow match {
     case Left(funcType) => funcType.represent(specialization).asInstanceOf[FunctionPointer]
-    case Right(arrow) => arrow
+    case Right(tau) => tau
   }
   expType = arrow.range
   expEffect = EffectPair(arrow.positive,arrow.negative)
   assert(arguments.length == arrow.domain.length)
   
-  override def specialize(spec: SignatureSubstitution,specScope: Scope): DefinitionCall = {
+  override def specialize(spec: SignatureSubstitution, specScope: Scope): DefinitionCall = {
     val newArguments = args.map(_.specialize(spec,specScope))
-    val newImplicits = implicits._1.map(impl => impl.map(_.specialize(spec,specScope)))
+    val newImplicits = implicits.map(impl => impl.map(_.specialize(spec,specScope)))
     val newSpecialization = specialization.map(sigma => spec.solve(sigma))
-    new DefinitionCall(definition,newArguments,(newImplicits,specScope),Some(newSpecialization))
+    new DefinitionCall(definition, newArguments, newImplicits, Some(newSpecialization))
   }
     
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
     val function: LLVMFunction = definition.specialize(specialization)(instantiation)
-    new LLVMCallInstruction(builder,function,arguments.map(_.compile(builder,scope,instantiation)).toArray,"definition_call")
+    new LLVMCallInstruction(builder,function,arguments.map(_.compile(builder, scope, instantiation)).toArray,"definition_call")
   }
 }
 

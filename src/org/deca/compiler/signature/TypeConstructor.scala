@@ -1,10 +1,6 @@
 package org.deca.compiler.signature
 
-import scala.collection.mutable.Set
-import scala.collection.immutable
-import scala.collection.mutable.HashSet
-import scala.collection.mutable.HashMap
-import scala.collection.mutable.GraphLattice
+import scala.collection.{mutable, immutable}
 import scala.util.Memoize1
 import org.jllvm._
 import org.deca.compiler.definition._
@@ -32,9 +28,9 @@ abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
   }
   def name: String = strName match {
     case Some(n) => n
-    case None => getClass().getName() + '@' + Integer.toHexString(hashCode())
+    case None => getClass.getName + '@' + Integer.toHexString(hashCode())
   }
-  protected val specializations = new HashMap[List[MonoSignature],LLVMType]()
+  protected val specializations = new mutable.HashMap[List[MonoSignature],LLVMType]()
   
   def compile(params: List[MonoSignature]): LLVMType
   def resolve(params: List[MonoSignature]): LLVMType
@@ -42,7 +38,7 @@ abstract class TypeConstructor(val parameters: List[SignatureVariable]) {
   def substitution(params: List[MonoSignature]): SignatureSubstitution = {
     val result = new SignatureSubstitution
     for(param <- parameters zip params)
-      result.substitute(param._1,param._2,true)
+      result.substitute(param._1, param._2, specialize = true)
     result
   }
   def freshlySpecialize: List[SignatureVariable] = parameters.map(_ match {

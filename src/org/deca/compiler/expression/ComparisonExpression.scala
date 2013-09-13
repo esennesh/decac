@@ -34,8 +34,8 @@ class ComparisonExpression(val operator: ComparisonOperator,
   override def specialize(spec: SignatureSubstitution,specScope: Scope): ComparisonExpression =
     new ComparisonExpression(operator,left.specialize(spec,specScope),right.specialize(spec,specScope),spec.solve(join))
   override def compile(builder: LLVMInstructionBuilder,scope: Scope,instantiation: Module): LLVMValue = {
-    val compLeft = (new ImplicitUpcast(left,join)).compile(builder,scope,instantiation)
-    val compRight = (new ImplicitUpcast(right,join)).compile(builder,scope,instantiation)
+    val compLeft = new ImplicitUpcast(left, join).compile(builder,scope,instantiation)
+    val compRight = new ImplicitUpcast(right, join).compile(builder,scope,instantiation)
     operator match {
       case OrdinalComparison(greater,oreq) => join.asInstanceOf[NumericalType] match {
         case real: RealType => {
